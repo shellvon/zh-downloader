@@ -6,4 +6,5 @@ export const addOrUpdateVideo = ({ commit }, payload) => {
 
 export const deleteVideo = ({ commit }, payload) => {
   commit(types.DELETE_VIDEO, payload);
+  commit(types.DELETE_DOWNLOAD_INFO, { id: payload.id });
 };

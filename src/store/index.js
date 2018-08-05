@@ -12,8 +12,9 @@ Vue.use(Vuex);
 export default new Vuex.Store({
   state: {
     playlist: [], // 视频列表
+    downloadInfo: {}, // 下载进度
   },
-  plugins: [VuexWebExtensions({ persistentStates: ['playlist'] })],
+  plugins: [VuexWebExtensions({ persistentStates: ['playlist', 'downloadInfo'] })],
   getters,
   mutations,
   actions,

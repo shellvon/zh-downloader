@@ -10,7 +10,7 @@ import {
   unknownAction,
 } from './actions';
 
-import { ADD_OR_UPDATE_VIDEO } from './store/mutation-types';
+import { ADD_OR_UPDATE_VIDEO, ADD_OR_UPDATE_DOWNLOAD_INFO } from './store/mutation-types';
 
 /**
  * 监听知乎视频请求.
@@ -25,7 +25,7 @@ chrome.webRequest.onBeforeRequest.addListener(
         let playlist = resp.playlist;
 
         let parsedPlaylist = {};
-
+        let defaultFormat = types.DEFAULT_VIDEO_FORMAT;
         for (var quality in playlist) {
           var m3u8 = playlist[quality].play_url;
           var manifest = await parseM3u8File(m3u8);
@@ -38,11 +38,12 @@ chrome.webRequest.onBeforeRequest.addListener(
             size: playlist[quality].size,
             name: videoName,
             manifest: manifest,
-            format: 'ts',
-            progress: 0, //
+            format: defaultFormat,
             ...resp.cover_info,
           };
           parsedPlaylist[quality] = videoItem;
+          // Update The download Info.
+          store.commit(ADD_OR_UPDATE_DOWNLOAD_INFO, { id: resp.id, quality: quality, progress: 0, format: defaultFormat });
         }
 
         return {
@@ -73,7 +74,7 @@ let globalPort;
 
 // 处理来自Popup的消息
 chrome.extension.onConnect.addListener(function(port) {
-  if (port.name !== 'ZH_DOWNLOADER') {
+  if (port.name !== types.PORT_NAME) {
     return;
   }
   globalPort = port;
@@ -82,21 +83,39 @@ chrome.extension.onConnect.addListener(function(port) {
       // 下载视频
       case types.DOWNLOAD_VIDEO_START:
         let videoInfo = payload;
-        let selectVideoItem = videoInfo.playlist[videoInfo.currentQuality];
+        let quality = videoInfo.currentQuality;
+        let selectVideoItem = videoInfo.playlist[quality];
         let segments = selectVideoItem.manifest.segments;
         let total = segments.length;
         let current = 0;
-        downloadSegments(selectVideoItem.baseUri, segments, selectVideoItem.format || 'ts', chunkInfo => {
+        let format = selectVideoItem.format || types.DEFAULT_VIDEO_FORMAT;
+        let downloadInfo = {
+          id: videoInfo.id,
+          quality: quality,
+          progress: 0,
+          format: format,
+          name: videoInfo.name + '-' + quality.toUpperCase() + '.' + format,
+        };
+        downloadSegments(selectVideoItem.baseUri, segments, format, chunkInfo => {
           current += 1;
-          selectVideoItem.progress = parseInt((current * 100) / total);
-          videoInfo.playlist[videoInfo.currentQuality] = selectVideoItem;
-          console.log(selectVideoItem);
-          if (globalPort) globalPort.postMessage(downloadProgressUpdate(videoInfo));
-        }).then(data => {
-          selectVideoItem.downloadLink = data.downloadLink;
-          videoInfo.playlist[videoInfo.currentQuality] = selectVideoItem;
-          if (globalPort) globalPort.postMessage(finishedDownloadVideo(videoInfo));
-        }); // 通知前端已经下载完成
+          downloadInfo.progress = parseInt((current * 100) / total);
+          if (globalPort) {
+            globalPort.postMessage(downloadProgressUpdate(downloadInfo));
+          }
+        })
+          .then(data => {
+            downloadInfo.link = data.downloadLink;
+            if (globalPort) {
+              // 通知前端已经下载完成
+              globalPort.postMessage(finishedDownloadVideo(downloadInfo));
+            }
+          })
+          .catch(err => {
+            downloadInfo.error = err.message || '系统错误';
+            if (globalPort) {
+              globalPort.postMessage(finishedDownloadVideo(downloadInfo));
+            }
+          });
         break;
 
       // 删除视频,更新一下当前的Badge

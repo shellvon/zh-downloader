@@ -9,3 +9,7 @@ export const UPDATE_DOWNLOAD_PROGRESS = 'UPDATE_DOWNLOAD_PROGRESS';
 export const ADD_NEW_VIDEO = 'ADD_NEW_VIDEO';
 
 export const UNKNOWN_ACTION = 'UNKNOWN_ACTION';
+
+export const PORT_NAME = 'ZH_DOWNLOADER';
+
+export const DEFAULT_VIDEO_FORMAT = 'ts';
