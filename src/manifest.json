@@ -1,6 +1,6 @@
 {
   "name": "zh-downloader",
-  "description": "Zhihu Video Downloader",
+  "description": "这是一个自动嗅探知乎视频资源并且支持直接下载保存的Chrome插件, 使用方式是直接打开知乎网页, 插件会自动嗅探出对应的视频资源用于用户进行操作.",
   "version": null,
   "manifest_version": 2,
   "icons": {

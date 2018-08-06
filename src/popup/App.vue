@@ -8,6 +8,9 @@
         </div>
       </template>
       <template v-else>
+        <template v-if="isDownloading">
+          <el-alert title="视频下载过程中请勿关闭本页面,若下载格式为MP4, 转换过程可能会相当耗时, 请耐心等待." type="warning"></el-alert>
+        </template>
         <el-table :data="playlist" style="width:100%" max-height="300">
           <el-table-column type="expand" fixed>
             <template slot-scope="props">
@@ -19,7 +22,7 @@
                     </el-tooltip>
                   </span>
                 </el-form-item>
-                <el-form-item label="视频名:">
+                <el-form-item label="视频名称:">
                   <span>{{ props.row.name }}</span>
                 </el-form-item>
                 <el-form-item label="M3U8地址:">
@@ -130,6 +133,7 @@ export default {
   mounted() {
     let self = this;
     this.port.onMessage.addListener(({ type, payload }) => {
+      console.log(`Popup.js Recieved event type: ${type}`);
       switch (type) {
         case ADD_NEW_VIDEO:
           self.$store.commit(mutationTypes.ADD_OR_UPDATE_VIDEO, payload);
@@ -150,20 +154,18 @@ export default {
           }
           // 视频下载完成
           self.$store.commit(mutationTypes.ADD_OR_UPDATE_DOWNLOAD_INFO, payload);
-
-          console.log('Recieve Download Finised Signal', payload);
           self.downloadFile(payload.link, payload.name);
 
           return true;
         default:
-          console.log('Unsupported message type.', type);
+          console.log(`Unsupported event type: ${type}`);
           break;
       }
     });
     this.port.onDisconnect.addListener(() => {
       // reconnect again.
       self.port = chrome.runtime.connect({
-        name: 'ZH_DOWNLOADER',
+        name: PORT_NAME,
       });
     });
   },

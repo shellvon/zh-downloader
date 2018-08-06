@@ -25,23 +25,24 @@ export default {
   },
 
   [types.ADD_OR_UPDATE_DOWNLOAD_INFO](state, { id: videoId, quality = 'hd', format = 'ts', progress = 0, link = '', name = '' }) {
-    // Ugly Code.
-    if (!state.downloadInfo[videoId]) {
-      state.downloadInfo[videoId] = {};
+    let downloadInfo = Object.assign({}, state.downloadInfo);
+    if (!downloadInfo[videoId]) {
+      downloadInfo[videoId] = {};
     }
-    if (!state.downloadInfo[videoId][quality]) {
-      state.downloadInfo[videoId][quality] = {};
+    if (!downloadInfo[videoId][quality]) {
+      downloadInfo[videoId][quality] = {};
     }
-    if (!state.downloadInfo[videoId][quality][format]) {
-      state.downloadInfo[videoId][quality][format] = {};
+    if (!downloadInfo[videoId][quality][format]) {
+      downloadInfo[videoId][quality][format] = {};
     }
-    state.downloadInfo[videoId][quality][format].progress = progress;
+    downloadInfo[videoId][quality][format].progress = progress;
     if (link) {
-      state.downloadInfo[videoId][quality][format].link = link;
+      downloadInfo[videoId][quality][format].link = link;
     }
     if (name) {
-      state.downloadInfo[videoId][quality][format].name = name;
+      downloadInfo[videoId][quality][format].name = name;
     }
+    state.downloadInfo = downloadInfo;
   },
   [types.DELETE_DOWNLOAD_INFO](state, { id: videoId }) {
     delete state.downloadInfo[videoId];

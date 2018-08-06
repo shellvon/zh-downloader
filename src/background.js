@@ -23,9 +23,9 @@ chrome.webRequest.onBeforeRequest.addListener(
       .then(async function(resp) {
         let videoName = resp.title || '未命名';
         let playlist = resp.playlist;
-
         let parsedPlaylist = {};
         let defaultFormat = types.DEFAULT_VIDEO_FORMAT;
+
         for (var quality in playlist) {
           var m3u8 = playlist[quality].play_url;
           var manifest = await parseM3u8File(m3u8);
@@ -58,6 +58,7 @@ chrome.webRequest.onBeforeRequest.addListener(
         store.commit(ADD_OR_UPDATE_VIDEO, videoInfo);
 
         chrome.browserAction.setBadgeText({ text: store.state.playlist.length + '' });
+        chrome.browserAction.setBadgeBackgroundColor({ color: 'red' });
       })
       .catch(error => {
         console.error(error);
@@ -79,6 +80,7 @@ chrome.extension.onConnect.addListener(function(port) {
   }
   globalPort = port;
   globalPort.onMessage.addListener(function({ type, payload }) {
+    console.debug(`Background.js received event type: ${type}`);
     switch (type) {
       // 下载视频
       case types.DOWNLOAD_VIDEO_START:
@@ -100,17 +102,19 @@ chrome.extension.onConnect.addListener(function(port) {
           current += 1;
           downloadInfo.progress = parseInt((current * 100) / total);
           if (globalPort) {
+            console.debug(`Download progress update: ${JSON.stringify(downloadInfo)} `);
             globalPort.postMessage(downloadProgressUpdate(downloadInfo));
           }
         })
           .then(data => {
             downloadInfo.link = data.downloadLink;
             if (globalPort) {
-              // 通知前端已经下载完成
+              console.debug(`Download ${downloadInfo['name']} finished`);
               globalPort.postMessage(finishedDownloadVideo(downloadInfo));
             }
           })
           .catch(err => {
+            console.error(err);
             downloadInfo.error = err.message || '系统错误';
             if (globalPort) {
               globalPort.postMessage(finishedDownloadVideo(downloadInfo));
@@ -134,6 +138,7 @@ chrome.extension.onConnect.addListener(function(port) {
   });
 
   globalPort.onDisconnect.addListener(() => {
+    console.debug('Connection disconnect');
     globalPort = null;
   });
 });
