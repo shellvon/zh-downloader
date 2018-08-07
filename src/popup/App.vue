@@ -119,6 +119,7 @@ import { ADD_NEW_VIDEO, UPDATE_DOWNLOAD_PROGRESS, DOWNLOAD_VIDEO_FINISHED, PORT_
 
 import { startDownloadVideo, deleteVideo } from '../actions';
 import * as mutationTypes from '../store/mutation-types';
+import { mapGetters } from 'vuex';
 
 export default {
   data() {
@@ -262,9 +263,7 @@ export default {
   },
 
   computed: {
-    playlist() {
-      return this.$store.state.playlist;
-    },
+    ...mapGetters(['playlist']),
   },
 };
 </script>

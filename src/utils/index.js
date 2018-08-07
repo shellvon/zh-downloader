@@ -12,11 +12,13 @@ export async function parseM3u8File(uri) {
   const parsedManifest = m3u8Parser.manifest;
   return parsedManifest;
 }
+
 export async function sleep(second) {
   return new Promise((resolve, reject) => {
     setTimeout(resolve, second);
   });
 }
+
 export async function fetchRetry(url, options, retryCnt = 3, delay = 5) {
   try {
     return fetch(url, options);

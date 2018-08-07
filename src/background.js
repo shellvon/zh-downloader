@@ -50,6 +50,7 @@ chrome.webRequest.onBeforeRequest.addListener(
           id: resp.id,
           name: videoName,
           thumbnail: resp.cover_info.thumbnail,
+          updatedAt: new Date().getTime(),
           playlist: parsedPlaylist,
           currentQuality: quality,
         };
