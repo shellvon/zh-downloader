@@ -84,3 +84,8 @@ body{
     margin-top: 50px;
   }
   
+  #pane-settings label {
+    width: 130px;
+    text-align: right;
+  }
+  

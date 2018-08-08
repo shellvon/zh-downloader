@@ -98,15 +98,15 @@
                 <el-option label="MP4" value="mp4"></el-option>
               </el-select>
             </el-form-item>
-            <el-form-item label="偏爱的视频转化器:">
-              <el-select placeholder="请选择你视频格式转化器" v-model="customSettings.converter">
+            <el-form-item label="偏爱的MP4转化器:">
+              <el-select placeholder="请选择你MP4转化器" v-model="customSettings.converter">
                 <el-option label="mux.js" value="mux.js">
                   <span style="float: left">mux.js</span>
                   <span style="float: right; color: red; font-size: 12px">转化后长宽正确,时间不正确</span>
                 </el-option>
                 <el-option label="mpegts-to-mp4" value="mpegts-to-mp4">
                   <span style="float: left">mpegts-to-mp4</span>
-                  <span style="float: right; color: red; font-size: 12px">转化后长宽错误,时间正确</span>
+                  <span style="float: right; color: red; font-size: 12px">转化后时间正确,长度不正确</span>
                 </el-option>
               </el-select>
             </el-form-item>
@@ -177,7 +177,7 @@ export default {
   mounted() {
     let self = this;
     this.port.onMessage.addListener(({ type, payload }) => {
-      console.log(`Popup.js Recieved event type: ${type}`);
+      console.debug(`Popup.js Recieved event type: ${type} =>`, payload);
       switch (type) {
         case ADD_NEW_VIDEO:
           self.$store.commit(mutationTypes.ADD_OR_UPDATE_VIDEO, payload);
