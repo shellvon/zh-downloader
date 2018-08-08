@@ -24,7 +24,9 @@ chrome.webRequest.onBeforeRequest.addListener(
         let videoName = resp.title || '未命名';
         let playlist = resp.playlist;
         let parsedPlaylist = {};
-        let defaultFormat = types.DEFAULT_VIDEO_FORMAT;
+        let customSettings = store.getters.customSettings;
+        let preferedFormat = customSettings.format || types.DEFAULT_VIDEO_FORMAT;
+        let preferedQuality = customSettings.quality || types.DEFAULT_VIDEO_QUALITY;
 
         for (var quality in playlist) {
           var m3u8 = playlist[quality].play_url;
@@ -38,12 +40,12 @@ chrome.webRequest.onBeforeRequest.addListener(
             size: playlist[quality].size,
             name: videoName,
             manifest: manifest,
-            format: defaultFormat,
+            format: preferedFormat,
             ...resp.cover_info,
           };
           parsedPlaylist[quality] = videoItem;
           // Update The download Info.
-          store.commit(ADD_OR_UPDATE_DOWNLOAD_INFO, { id: resp.id, quality: quality, progress: 0, format: defaultFormat });
+          store.commit(ADD_OR_UPDATE_DOWNLOAD_INFO, { id: resp.id, quality: quality, progress: 0, format: preferedFormat });
         }
 
         return {
@@ -52,7 +54,7 @@ chrome.webRequest.onBeforeRequest.addListener(
           thumbnail: resp.cover_info.thumbnail,
           updatedAt: new Date().getTime(),
           playlist: parsedPlaylist,
-          currentQuality: quality,
+          currentQuality: preferedQuality,
         };
       })
       .then(videoInfo => {
@@ -79,47 +81,77 @@ chrome.extension.onConnect.addListener(function(port) {
   if (port.name !== types.PORT_NAME) {
     return;
   }
+  console.debug('Connection onconnect...');
   globalPort = port;
   globalPort.onMessage.addListener(function({ type, payload }) {
     console.debug(`Background.js received event type: ${type}`);
+
+    const safeSendResponse = message => {
+      if (globalPort) {
+        globalPort.postMessage(message);
+      } else {
+        chrome.runtime.sendMessage(message);
+      }
+    };
+
     switch (type) {
       // 下载视频
       case types.DOWNLOAD_VIDEO_START:
         let videoInfo = payload;
-        let quality = videoInfo.currentQuality;
+        let quality = videoInfo.currentQuality; // 选择下载的清晰度
         let selectVideoItem = videoInfo.playlist[quality];
-        let segments = selectVideoItem.manifest.segments;
+        let segments = selectVideoItem.manifest.segments; // 对应清晰度的视频分片数据.
+        let format = selectVideoItem.format || types.DEFAULT_VIDEO_FORMAT; // 下载格式.
+        let converter = store.getters.customSettings.converter || types.DEFAULT_VIDEO_CONVERTER; // 默认的转化器
+        let start = 0;
         let total = segments.length;
-        let current = 0;
-        let format = selectVideoItem.format || types.DEFAULT_VIDEO_FORMAT;
+
+        // 初始化下载信息.
         let downloadInfo = {
           id: videoInfo.id,
           quality: quality,
-          progress: 0,
+          progress: start,
           format: format,
           name: videoInfo.name + '-' + quality.toUpperCase() + '.' + format,
         };
-        downloadSegments(selectVideoItem.baseUri, segments, format, chunkInfo => {
-          current += 1;
-          downloadInfo.progress = parseInt((current * 100) / total);
-          if (globalPort) {
-            console.debug(`Download progress update: ${JSON.stringify(downloadInfo)} `);
-            globalPort.postMessage(downloadProgressUpdate(downloadInfo));
-          }
-        })
+        store.commit(ADD_OR_UPDATE_DOWNLOAD_INFO, downloadInfo);
+
+        downloadSegments(
+          selectVideoItem.baseUri,
+          segments,
+          format,
+          ({ type, payload }) => {
+            console.debug(`ProgressCallback : ${type} => `, payload);
+            let msg = payload.msg;
+            switch (type) {
+              // 正在下载中....
+              case types.DOWNLOAD_VIDEO_INPROGRESS:
+                start += 1;
+                let percent = parseInt((start * 100) / total);
+                // 不让它变成100,因为有可能转化需要一定时间
+                downloadInfo.progress = percent >= 100 ? 99.99 : percent;
+                store.commit(ADD_OR_UPDATE_DOWNLOAD_INFO, downloadInfo);
+                msg = `下载分片数据中(${start}/${total})...请耐心等待`;
+                break;
+              // 开始合并数据了...
+              case types.DOWNLOAD_VIDEO_MERGING:
+                break;
+              // ....
+            }
+            // 通知前端刷新
+            safeSendResponse(downloadProgressUpdate({ msg }));
+          },
+          converter
+        )
           .then(data => {
             downloadInfo.link = data.downloadLink;
-            if (globalPort) {
-              console.debug(`Download ${downloadInfo['name']} finished`);
-              globalPort.postMessage(finishedDownloadVideo(downloadInfo));
-            }
+            downloadInfo.progress = 100;
+            console.debug(`Download ${downloadInfo['name']} finished`, data);
+            safeSendResponse(finishedDownloadVideo(downloadInfo));
           })
           .catch(err => {
-            console.error(err);
-            downloadInfo.error = err.message || '系统错误';
-            if (globalPort) {
-              globalPort.postMessage(finishedDownloadVideo(downloadInfo));
-            }
+            downloadInfo.error = err.message;
+            safeSendResponse(finishedDownloadVideo(downloadInfo));
           });
         break;
 
@@ -131,7 +163,7 @@ chrome.extension.onConnect.addListener(function(port) {
         break;
 
       default:
-        chrome.runtime.sendMessage(unknownAction(payload));
+        safeSendResponse(unknownAction(payload));
         break;
     }
 
@@ -139,7 +171,7 @@ chrome.extension.onConnect.addListener(function(port) {
   });
 
   globalPort.onDisconnect.addListener(() => {
-    console.debug('Connection disconnect');
+    console.debug('Connection disconnect...');
     globalPort = null;
   });
 });

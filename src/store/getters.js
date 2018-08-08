@@ -5,3 +5,5 @@ export const playlist = state => {
   return items;
 };
 export const downloadInfo = state => state.downloadInfo;
+
+export const customSettings = state => state.customSettings || {};

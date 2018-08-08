@@ -34,7 +34,7 @@
                   <span>{{ props.row.playlist[props.row.currentQuality].duration | msToTime}}</span>
                 </el-form-item>
                 <el-form-item label="清晰度:">
-                  <span>{{ props.row.playlist[props.row.currentQuality].quality | qualityStr}}</span>
+                  <span>{{ qualityMap[props.row.playlist[props.row.currentQuality].quality] || '未知'}}</span>
                 </el-form-item>
                 <el-form-item label="视频大小:">
                   <span>{{ props.row.playlist[props.row.currentQuality].size | bytesToSize}}</span>
@@ -52,7 +52,7 @@
           <el-table-column label="清晰度">
             <template slot-scope="scope">
               <el-select v-model="scope.row.currentQuality" size="small">
-                <el-option v-for="(item, key) in scope.row.playlist" :key="key" :label="item.quality | qualityStr" :value="item.quality">
+                <el-option v-for="(item, key) in scope.row.playlist" :key="key" :label="qualityMap[item.quality] || item.quality" :value="item.quality">
                 </el-option>
               </el-select>
             </template>
@@ -67,8 +67,10 @@
           </el-table-column>
           <el-table-column label="下载进度" width="80">
             <template slot-scope="scope">
-              <el-progress :percentage="progressValue(scope.row)"
-                type="circle" :width=40 color="#8e71c7"></el-progress>
+              <el-tooltip>
+                <div slot="content">{{progressMessage && scope.row.id === downloadingVedioId ? progressMessage: '点击右边下载按钮即会自动更新此进度'}}</div>
+                <el-progress :percentage="progressValue(scope.row)" type="circle" :width=40 color="#8e71c7"></el-progress>
+              </el-tooltip>
             </template>
           </el-table-column>
           <el-table-column fixed="right" label="操作" width="100">
@@ -85,6 +87,40 @@
           </el-table-column>
         </el-table>
       </template>
+    </el-tab-pane>
+    <el-tab-pane label="设置" name="settings">
+      <el-container>
+        <el-main>
+          <el-form label-position='left'>
+            <el-form-item label="偏爱的视频格式:">
+              <el-select placeholder="请选择你偏好的视频格式" v-model="customSettings.format">
+                <el-option label="MPEG2-TS" value="ts"></el-option>
+                <el-option label="MP4" value="mp4"></el-option>
+              </el-select>
+            </el-form-item>
+            <el-form-item label="偏爱的视频转化器:">
+              <el-select placeholder="请选择你视频格式转化器" v-model="customSettings.converter">
+                <el-option label="mux.js" value="mux.js">
+                  <span style="float: left">mux.js</span>
+                  <span style="float: right; color: red; font-size: 12px">转化后长宽正确,时间不正确</span>
+                </el-option>
+                <el-option label="mpegts-to-mp4" value="mpegts-to-mp4">
+                  <span style="float: left">mpegts-to-mp4</span>
+                  <span style="float: right; color: red; font-size: 12px">转化后长宽错误,时间正确</span>
+                </el-option>
+              </el-select>
+            </el-form-item>
+            <el-form-item label="偏爱的清晰度:">
+              <el-select placeholder="请选择你偏好的清晰度" v-model="customSettings.quality">
+                <el-option v-for="(item, key) in qualityMap" :key="key" :label="item" :value="key"></el-option>
+              </el-select>
+            </el-form-item>
+          </el-form>
+        </el-main>
+      </el-container>
+
+
+
     </el-tab-pane>
     <el-tab-pane label="关于" name="about">
       <el-container>
@@ -126,6 +162,13 @@ export default {
     return {
       isDownloading: false,
       activeName: 'playlist',
+      progressMessage: '',
+      qualityMap: {
+        hd: '高清',
+        sd: '标清',
+        ld: '普清',
+      },
+      downloadingVedioId: 0, // 当前正在下载的videoId.
       port: chrome.runtime.connect({
         name: PORT_NAME,
       }),
@@ -140,11 +183,13 @@ export default {
           self.$store.commit(mutationTypes.ADD_OR_UPDATE_VIDEO, payload);
           return true;
         case UPDATE_DOWNLOAD_PROGRESS:
+          self.progressMessage = payload.msg;
           // 更新下载进度.
-          self.$store.commit(mutationTypes.ADD_OR_UPDATE_DOWNLOAD_INFO, payload);
+          // self.$store.commit(mutationTypes.ADD_OR_UPDATE_DOWNLOAD_INFO, payload);
           return true;
         case DOWNLOAD_VIDEO_FINISHED:
           self.isDownloading = false;
+          self.progressMessage = '';
           if (payload.error) {
             self.$message({
               showClose: true,
@@ -191,6 +236,7 @@ export default {
      */
     handleDownloadVideo(videoInfo) {
       this.isDownloading = true;
+      this.downloadingVedioId = videoInfo.id;
       this.port.postMessage(startDownloadVideo(videoInfo));
     },
 
@@ -234,14 +280,6 @@ export default {
   },
 
   filters: {
-    qualityStr(value) {
-      let qualityMap = {
-        sd: '标清',
-        hd: '高清',
-        ld: '普清',
-      };
-      return qualityMap[value] || '标清';
-    },
     /**
      * 毫秒->人类友好的H:M:S格式
      */
@@ -263,7 +301,7 @@ export default {
   },
 
   computed: {
-    ...mapGetters(['playlist']),
+    ...mapGetters(['playlist', 'customSettings']),
   },
 };
 </script>
