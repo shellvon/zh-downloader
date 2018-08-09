@@ -9,6 +9,7 @@
 
 下载本代码之后执行 `npm install && npm run build` 之后在 [Chrome](chrome://extensions/)中选择"加载已解压的扩展程序" 选择 `dist` 目录即可。
 
+或者你可以选择已经打包好的CRX格式插件,可以前往这里下载:[https://github.com/shellvon/zh-downloader/releases/](https://github.com/shellvon/zh-downloader/releases/)
 
 # 功能特色
 
