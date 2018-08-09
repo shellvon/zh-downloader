@@ -51,4 +51,8 @@ export default {
 </script>
 
 <style>
+#pane-settings label {
+  width: 130px;
+  text-align: right;
+}
 </style>

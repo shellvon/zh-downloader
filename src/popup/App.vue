@@ -12,6 +12,16 @@
   </el-tabs>
 </template>
 
+<style>
+body {
+  width: 600px;
+}
+
+.link {
+  text-decoration: none;
+  color: #409eff;
+}
+</style>
 
 <script>
 import { ADD_NEW_VIDEO, UPDATE_DOWNLOAD_PROGRESS, DOWNLOAD_VIDEO_FINISHED, PORT_NAME } from '../constants';

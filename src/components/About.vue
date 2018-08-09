@@ -30,4 +30,36 @@ export default {
 </script>
 
 <style>
+.el-aside {
+  text-align: center;
+  padding: 20px;
+}
+
+.plugin-name {
+  font-size: 1.4em;
+  font-weight: bold;
+}
+
+.plugin-version {
+  margin-left: 12px;
+  color: #cbcbcb;
+}
+
+.description {
+  margin-top: 10px;
+}
+
+.warning {
+  margin-top: 30px;
+  color: grey;
+}
+
+.warning span {
+  color: red;
+  font-size: 1.2em;
+}
+
+.footer {
+  margin-top: 50px;
+}
 </style>

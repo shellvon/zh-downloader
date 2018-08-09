@@ -302,4 +302,32 @@ export default {
 </script>
 
 <style>
+.nothing {
+  font-size: 36px;
+}
+
+.error-message {
+  text-align: center;
+}
+
+.thumbnail {
+  width: 128px;
+  max-height: 72px;
+  border-radius: 2px;
+}
+
+.table-expand {
+  font-size: 0;
+}
+
+.table-expand label {
+  width: 90px;
+  color: #cbcbcb;
+}
+
+.table-expand .el-form-item {
+  margin-right: 0;
+  margin-bottom: 0;
+  width: 50%;
+}
 </style>

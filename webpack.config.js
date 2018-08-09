@@ -5,6 +5,8 @@ const CopyWebpackPlugin = require('copy-webpack-plugin');
 const ChromeExtensionReloader = require('webpack-chrome-extension-reloader');
 const { VueLoaderPlugin } = require('vue-loader');
 const { version } = require('./package.json');
+const UglifyJsPlugin = require("uglifyjs-webpack-plugin");
+const OptimizeCSSAssetsPlugin = require("optimize-css-assets-webpack-plugin");
 
 const config = {
   mode: process.env.NODE_ENV,
@@ -19,6 +21,16 @@ const config = {
   },
   resolve: {
     extensions: ['.js', '.vue'],
+  },
+  optimization: {
+    minimizer: [
+      new UglifyJsPlugin({
+        cache: true,
+        parallel: true,
+        sourceMap: false // set to true if you want JS source maps
+      }),
+      new OptimizeCSSAssetsPlugin({})
+    ]
   },
   module: {
     rules: [
