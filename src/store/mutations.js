@@ -47,4 +47,13 @@ export default {
   [types.DELETE_DOWNLOAD_INFO](state, { id: videoId }) {
     delete state.downloadInfo[videoId];
   },
+  [types.UPDATE_SETTINGS](state, settings) {
+    let newSettings = Object.assign({}, state.customSettings);
+    for (let profileKey in settings) {
+      if (newSettings.hasOwnProperty(profileKey)) {
+        newSettings[profileKey] = settings[profileKey];
+      }
+    }
+    state.customSettings = newSettings;
+  },
 };
