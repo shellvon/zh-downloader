@@ -61,7 +61,7 @@ export async function fetchRetry(url, options, retryCnt = DEFAULT_FETCH_RETRY_CN
 export function downloadSingleSegment(uri, options = {}, retryCnt = DEFAULT_FETCH_RETRY_CNT) {
   return fetchRetry(uri, options, retryCnt).then(resp => {
     if (!resp.ok) {
-      throw new Error('下载失败,服务端返回:' + resp.status);
+      throw new Error('(;´༎ຶД༎ຶ`)下载失败,服务端返回:' + resp.status);
     }
     return resp;
   });

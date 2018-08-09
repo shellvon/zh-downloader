@@ -9,7 +9,7 @@
       </template>
       <template v-else>
         <template v-if="isDownloading">
-          <el-alert title="视频下载过程中请勿关闭本页面,若下载格式为MP4, 转换过程可能会相当耗时, 请耐心等待." type="warning"></el-alert>
+          <el-alert title="(◉ω◉)视频下载过程中请勿关闭本页面,若下载格式为MP4, 转换过程可能会相当耗时, 请耐心等待." type="warning"></el-alert>
         </template>
         <el-table :data="playlist" style="width:100%" max-height="300">
           <el-table-column type="expand" fixed>
@@ -83,6 +83,9 @@
                 <el-button @click="handleDeleteVideo(scope.row)" type="text" :disabled="isDownloading" icon="el-icon-delete"></el-button>
               </el-tooltip>
 
+              <el-tooltip v-if="progressValue(scope.row) === 100" class="item" effect="dark" content="打开文件所在位置" placement="bottom">
+                <el-button @click="handleShowFile(scope.row)" type="text" icon="el-icon-view"></el-button>
+              </el-tooltip>
             </template>
           </el-table-column>
         </el-table>
@@ -118,9 +121,6 @@
           </el-form>
         </el-main>
       </el-container>
-
-
-
     </el-tab-pane>
     <el-tab-pane label="关于" name="about">
       <el-container>
@@ -249,10 +249,74 @@ export default {
       this.$store.dispatch('deleteVideo', videoInfo);
       this.$message({
         showClose: true,
-        message: '删除成功',
+        message: ' (✌ﾟ∀ﾟ)☞ 删除成功',
         type: 'success',
       });
       this.port.postMessage(deleteVideo(videoInfo));
+    },
+
+    /**
+     * 获取在Chrome中下载文件的下载信息
+     *
+     * 由于下载文件用的chrome API无法修改文件名(filename没有用), 因此下载的时候是使用a标签
+     * 这是拿不到chrome需要的downloadId的，所以只能通过搜索接口取检索到downloadId,然后才能打开.
+     *
+     * See: https://developer.chrome.com/extensions/downloads#method-search
+     * See: https://developer.chrome.com/extensions/downloads#method-show
+     *
+     * @param {object} videoInfo 文件信息
+     */
+    getDownloadInfoByVideoInfo(videoInfo) {
+      const selectedVideoInfo = this.$store.state.downloadInfo[videoInfo.id];
+      if (!selectedVideoInfo) {
+        return;
+      }
+      // 判断是否有对应清晰度的视频
+      const selectedQualityInfo = selectedVideoInfo[videoInfo.currentQuality];
+      if (!selectedQualityInfo) {
+        return;
+      }
+      // 判断是否有对应数据格式的视频
+      const selectedFormat = videoInfo.playlist[videoInfo.currentQuality].format;
+      if (!selectedQualityInfo[selectedFormat]) {
+        return;
+      }
+      // 获取下载链接.
+      const link = selectedQualityInfo[selectedFormat].link;
+
+      if (!link) {
+        return;
+      }
+
+      return new Promise((resolve, reject) => {
+        chrome.downloads.search(
+          {
+            finalUrl: link,
+          },
+          downloadItems => {
+            const downloadInfo = downloadItems[0] && downloadItems[0];
+            resolve(downloadInfo);
+          }
+        );
+      });
+    },
+
+    /**
+     * 查看 Chrome 下载的文件所在位置(不是使用程序直接打开文件)
+     * 由于download信息不是实时更新的,因此可能出现downloadInfo.exists误判的情况
+     * 这时候是没有响应的
+     */
+    async handleShowFile(videoInfo) {
+      const downloadInfo = await this.getDownloadInfoByVideoInfo(videoInfo);
+      if (downloadInfo && downloadInfo.exists) {
+        chrome.downloads.show(downloadInfo.id);
+      } else {
+        this.$message({
+          showClose: true,
+          message: 'ಥ﹏ಥ 文件不存在,请尝试重新下载!',
+          type: 'error',
+        });
+      }
     },
 
     /**

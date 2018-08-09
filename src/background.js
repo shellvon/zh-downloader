@@ -131,7 +131,7 @@ chrome.extension.onConnect.addListener(function(port) {
                 // 不让它变成100,因为有可能转化需要一定时间
                 downloadInfo.progress = percent >= 100 ? 99.99 : percent;
                 store.commit(ADD_OR_UPDATE_DOWNLOAD_INFO, downloadInfo);
-                msg = `下载分片数据中(${start}/${total})...请耐心等待`;
+                msg = `´• ل •\`下载分片数据中(${start}/${total})...请耐心等待`;
                 break;
               // 开始合并数据了...
               case types.DOWNLOAD_VIDEO_MERGING:
