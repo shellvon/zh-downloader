@@ -13,11 +13,12 @@
 
 # 功能特色
 
-+ 所有知乎视频自动采集和嗅探,无需用户干预(badge上会提示用户多少视频,不会发通知打扰用户)
-+ 视频信息(ID/视频原地址/封面图/大小/时长/名称/格式)等多规格一览无余
++ 所有知乎视频自动采集和嗅探,无需用户干预(Badge上实时显示已采集的视频数量))
++ 视频信息(ID/视频原地址/封面图/大小/时长/名称/格式)等多规格一览无余,支持复制地址至其他平台下载
 + 多清晰度/多种格式提供下载
 + 支持自定义偏好设置,比如您可以自己设置用于转化MP4的转化器是什么,偏爱的默认格式是什么
 + 实时友好展示下载/转化进度
++ 自动清理超过一定历史的视频文件
 + UI 不算太差
 + 纯前端Javascript实现
 + 最新采集的永远放在最前面
@@ -46,11 +47,11 @@
 
 - 利用 [M3U8-Parser](https://github.com/videojs/m3u8-parser) 解析上述 API 返回的数据，并提交数据至 Popup 页面进行查看。
 
-- 提交数据利用了 Vue 的 Store 状态管理，由于 Popup 生命周期的原因，因此将 Store 也存入了 localStorage 进行持久化, 插件是 `vuex-webextensions`。
+- 提交数据利用了 Vue 的 Store 状态管理，由于 Popup 生命周期的原因，因此将 Store 也存入了 [chrome.storage](https://developer.chrome.com/apps/storage) 进行持久化, 插件是 `vuex-webextensions`。
 
 - Popup(前端)接受用户下载请求，利用 `chrome.runtime.connect` 连接 Port 与 Background.js (后端)进行双向通讯，通知其下载请求。
 
-- Background.js 遍历所有 TS 数据包并将起合并为一个 TS 包，如果发现下载的是 mp4 格式，则利用 `mpegts_to_mp4` 进行数据转化。
+- Background.js 遍历所有 TS 数据包并将起合并为一个 TS 包，如果发现下载的是 mp4 格式，则利用 `mpegts_to_mp4` 或则 `mux.js` 进行数据转化。
 
 - 利用 Port 实时通知 Popup 页的下载进度以及下载结果。
 
@@ -63,8 +64,8 @@
 # 限制
 
 1. 下载过程中不能关闭 Popup 页，否则后端无法与之通信然后通知下载结果
-2. 嗅探的历史视频需要手动删除，否则知乎链接会过期，下载会出现403
-3. 转化的MP4格式宽高不正确，因此普通视频播放器可能难以播放, 请尝试用 `mplayer` 播放。 或者下载 TS 之后用 `ffmpeg` 或者 [https://cloudconvert.com/](https://cloudconvert.com/) 在线转换
+2. 不知道视频链接过期时间, 因此下载过程中会出现403，这时候可以点击ID进入知乎将自动刷新。
+3. 转化的MP4格式宽高不正确，因此普通视频播放器可能难以播放, 请尝试用 `mplayer` 播放。 或者下载 TS 之后用 `ffmpeg` 或者 [https://cloudconvert.com/](https://cloudconvert.com/) 在线转换。
 
 # TODO: 
 
@@ -79,7 +80,7 @@
 # Change Logs:
 
 #### 2018-08-10
- - [A] 自动删除采集超过一定时间的视频,用户可在设置页面自行设置
+ - [A] 自动删除采集超过一定时间的视频,用户可在设置页面自行设置 [dd39c90b](https://github.com/shellvon/zh-downloader/commit/dd39c90b235866b10999c494febced3a1ddee5dc)
  - [U] 优化下载信息的存储结构,进一步提供代码可读性 [65993b5a](https://github.com/shellvon/zh-downloader/commit/65993b5a1eaeb38bce1a2b5cd0f6a536c3f5db6c)
  - [U] 更新文档,增加 ChangeLogs 栏
 
