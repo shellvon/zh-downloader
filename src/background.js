@@ -12,6 +12,14 @@ import {
 
 import { ADD_OR_UPDATE_VIDEO, ADD_OR_UPDATE_DOWNLOAD_INFO } from './store/mutation-types';
 
+// 设置为红色
+chrome.browserAction.setBadgeBackgroundColor({ color: 'red' });
+
+// 更新Badge的数字,默认是视频数量
+const refreshBadgeText = (text = store.state.playlist.length) => {
+  chrome.browserAction.setBadgeText({ text: '' + (text || '') });
+};
+
 /**
  * 监听知乎视频请求.
  */
@@ -59,9 +67,7 @@ chrome.webRequest.onBeforeRequest.addListener(
       })
       .then(videoInfo => {
         store.commit(ADD_OR_UPDATE_VIDEO, videoInfo);
-
-        chrome.browserAction.setBadgeText({ text: store.state.playlist.length + '' });
-        chrome.browserAction.setBadgeBackgroundColor({ color: 'red' });
+        refreshBadgeText();
       })
       .catch(error => {
         console.error(error);
@@ -121,7 +127,7 @@ chrome.extension.onConnect.addListener(function(port) {
           segments,
           format,
           ({ type, payload }) => {
-            console.debug(`ProgressCallback : ${type} => `, payload);
+            // console.debug(`ProgressCallback : ${type} => `, payload);
             let msg = payload.msg;
             switch (type) {
               // 正在下载中....
@@ -157,9 +163,7 @@ chrome.extension.onConnect.addListener(function(port) {
 
       // 删除视频,更新一下当前的Badge
       case types.DELETED_VIDEO:
-        chrome.browserAction.setBadgeText({
-          text: '' + (store.state.playlist.length || ''),
-        });
+        refreshBadgeText();
         break;
 
       default:
@@ -174,4 +178,28 @@ chrome.extension.onConnect.addListener(function(port) {
     console.debug('Connection disconnect...');
     globalPort = null;
   });
+});
+
+const getAlarmsConfig = () => {
+  // 获取间隔时间.
+  let checkInternal = store.state.customSettings.checkInternal || types.DEFAULT_CHECK_INTERNAL;
+  // 如果过期时间更小,选择此时间
+  checkInternal = Math.min(checkInternal, store.state.customSettings.expiredAt);
+  return { delayInMinutes: checkInternal, periodInMinutes: checkInternal };
+};
+
+// 首次创建一个.
+chrome.alarms.create(types.ALARM_NAME, getAlarmsConfig());
+
+/**
+ * 定时删除过期的视频.
+ */
+chrome.alarms.onAlarm.addListener(alarm => {
+  if (alarm.name !== types.ALARM_NAME) {
+    return;
+  }
+  store.dispatch('deletedExpiredVideo', { expiredAt: (store.state.customSettings.expiredAt || types.DEFAULT_EXPIRED_AT) * 6e4 });
+  refreshBadgeText();
+  // 刷新替换之
+  chrome.alarms.create(types.ALARM_NAME, getAlarmsConfig());
 });

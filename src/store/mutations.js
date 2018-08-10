@@ -25,6 +25,20 @@ export default {
   },
 
   /**
+   * 重置新视频列表
+   */
+  [types.RESET_VIDEO_INFO](state, payload) {
+    state.playlist = payload;
+  },
+
+  /**
+   * 重置新的下载历史列表
+   */
+  [types.RESET_DOWNLOAD_INFO](state, payload) {
+    state.downloadInfo = payload;
+  },
+
+  /**
    * 更新视频下载信息
    */
   [types.ADD_OR_UPDATE_DOWNLOAD_INFO](state, { id: videoId, quality = 'hd', format = 'ts', progress = 0, link = '', name = '' }) {
@@ -53,13 +67,7 @@ export default {
   /**
    * 更新设置
    */
-  [types.UPDATE_SETTINGS](state, settings) {
-    let newSettings = Object.assign({}, state.customSettings);
-    for (let profileKey in settings) {
-      if (newSettings.hasOwnProperty(profileKey)) {
-        newSettings[profileKey] = settings[profileKey];
-      }
-    }
+  [types.UPDATE_SETTINGS](state, newSettings) {
     state.customSettings = newSettings;
   },
 };

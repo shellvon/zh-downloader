@@ -18,6 +18,9 @@
                 <el-button size="medium">
                     <a class="link" href="https://von.sh" target="_blank">作者</a>
                 </el-button>
+                <el-button size="medium">
+                    <a class="link" href="https://github.com/shellvon/zh-downloader/issues/new" target="_blank">问题反馈</a>
+                </el-button>
             </el-row>
         </el-main>
     </el-container>

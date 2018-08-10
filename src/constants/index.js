@@ -28,6 +28,9 @@ export const UNKNOWN_ACTION = 'UNKNOWN_ACTION';
 // 前后端链接用的端口号
 export const PORT_NAME = 'ZH_DOWNLOADER';
 
+// 报警所用的alarm name.
+export const ALARM_NAME = 'ZH_DOWNLOADER_ALARM';
+
 // 视频格式: MPEG-4
 export const VIDEO_FORMAT_MP4 = 'mp4';
 
@@ -45,3 +48,9 @@ export const DEFAULT_VIDEO_CONVERTER = 'mux.js';
 
 // 默认的视频质量
 export const DEFAULT_VIDEO_QUALITY = 'hd';
+
+// 默认的检查间隔,单位分钟
+export const DEFAULT_CHECK_INTERNAL = 30;
+
+// 默认的过期时间(从采集算起,过了这个时间之后会被自动删除),单位分钟
+export const DEFAULT_EXPIRED_AT = 240;

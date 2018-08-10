@@ -1,93 +1,92 @@
 <template>
-    <el-row>
-        <template v-if="playlist.length===0">
-            <p class="error-message nothing">\_(ツ)_/¯</p>
-            <p class="error-message">没有嗅探到知乎视频.</p>
-        </template>
-        <template v-else>
-            <el-alert v-if="isDownloading" title="视频下载过程中请勿关闭本页面,若下载格式为MP4,转换过程可能会相当耗时,请耐心等待" type="warning"></el-alert>
-            <el-table :data="playlist" style="width:100%" max-height="300">
-                <el-table-column type="expand" fixed>
-                    <template slot-scope="props">
-                        <el-form label-position="left" inline class="table-expand">
-                            <el-form-item label="视频ID:">
-                                <span>
-                                    <el-tooltip class="item" effect="dark" content="点击可直接进入知乎播放" placement="bottom">
-                                        <a class="link" :href="'https://www.zhihu.com/video/'+props.row.id" target="_blank">{{props.row.id}}</a>
-                                    </el-tooltip>
-                                </span>
-                            </el-form-item>
-                            <el-form-item label="视频名称:">
-                                <span>{{ props.row.name }}</span>
-                            </el-form-item>
-                            <el-form-item label="M3U8地址:">
-                                <span>
-                                    <a class="link" :href="props.row.playlist[props.row.currentQuality].m3u8" target="_blank">点击查看</a>
-                                </span>
-                            </el-form-item>
-                            <el-form-item label="视频长度:">
-                                <span>{{ props.row.playlist[props.row.currentQuality].duration | msToTime}}</span>
-                            </el-form-item>
-                            <el-form-item label="清晰度:">
-                                <span>{{ qualityMap[props.row.playlist[props.row.currentQuality].quality] || '未知'}}</span>
-                            </el-form-item>
-                            <el-form-item label="视频大小:">
-                                <span>{{ props.row.playlist[props.row.currentQuality].size | bytesToSize}}</span>
-                            </el-form-item>
-                        </el-form>
-                    </template>
-                </el-table-column>
-                <el-table-column label="缩略图">
-                    <template slot-scope="scope">
-                        <img class="thumbnail" :src="scope.row.thumbnail" />
-                    </template>
-                </el-table-column>
-                <el-table-column prop="name" label="视频名字">
-                </el-table-column>
-                <el-table-column label="清晰度">
-                    <template slot-scope="scope">
-                        <el-select v-model="scope.row.currentQuality" size="small">
-                            <el-option v-for="(item, key) in scope.row.playlist" :key="key" :label="qualityMap[item.quality] || item.quality" :value="item.quality">
-                            </el-option>
-                        </el-select>
-                    </template>
-                </el-table-column>
-                <el-table-column label="视频格式">
-                    <template slot-scope="scope">
-                        <el-select v-model="scope.row.playlist[scope.row.currentQuality].format" size="small">
-                            <el-option label="MPEG2-TS" value="ts"></el-option>
-                            <el-option label="MP4" value="mp4"></el-option>
-                        </el-select>
-                    </template>
-                </el-table-column>
-                <el-table-column label="下载进度" width="80">
-                    <template slot-scope="scope">
-                        <el-tooltip>
-                            <div slot="content">{{isDownloading && progressMessage && scope.row.id === downloadingVedioId ? progressMessage:
-                                '点击右边下载按钮即会自动更新此进度'}}
-                            </div>
-                            <el-progress :percentage="progressValue(scope.row)" type="circle" :width=40 color="#8e71c7"></el-progress>
-                        </el-tooltip>
-                    </template>
-                </el-table-column>
-                <el-table-column fixed="right" label="操作" width="100">
-                    <template slot-scope="scope">
-                        <el-tooltip class="item" effect="dark" content="下载" placement="bottom">
-                            <el-button @click="handleDownloadVideo(scope.row)" type="text" :disabled="isDownloading" icon="el-icon-download"></el-button>
-                        </el-tooltip>
+  <el-row>
+    <template v-if="playlist.length===0">
+      <p class="error-message nothing">\_(ツ)_/¯</p>
+      <p class="error-message">没有嗅探到知乎视频.</p>
+    </template>
+    <template v-else>
+      <el-alert v-if="isDownloading" title="视频下载过程中请勿关闭本页面,若下载格式为MP4,转换过程可能会相当耗时,请耐心等待" type="warning"></el-alert>
+      <el-table :data="playlist" style="width:100%" max-height="300">
+        <el-table-column type="expand" fixed>
+          <template slot-scope="props">
+            <el-form label-position="left" inline class="table-expand">
+              <el-form-item label="视频ID:">
+                <span>
+                  <el-tooltip class="item" effect="dark" content="点击可直接进入知乎播放" placement="bottom">
+                    <a class="link" :href="'https://www.zhihu.com/video/'+props.row.id" target="_blank">{{props.row.id}}</a>
+                  </el-tooltip>
+                </span>
+              </el-form-item>
+              <el-form-item label="视频名称:">
+                <span>{{ props.row.name }}</span>
+              </el-form-item>
+              <el-form-item label="M3U8地址:">
+                <span>
+                  <a class="link" :href="props.row.playlist[props.row.currentQuality].m3u8" target="_blank">点击查看</a>
+                </span>
+              </el-form-item>
+              <el-form-item label="视频长度:">
+                <span>{{ props.row.playlist[props.row.currentQuality].duration | msToTime}}</span>
+              </el-form-item>
+              <el-form-item label="清晰度:">
+                <span>{{ qualityMap[props.row.playlist[props.row.currentQuality].quality] || '未知'}}</span>
+              </el-form-item>
+              <el-form-item label="视频大小:">
+                <span>{{ props.row.playlist[props.row.currentQuality].size | bytesToSize}}</span>
+              </el-form-item>
+            </el-form>
+          </template>
+        </el-table-column>
+        <el-table-column label="缩略图">
+          <template slot-scope="scope">
+            <img class="thumbnail" :src="scope.row.thumbnail" />
+          </template>
+        </el-table-column>
+        <el-table-column prop="name" label="视频名字">
+        </el-table-column>
+        <el-table-column label="清晰度">
+          <template slot-scope="scope">
+            <el-select v-model="scope.row.currentQuality" size="small">
+              <el-option v-for="(item, key) in scope.row.playlist" :key="key" :label="qualityMap[item.quality] || item.quality" :value="item.quality">
+              </el-option>
+            </el-select>
+          </template>
+        </el-table-column>
+        <el-table-column label="视频格式">
+          <template slot-scope="scope">
+            <el-select v-model="scope.row.playlist[scope.row.currentQuality].format" size="small">
+              <el-option label="MPEG2-TS" value="ts"></el-option>
+              <el-option label="MP4" value="mp4"></el-option>
+            </el-select>
+          </template>
+        </el-table-column>
+        <el-table-column label="下载进度" width="80">
+          <template slot-scope="scope">
+            <el-tooltip>
+              <div slot="content">{{isDownloading && progressMessage && scope.row.id === downloadingVedioId ? progressMessage: '点击右边下载按钮即会自动更新此进度'}}
+              </div>
+              <el-progress :percentage="progressValue(scope.row)" type="circle" :width=40 color="#8e71c7"></el-progress>
+            </el-tooltip>
+          </template>
+        </el-table-column>
+        <el-table-column fixed="right" label="操作" width="100">
+          <template slot-scope="scope">
+            <el-tooltip class="item" effect="dark" content="下载" placement="bottom">
+              <el-button @click="handleDownloadVideo(scope.row)" type="text" :disabled="isDownloading" icon="el-icon-download"></el-button>
+            </el-tooltip>
 
-                        <el-tooltip class="item" effect="dark" content="删除" placement="bottom">
-                            <el-button @click="handleDeleteVideo(scope.row)" type="text" :disabled="isDownloading" icon="el-icon-delete"></el-button>
-                        </el-tooltip>
+            <el-tooltip class="item" effect="dark" content="删除" placement="bottom">
+              <el-button @click="handleDeleteVideo(scope.row)" type="text" :disabled="isDownloading" icon="el-icon-delete"></el-button>
+            </el-tooltip>
 
-                        <el-tooltip v-if="progressValue(scope.row) === 100" class="item" effect="dark" content="打开文件所在位置" placement="bottom">
-                            <el-button @click="handleShowFile(scope.row)" type="text" icon="el-icon-view"></el-button>
-                        </el-tooltip>
-                    </template>
-                </el-table-column>
-            </el-table>
-        </template>
-    </el-row>
+            <el-tooltip v-if="progressValue(scope.row) === 100" class="item" effect="dark" content="打开文件所在位置" placement="bottom">
+              <el-button @click="handleShowFile(scope.row)" type="text" icon="el-icon-view"></el-button>
+            </el-tooltip>
+          </template>
+        </el-table-column>
+      </el-table>
+    </template>
+  </el-row>
 </template>
 
 

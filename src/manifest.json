@@ -22,6 +22,7 @@
     "downloads",
     "downloads.open",
     "notifications",
+    "alarms",
     "storage",
     "http://*/*",
     "https://*/*"
