@@ -50,7 +50,7 @@ export const DEFAULT_VIDEO_CONVERTER = 'mux.js';
 export const DEFAULT_VIDEO_QUALITY = 'hd';
 
 // 默认的检查间隔,单位分钟
-export const DEFAULT_CHECK_INTERNAL = 30;
+export const DEFAULT_CHECK_INTERNAL = 5;
 
 // 默认的过期时间(从采集算起,过了这个时间之后会被自动删除),单位分钟
 export const DEFAULT_EXPIRED_AT = 240;
