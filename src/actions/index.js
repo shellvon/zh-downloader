@@ -32,7 +32,8 @@ export const mergeVideo = payload => {
 };
 
 /**
- *  合并完成视频, 也就是下载完成了
+ * 合并完成视频, 也就是下载完成了
+ *
  * @param {object} payload
  * @see finishedDownloadVideo
  */
@@ -66,6 +67,7 @@ export const deleteVideo = payload => {
 
 /**
  * 未知事件
+ * @param {object} payload
  */
 export const unknownAction = payload => {
   return { type: types.UNKNOWN_ACTION, payload: payload };

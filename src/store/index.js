@@ -17,9 +17,9 @@ export default new Vuex.Store({
       format: DEFAULT_VIDEO_FORMAT,
     },
     playlist: [], // 视频列表
-    downloadInfo: {}, // 下载进度
+    downloadInfo: [], // 下载列表信息
   },
-  plugins: [VuexWebExtensions({ persistentStates: ['playlist', 'downloadInfo'] })],
+  plugins: [new VuexWebExtensions({ persistentStates: ['playlist', 'downloadInfo', 'customSettings'] })],
   getters,
   mutations,
   actions,

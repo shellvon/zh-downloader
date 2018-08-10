@@ -53,8 +53,8 @@ export default {
   },
   mounted() {
     let self = this;
-    this.port.onMessage.addListener(({ type, payload }, r) => {
-      console.debug(`Popup.js Recieved event type: ${type} =>`, payload, r);
+    this.port.onMessage.addListener(({ type, payload }) => {
+      // console.debug(`Popup.js Recieved event type: ${type} =>`, payload);
       switch (type) {
         case ADD_NEW_VIDEO:
           self.$refs.playlist.onAddVideo(payload);
@@ -66,7 +66,6 @@ export default {
           self.$refs.playlist.onFinishedDownload(payload);
           break;
         default:
-          // Ignore
           break;
       }
       return true;
@@ -83,20 +82,18 @@ export default {
     /**
      * 来自子组件通知删除成功的消息
      *
-     * @param obejct videoInfo 视频信息.
+     * @param {object} videoInfo 视频信息.
      */
     onDeletedVideo(videoInfo) {
-      console.log('onDeletedVideo Got message from child', videoInfo);
       this.port.postMessage(deleteVideo(videoInfo));
     },
 
     /**
      * 来自自组件通知需要开始下载的消息
      *
-     * @param object videoInfo 视频信息.
+     * @param {object} videoInfo 视频信息.
      */
     onStartDownloadVideo(videoInfo) {
-      console.log('onStartDownloadVideo Got message from child', videoInfo);
       this.port.postMessage(startDownloadVideo(videoInfo));
     },
   },

@@ -1,6 +1,6 @@
 # Zh-Downloader
 
-这是Chrome插件, 能进行知乎视频嗅探以及下载功能。支持下载为TS格式( MPEG2-TS 格式) 或者 MP4 格式,其中 MP4格式使用 [mpegts_to_mp4](https://github.com/RReverser/mpegts) 库完成。
+这是Chrome插件, 能进行知乎视频嗅探以及下载功能。支持下载为TS格式( MPEG2-TS 格式) 或者 MP4 格式。
 
 ![screenshot](./screenshot/videolist.png)
 ![screenshot](./screenshot/about.png)
@@ -33,6 +33,7 @@
 + [Element](http://element.eleme.io/#/zh-CN)
 + [m3u8-parser](https://github.com/videojs/m3u8-parser)
 + [mpegts_to_mp4](https://github.com/RReverser/mpegts)
++ [mux.js](https://github.com/videojs/mux.js)
 + [vuex-webextensions](https://github.com/MitsuhaKitsune/vuex-webextensions)
 
 # 原理解释
@@ -53,10 +54,10 @@
 
 - 利用 Port 实时通知 Popup 页的下载进度以及下载结果。
 
-> ⚠️ 注意:  MP4 尝试了`mpegts_to_mp4`， mux.js, videoconverter.js 效果均不是很理想。因此不建议下载MP4。
+> ⚠️ 注意:  MP4 尝试了`mpegts_to_mp4`, `mux.js`, `videoconverter.js` 效果均不是很理想。因此不建议下载MP4。
 
 1. mpegts_to_mp4: 读取 SPS 信息的时候宽度/高度信息错误。
-2. mux.js 能正常读取宽/高，但是无法正常解析Duration，另一个有趣的问题是部分知乎用户的视频没有音频，因此不会触发 mux.js 的 `data` 事件，因此需要分开处理音频/视频
+2. mux.js 能正常读取宽/高，但是无法正常解析Duration(See [videojs/mux.js#210](https://github.com/videojs/mux.js/issues/210))，另一个有趣的问题是部分知乎用户的视频没有音频，因此不会触发 mux.js 的 `data` 事件(See [videojs/mux.js#194](https://github.com/videojs/mux.js/issues/194))，因此需要分开处理音频/视频。
 3. videoconverter.js  Node 直接就爆内存错误
 
 # 限制
@@ -64,3 +65,40 @@
 1. 下载过程中不能关闭 Popup 页，否则后端无法与之通信然后通知下载结果
 2. 嗅探的历史视频需要手动删除，否则知乎链接会过期，下载会出现403
 3. 转化的MP4格式宽高不正确，因此普通视频播放器可能难以播放, 请尝试用 `mplayer` 播放。 或者下载 TS 之后用 `ffmpeg` 或者 [https://cloudconvert.com/](https://cloudconvert.com/) 在线转换
+
+# TODO: 
+
+- [x] 用户可自定义设置
+- [x] 已下载视频增加打开功能
+- [ ] 自动删除采集超过一定时间的视频(时间/策略?)
+- [ ] 用户忽略某些条件的视频采集(如大小/清晰度/作者/视频名)?
+- [ ] 直接搜索知乎视频(不知道有API没有)?
+- [ ] 修复导出 MP4 格式的问题,无论是 `mux.js` 还是 `mpegts_to_mp4`，任一即可
+- [ ] 发布至 Google Chrome 商店
+
+# Change Logs:
+
+#### 2018-08-10
+ - [U] 优化下载信息的存储结构,进一步提供代码可读性
+ - [U] 更新文档,增加 ChangeLogs 栏
+
+#### 2018-08-09
+ - [A] 增加查看已下载视频功能 [b9753a95](https://github.com/shellvon/zh-downloader/commit/b9753a9536b89e6b331c05f3dc3766d3619281ab)
+ - [U] 重构拆分组件/CSS以及发布CRX
+
+#### 2018-08-08
+ - [A] 增加设置面板,可自行设置偏好的格式/清晰度 [f1851b5c](https://github.com/shellvon/zh-downloader/commit/f1851b5c3c42437f55858c16661395dff585112e)
+ - [U] 下载详细进度,修改代码风格 [f1851b5c](https://github.com/shellvon/zh-downloader/commit/f1851b5c3c42437f55858c16661395dff585112e)
+
+#### 2018-08-07
+ - [A] 视频按照采集时间排序 [688afd0e](https://github.com/shellvon/zh-downloader/commit/688afd0e0b5ff39ca4e34f03c11a899944fd2332)
+ - [F] 修改文档错别字 [22d0bc8a](https://github.com/shellvon/zh-downloader/commit/22d0bc8a06167391e571b3ce39a02ee62d04078e)
+
+
+#### 2018-08-06
+ - [A] 增加下载时文案提示 [c5bfc568](https://github.com/shellvon/zh-downloader/commit/c5bfc568d308701cf36ca4c0a01f5ad46c9b0c12)
+ - [F] 修复`mpegts_to_mp4`不存在以及进度条不更新的BUG [c5bfc568](https://github.com/shellvon/zh-downloader/commit/c5bfc568d308701cf36ca4c0a01f5ad46c9b0c12)
+ - [U] 更新文档
+
+#### 2018-08-05
+ - [A] 初版代码发布,支持采集视频和下载视频 [3b99a2d7](https://github.com/shellvon/zh-downloader/commit/3b99a2d7d8fef4dc6ea26a432ebbc960ae36aa95)

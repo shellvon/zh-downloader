@@ -115,7 +115,7 @@ export default {
     /**
      * 来自父组件通知的信息,当后台某个视频被采集到的消息
      *
-     * @param object progressInfo 下载的进度信息,因下载格式不同而不同,但一定包含msg字段
+     * @param {object} progressInfo 下载的进度信息,因下载格式不同而不同,但一定包含msg字段
      */
     onAddVideo(newVideoInfo) {
       this.$store.commit(ADD_OR_UPDATE_VIDEO, newVideoInfo);
@@ -124,7 +124,7 @@ export default {
     /**
      * 来自父组件通知的信息,当后台某个视频正在下载的通知.
      *
-     * @param object progressInfo 下载的进度信息,因下载格式不同而不同,但一定包含msg字段
+     * @param {object} progressInfo 下载的进度信息,因下载格式不同而不同,但一定包含msg字段
      */
     onProgressUpdate(progressInfo) {
       this.progressMessage = progressInfo.msg || '';
@@ -133,7 +133,7 @@ export default {
     /**
      * 来自父组件通知的信息,当后台某个视频下载结束之后通知.
      *
-     * @param object downloadInfo 下载信息.
+     * @param {object} downloadInfo 下载信息.
      */
     onFinishedDownload(downloadInfo) {
       this.isDownloading = false;
@@ -153,8 +153,8 @@ export default {
     /**
      * 指定文件名下载资源.
      *
-     * @param string link     下载链接
-     * @param string filename 下载文件名,如果不给则是当前时间结尾的mp4格式
+     * @param {string} link     下载链接
+     * @param {string} filename 下载文件名,如果不给则是当前时间结尾的mp4格式
      */
     downloadFile(link, filename = undefined) {
       var a = document.createElement('a');
@@ -164,32 +164,19 @@ export default {
     },
 
     /**
-     * @param object videoInfo 需要查看进度的视频信息
+     * 获取下载的进度条数据,没找到就默认返回0.
+     *
+     * @param {object} videoInfo 需要查看进度的视频信息
      */
     progressValue(videoInfo) {
-      // 判断是否对应Id的视频
-      const selectedVideoInfo = this.$store.state.downloadInfo[videoInfo.id];
-      if (!selectedVideoInfo) {
-        return 0;
-      }
-      // 判断是否有对应清晰度的视频
-      const selectedQualityInfo = selectedVideoInfo[videoInfo.currentQuality];
-      if (!selectedQualityInfo) {
-        return 0;
-      }
-      // 判断是否有对应数据格式的视频
-      const selectedFormat = videoInfo.playlist[videoInfo.currentQuality].format;
-      if (!selectedQualityInfo[selectedFormat]) {
-        return 0;
-      }
-      // 返回该格式的进度
-      return selectedQualityInfo[selectedFormat].progress || 0;
+      // 获取下载的进度条数据,没找到就默认返回0.
+      return this.$store.getters.getDownloadInfoByVideoItemInfo(this.getSelectedVideoItemInfo(videoInfo), 'progress', 0);
     },
 
     /**
      * 处理下载按钮事件
      *
-     * @param object videoInfo 需要下载的视频信息
+     * @param {object} videoInfo 需要下载的视频信息
      */
     handleDownloadVideo(videoInfo) {
       this.isDownloading = true;
@@ -200,7 +187,7 @@ export default {
     /**
      * 处理删除按钮事件
      *
-     * @param object videoInfo 需要删除的视频信息
+     * @param {object} videoInfo 需要删除的视频信息
      */
     handleDeleteVideo(videoInfo) {
       this.$store.dispatch('deleteVideo', videoInfo);
@@ -214,6 +201,18 @@ export default {
     },
 
     /**
+     * 获取当前用户现在的视频信息(用于查询用户的下载信息)
+     */
+    getSelectedVideoItemInfo(videoInfo) {
+      const selectedVideoItemInfo = {
+        id: videoInfo.id,
+        quality: videoInfo.currentQuality,
+        format: videoInfo.playlist[videoInfo.currentQuality].format,
+      };
+      return selectedVideoItemInfo;
+    },
+
+    /**
      * 获取在Chrome中下载文件的下载信息
      *
      * 由于下载文件用的chrome API无法修改文件名(filename没有用), 因此下载的时候是使用a标签
@@ -224,24 +223,9 @@ export default {
      *
      * @param {object} videoInfo 文件信息
      */
-    getDownloadInfoByVideoInfo(videoInfo) {
-      const selectedVideoInfo = this.$store.state.downloadInfo[videoInfo.id];
-      if (!selectedVideoInfo) {
-        return;
-      }
-      // 判断是否有对应清晰度的视频
-      const selectedQualityInfo = selectedVideoInfo[videoInfo.currentQuality];
-      if (!selectedQualityInfo) {
-        return;
-      }
-      // 判断是否有对应数据格式的视频
-      const selectedFormat = videoInfo.playlist[videoInfo.currentQuality].format;
-      if (!selectedQualityInfo[selectedFormat]) {
-        return;
-      }
-      // 获取下载链接.
-      const link = selectedQualityInfo[selectedFormat].link;
-
+    getChromeDownloadInfoByVideoInfo(videoInfo) {
+      // 找一下当时用户的下载链接,可以通过下载链接找到chrome的downloadId.
+      const link = this.$store.getters.getDownloadInfoByVideoItemInfo(this.getSelectedVideoItemInfo(videoInfo), 'link');
       if (!link) {
         return;
       }
@@ -263,10 +247,14 @@ export default {
      * 查看 Chrome 下载的文件所在位置(不是使用程序直接打开文件)
      * 由于download信息不是实时更新的,因此可能出现downloadInfo.exists误判的情况
      * 这时候是没有响应的
+     *
+     * @param {object} videoInfo
      */
     async handleShowFile(videoInfo) {
-      const downloadInfo = await this.getDownloadInfoByVideoInfo(videoInfo);
-      if (downloadInfo && downloadInfo.exists) {
+      const downloadInfo = await this.getChromeDownloadInfoByVideoInfo(videoInfo);
+      console.log('Got download info:', downloadInfo);
+      // 如果存在下载信息且文件还存在且没有错误,则尝试打开.
+      if (downloadInfo && downloadInfo.exists && !downloadInfo.error) {
         chrome.downloads.show(downloadInfo.id);
       } else {
         this.$message({
@@ -281,6 +269,8 @@ export default {
   filters: {
     /**
      * 毫秒->人类友好的H:M:S格式
+     *
+     * @param {integer|string} s 需要格式化的时间字符串
      */
     msToTime(s) {
       // https://stackoverflow.com/questions/9763441/milliseconds-to-time-in-javascript
@@ -289,6 +279,8 @@ export default {
     },
     /**
      * 比特转化到Mb/TB
+     *
+     * @param {integer} bytes 需要格式化的的bytes大小
      */
     bytesToSize(bytes) {
       var sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
