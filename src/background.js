@@ -49,7 +49,9 @@ chrome.webRequest.onBeforeRequest.addListener(
             name: videoName,
             manifest: manifest,
             format: preferedFormat,
-            ...resp.cover_info,
+            width: playlist[quality].width,
+            height: playlist[quality].height,
+            bitrate: playlist[quality].bitrate,
           };
           parsedPlaylist[quality] = videoItem;
           // Update The download Info.

@@ -14,7 +14,7 @@
 
 <style>
 body {
-  width: 600px;
+  width: 640px;
 }
 
 .link {

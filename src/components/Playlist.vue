@@ -22,7 +22,10 @@
               </el-form-item>
               <el-form-item label="M3U8地址:">
                 <span>
-                  <a class="link" :href="props.row.playlist[props.row.currentQuality].m3u8" target="_blank">点击查看</a>
+                  <el-tooltip class="item" effect="dark" :content="props.row.playlist[props.row.currentQuality].m3u8" placement="bottom">
+                    <a class="link" :href="props.row.playlist[props.row.currentQuality].m3u8" target="_blank">打开</a>
+                  </el-tooltip>
+                  <a class="link" href="javascript:void(0);" @click="copy(props.row.playlist[props.row.currentQuality].m3u8)">复制</a>
                 </span>
               </el-form-item>
               <el-form-item label="视频长度:">
@@ -33,6 +36,12 @@
               </el-form-item>
               <el-form-item label="视频大小:">
                 <span>{{ props.row.playlist[props.row.currentQuality].size | bytesToSize}}</span>
+              </el-form-item>
+              <el-form-item label="分辨率:">
+                <span>{{ props.row.playlist[props.row.currentQuality].width }} x {{ props.row.playlist[props.row.currentQuality].height }}</span>
+              </el-form-item>
+              <el-form-item label="采集时间:">
+                <span>{{ new Date(props.row.updatedAt).toLocaleString()}}</span>
               </el-form-item>
             </el-form>
           </template>
@@ -111,6 +120,28 @@ export default {
     ...mapGetters(['playlist']),
   },
   methods: {
+    /**
+     * 复制
+     */
+    copy(text) {
+      let self = this;
+      navigator.clipboard
+        .writeText(text)
+        .then(() => {
+          self.$message({
+            showClose: true,
+            message: '已成功复制到粘贴板',
+            type: 'success',
+          });
+        })
+        .catch(() => {
+          self.$message({
+            showClose: true,
+            message: '抱歉,复制失败~请尝试打开此链接Ctrl-C进行复制',
+            type: 'error',
+          });
+        });
+    },
     /**
      * 来自父组件通知的信息,当后台某个视频被采集到的消息
      *

@@ -79,6 +79,10 @@
 
 # Change Logs:
 
+#### 2018-08-11
+ - [A] 增加M3u8复制功能以及查看采集时间/分辨率功能 
+ - [U] 调整UI宽度为640px
+
 #### 2018-08-10
  - [A] 自动删除采集超过一定时间的视频,用户可在设置页面自行设置 [dd39c90b](https://github.com/shellvon/zh-downloader/commit/dd39c90b235866b10999c494febced3a1ddee5dc)
  - [U] 优化下载信息的存储结构,进一步提供代码可读性 [65993b5a](https://github.com/shellvon/zh-downloader/commit/65993b5a1eaeb38bce1a2b5cd0f6a536c3f5db6c)
