@@ -2,8 +2,7 @@
 
 这是Chrome插件, 能进行知乎视频嗅探以及下载功能。支持下载为TS格式( MPEG2-TS 格式) 或者 MP4 格式。
 
-![screenshot](./screenshot/videolist.png)
-![screenshot](./screenshot/about.png)
+![screenshot](./screenshot/record.gif)
 
 # 使用说明
 
@@ -74,14 +73,14 @@
 - [x] 已下载视频增加打开功能
 - [x] 自动删除采集超过一定时间的视频(时间/策略?)
 - [ ] 用户忽略某些条件的视频采集(如大小/清晰度/作者/视频名)?
-- [x] ～～直接搜索知乎视频(不知道有API没有)～～ 知乎推荐视频(无法搜索)
+- [x] ~~直接搜索知乎视频(不知道有API没有)~~ 知乎推荐视频(无法搜索)
 - [ ] 修复导出 MP4 格式的问题,无论是 `mux.js` 还是 `mpegts_to_mp4`，任一即可
 - [ ] 发布至 Google Chrome 商店
 
 # Change Logs:
 
 #### 2018-08-12
- - [A] 增加推荐视频,支持从将推荐视频加入采集队列
+ - [A] 增加推荐视频,支持从将推荐视频加入采集队列 [aa068288](https://github.com/shellvon/zh-downloader/commit/aa068288446e57ce0c749ae9d6fb4a634cf00d9e)
 
 #### 2018-08-11
  - [A] 增加M3u8复制功能以及查看采集时间/分辨率功能 [01479b38](https://github.com/shellvon/zh-downloader/commit/01479b3841908e97d08d74479a0fa6bf5e572663)
