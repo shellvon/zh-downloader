@@ -3,6 +3,9 @@
     <el-tab-pane label="视频" name="playlist">
       <playlist :quality-map="qualityMap" ref="playlist" v-on:download="onStartDownloadVideo" v-on:delete="onDeletedVideo"></playlist>
     </el-tab-pane>
+    <el-tab-pane label="推荐" name="recommend">
+      <recommend v-on:collect="onCollectVideo"></recommend>
+    </el-tab-pane>
     <el-tab-pane label="设置" name="settings">
       <settings :quality-map="qualityMap"></settings>
     </el-tab-pane>
@@ -26,17 +29,19 @@ body {
 <script>
 import { ADD_NEW_VIDEO, UPDATE_DOWNLOAD_PROGRESS, DOWNLOAD_VIDEO_FINISHED, PORT_NAME } from '../constants';
 
-import { startDownloadVideo, deleteVideo } from '../actions';
+import { startDownloadVideo, deleteVideo, collectVideo } from '../actions';
 
 import Playlist from '../components/Playlist.vue';
 import Settings from '../components/Settings.vue';
 import About from '../components/About.vue';
+import Recommend from '../components/Recommend.vue';
 
 export default {
   components: {
     Playlist,
     Settings,
     About,
+    Recommend,
   },
   data() {
     return {
@@ -88,6 +93,18 @@ export default {
       this.port.postMessage(deleteVideo(videoInfo));
     },
 
+    /**
+     * 子组件通知采集视频.
+     */
+    onCollectVideo(videoId) {
+      this.port.postMessage(
+        collectVideo({
+          videoId: videoId,
+          preferedFormat: this.$store.getters.customSettings.format,
+          preferedQuality: this.$store.getters.customSettings.quality,
+        })
+      );
+    },
     /**
      * 来自自组件通知需要开始下载的消息
      *

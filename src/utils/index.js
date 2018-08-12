@@ -4,7 +4,7 @@ import MPEGTS from 'mpegts_to_mp4/mpegts_to_mp4/mpegts';
 import mpegts_to_mp4 from 'mpegts_to_mp4/mpegts_to_mp4/index'; // eslint-disable-line camelcase
 
 import { downloadingVideo, mergeVideo, finishedMergeVideo } from '../actions';
-import { DEFAULT_VIDEO_CONVERTER, DEFAULT_FETCH_RETRY_CNT, DEFAULT_VIDEO_FORMAT, VIDEO_FORMAT_MP4, VIDEO_FORMAT_TS } from '../constants';
+import { DEFAULT_VIDEO_CONVERTER, DEFAULT_FETCH_RETRY_CNT, DEFAULT_VIDEO_FORMAT, VIDEO_FORMAT_MP4, VIDEO_FORMAT_TS, DEFAULT_VIDEO_QUALITY } from '../constants';
 
 import muxjs from 'mux.js';
 
@@ -213,4 +213,54 @@ export async function downloadSegments(baseUri, segments, format = DEFAULT_VIDEO
 
   // All done
   return allJobs.then(finishedJob);
+}
+
+// 更新Badge的文字
+export const refreshBadgeText = text => {
+  chrome.browserAction.setBadgeText({ text: '' + (text || '') });
+};
+
+/**
+ * 通过视频ID采集一个视频信息
+ *
+ * @param {int}    videoId        需要抓取的视频Id
+ * @param {string} preferedFormat  偏好的视频格式(决定了前端展示)
+ * @param {string} preferedQuality  偏好的视频清晰度(决定了前端默认展示的清晰度)
+ */
+export async function fetchNewVideoById(videoId, preferedFormat = DEFAULT_VIDEO_FORMAT, preferedQuality = DEFAULT_VIDEO_QUALITY) {
+  return fetchRetry(`https://lens.zhihu.com/api/videos/${videoId}`)
+    .then(resp => resp.json())
+    .then(async function(resp) {
+      let videoName = resp.title || '未命名';
+      let playlist = resp.playlist;
+      let parsedPlaylist = {};
+      for (var quality in playlist) {
+        var m3u8 = playlist[quality].play_url;
+        var manifest = await parseM3u8File(m3u8);
+        var videoItem = {
+          id: resp.id,
+          quality: quality,
+          duration: manifest.segments.reduce((a, b) => a + b.duration, 0) * 1000, // second -> ms
+          m3u8: m3u8,
+          baseUri: m3u8.replace(/[^/]+$/i, ''),
+          size: playlist[quality].size,
+          name: videoName,
+          manifest: manifest,
+          format: preferedFormat,
+          width: playlist[quality].width,
+          height: playlist[quality].height,
+          bitrate: playlist[quality].bitrate,
+        };
+        parsedPlaylist[quality] = videoItem;
+      }
+
+      return {
+        id: resp.id,
+        name: videoName,
+        thumbnail: resp.cover_info.thumbnail,
+        updatedAt: new Date().getTime(),
+        playlist: parsedPlaylist,
+        currentQuality: preferedQuality,
+      };
+    });
 }

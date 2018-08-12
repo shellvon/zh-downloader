@@ -54,3 +54,9 @@ export const DEFAULT_CHECK_INTERNAL = 5;
 
 // 默认的过期时间(从采集算起,过了这个时间之后会被自动删除),单位分钟
 export const DEFAULT_EXPIRED_AT = 240;
+
+// 前后端执行某个指令的时候出现错误
+export const ACTION_ERROR_OCCURRED = 'ACTION_ERROR_OCCURRED';
+
+// 采集视频
+export const COLLECT_VIDEO = 'COLLECT_VIDEO';

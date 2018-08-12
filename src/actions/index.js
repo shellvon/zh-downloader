@@ -72,3 +72,11 @@ export const deleteVideo = payload => {
 export const unknownAction = payload => {
   return { type: types.UNKNOWN_ACTION, payload: payload };
 };
+
+export const errorAction = payload => {
+  return { type: types.ACTION_ERROR_OCCURRED, payload: payload };
+};
+
+export const collectVideo = payload => {
+  return { type: types.COLLECT_VIDEO, payload: payload };
+};

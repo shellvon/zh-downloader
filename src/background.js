@@ -1,4 +1,4 @@
-import { parseM3u8File, downloadSegments } from './utils';
+import { downloadSegments, fetchNewVideoById, refreshBadgeText } from './utils';
 
 import * as types from './constants';
 
@@ -7,69 +7,29 @@ import store from './store';
 import {
   downloadProgressUpdate, // 视频下载更新
   finishedDownloadVideo, // 下载完成新的视频,
-  unknownAction,
+  errorAction,
 } from './actions';
 
 import { ADD_OR_UPDATE_VIDEO, ADD_OR_UPDATE_DOWNLOAD_INFO } from './store/mutation-types';
 
 // 设置为红色
-chrome.browserAction.setBadgeBackgroundColor({ color: 'red' });
-
-// 更新Badge的数字,默认是视频数量
-const refreshBadgeText = (text = store.state.playlist.length) => {
-  chrome.browserAction.setBadgeText({ text: '' + (text || '') });
-};
+chrome.browserAction.setBadgeBackgroundColor({
+  color: 'red',
+});
 
 /**
  * 监听知乎视频请求.
  */
 chrome.webRequest.onBeforeRequest.addListener(
   async function(details) {
-    let videoId = details.url.replace(/^.*\/video\/(\d+)/, '$1');
-    fetch(`https://lens.zhihu.com/api/videos/${videoId}`)
-      .then(resp => resp.json())
-      .then(async function(resp) {
-        let videoName = resp.title || '未命名';
-        let playlist = resp.playlist;
-        let parsedPlaylist = {};
-        let customSettings = store.getters.customSettings;
-        let preferedFormat = customSettings.format || types.DEFAULT_VIDEO_FORMAT;
-        let preferedQuality = customSettings.quality || types.DEFAULT_VIDEO_QUALITY;
-
-        for (var quality in playlist) {
-          var m3u8 = playlist[quality].play_url;
-          var manifest = await parseM3u8File(m3u8);
-          var videoItem = {
-            id: resp.id,
-            quality: quality,
-            duration: manifest.segments.reduce((a, b) => a + b.duration, 0) * 1000, // second -> ms
-            m3u8: m3u8,
-            baseUri: m3u8.replace(/[^/]+$/i, ''),
-            size: playlist[quality].size,
-            name: videoName,
-            manifest: manifest,
-            format: preferedFormat,
-            width: playlist[quality].width,
-            height: playlist[quality].height,
-            bitrate: playlist[quality].bitrate,
-          };
-          parsedPlaylist[quality] = videoItem;
-          // Update The download Info.
-          store.commit(ADD_OR_UPDATE_DOWNLOAD_INFO, { id: resp.id, quality: quality, progress: 0, format: preferedFormat });
-        }
-
-        return {
-          id: resp.id,
-          name: videoName,
-          thumbnail: resp.cover_info.thumbnail,
-          updatedAt: new Date().getTime(),
-          playlist: parsedPlaylist,
-          currentQuality: preferedQuality,
-        };
-      })
+    const videoId = details.url.replace(/^.*\/video\/(\d+)/, '$1');
+    const customSettings = store.getters.customSettings;
+    const preferedFormat = customSettings.format || types.DEFAULT_VIDEO_FORMAT;
+    const preferedQuality = customSettings.quality || types.DEFAULT_VIDEO_QUALITY;
+    fetchNewVideoById(videoId, preferedFormat, preferedQuality)
       .then(videoInfo => {
         store.commit(ADD_OR_UPDATE_VIDEO, videoInfo);
-        refreshBadgeText();
+        refreshBadgeText(store.state.playlist.length);
       })
       .catch(error => {
         console.error(error);
@@ -147,7 +107,11 @@ chrome.extension.onConnect.addListener(function(port) {
               // ....
             }
             // 通知前端刷新
-            safeSendResponse(downloadProgressUpdate({ msg }));
+            safeSendResponse(
+              downloadProgressUpdate({
+                msg,
+              })
+            );
           },
           converter
         )
@@ -165,11 +129,24 @@ chrome.extension.onConnect.addListener(function(port) {
 
       // 删除视频,更新一下当前的Badge
       case types.DELETED_VIDEO:
-        refreshBadgeText();
+        refreshBadgeText(store.state.playlist.length);
         break;
 
+      // 前端消息: 采集视频
+      case types.COLLECT_VIDEO:
+        fetchNewVideoById(payload.videoId, payload.preferedFormat || types.DEFAULT_VIDEO_FORMAT, payload.preferedQuality || types.DEFAULT_VIDEO_QUALITY)
+          .then(videoInfo => {
+            store.commit(ADD_OR_UPDATE_VIDEO, videoInfo);
+            console.log('refreshBadgeText', store.state.playlist.length);
+            refreshBadgeText(store.state.playlist.length);
+            // 懒得通知前端了...
+          })
+          .catch(err => {
+            safeSendResponse(errorAction({ msg: `采集视频时出现错误:${err.message}`, type: types.COLLECT_VIDEO }));
+          });
+        break;
       default:
-        safeSendResponse(unknownAction(payload));
+        safeSendResponse(errorAction({ msg: `无法识别的指令:${type}`, type: types.UNKNOWN_ACTION }));
         break;
     }
 
@@ -177,7 +154,6 @@ chrome.extension.onConnect.addListener(function(port) {
   });
 
   globalPort.onDisconnect.addListener(() => {
-    console.debug('Connection disconnect...');
     globalPort = null;
   });
 });
@@ -187,7 +163,10 @@ const getAlarmsConfig = () => {
   let checkInternal = store.state.customSettings.checkInternal || types.DEFAULT_CHECK_INTERNAL;
   // 如果过期时间更小,选择此时间
   checkInternal = Math.min(checkInternal, store.state.customSettings.expiredAt);
-  return { delayInMinutes: checkInternal, periodInMinutes: checkInternal };
+  return {
+    delayInMinutes: checkInternal,
+    periodInMinutes: checkInternal,
+  };
 };
 
 // 首次创建一个.
@@ -200,8 +179,10 @@ chrome.alarms.onAlarm.addListener(alarm => {
   if (alarm.name !== types.ALARM_NAME) {
     return;
   }
-  store.dispatch('deletedExpiredVideo', { expiredAt: (store.state.customSettings.expiredAt || types.DEFAULT_EXPIRED_AT) * 6e4 });
-  refreshBadgeText();
+  store.dispatch('deletedExpiredVideo', {
+    expiredAt: (store.state.customSettings.expiredAt || types.DEFAULT_EXPIRED_AT) * 6e4,
+  });
+  refreshBadgeText(store.state.playlist.length);
   // 刷新替换之
   chrome.alarms.create(types.ALARM_NAME, getAlarmsConfig());
 });
