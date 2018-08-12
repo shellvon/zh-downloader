@@ -2,7 +2,7 @@
 
 这是Chrome插件, 能进行知乎视频嗅探以及下载功能。支持下载为TS格式( MPEG2-TS 格式) 或者 MP4 格式。
 
-![screenshot](http://wx1.sinaimg.cn/large/9d8084a3gy1fu78jp21s4g20yl0hy4qz.gif)
+[点击查看Gif动图](http://wx1.sinaimg.cn/large/9d8084a3gy1fu78jp21s4g20yl0hy4qz.gif)
 
 # 使用说明
 
