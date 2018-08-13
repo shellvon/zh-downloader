@@ -48,8 +48,6 @@ export default {
   props: ['qualityMap'],
   methods: {
     onChange(key, value) {
-      console.log(`try to change: ${key} => ${value}`);
-      debugger;
       this.$store.dispatch('updateSettings', {
         [key]: value,
       });
