@@ -80,6 +80,7 @@
 # Change Logs:
 
 #### 2018-08-13
+ - [F] 更新 [MitsuhaKitsune/vuex-webextensions](https://github.com/MitsuhaKitsune/vuex-webextensions), See [MitsuhaKitsune/vuex-webextensions#7](https://github.com/MitsuhaKitsune/vuex-webextensions/issues/7)
  - [F] 未登录知乎时异常 [issues/2](https://github.com/shellvon/zh-downloader/issues/2)
  - [U] 性能优化: 切换为动态组件 [issues/1](https://github.com/shellvon/zh-downloader/issues/1)
 

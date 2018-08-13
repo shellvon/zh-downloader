@@ -37,7 +37,7 @@
     "mux.js": "^4.5.1",
     "vue": "^2.5.17",
     "vuex": "^3.0.1",
-    "vuex-webextensions": "^1.2.1"
+    "vuex-webextensions": "^1.2.2"
   },
   "devDependencies": {
     "@babel/core": "^7.0.0-beta.56",
