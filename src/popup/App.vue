@@ -24,6 +24,8 @@ import { ADD_NEW_VIDEO, UPDATE_DOWNLOAD_PROGRESS, DOWNLOAD_VIDEO_FINISHED, PORT_
 
 import { startDownloadVideo, deleteVideo, collectVideo } from '../actions';
 
+import { version } from '../../package.json';
+
 import Playlist from '../components/Playlist.vue';
 import Settings from '../components/Settings.vue';
 import About from '../components/About.vue';
@@ -81,7 +83,9 @@ export default {
           label: '关于',
           name: 'about',
           event: {},
-          props: {},
+          props: {
+            version,
+          },
         },
       ],
     };

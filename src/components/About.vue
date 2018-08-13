@@ -6,7 +6,7 @@
         </el-aside>
         <el-main>
             <el-row class="plugin-name">知乎下载器
-                <span class="plugin-version"> 1.0.0 </span>
+                <span class="plugin-version"> {{version}} </span>
             </el-row>
             <el-row class="description">这是一个自动嗅探知乎视频资源并且支持直接下载保存的Chrome插件, 使用方式是直接打开知乎网页, 插件会自动嗅探出对应的视频资源用于用户进行操作. </el-row>
             <el-row class="warning">
@@ -29,6 +29,7 @@
 <script>
 export default {
   name: 'About',
+  props: ['version'],
 };
 </script>
 
