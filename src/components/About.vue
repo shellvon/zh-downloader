@@ -13,7 +13,7 @@
                 <span>注意: </span>由于MP4转化相当耗时,因此不建议下载MP4!</el-row>
             <el-row class="footer">
                 <el-button size="medium">
-                    <a class="link" href="https://github.com/shellvon/zh-downloader" target="_blank">项目源码</a>
+                    <a class="link" href="https://chrome.google.com/webstore/detail/zh-downloader/gcknejnpflbcggigdinhahgngfhaomik/reviews" target="_blank">评价</a>
                 </el-button>
                 <el-button size="medium">
                     <a class="link" href="https://von.sh" target="_blank">作者</a>

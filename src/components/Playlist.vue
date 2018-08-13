@@ -5,7 +5,8 @@
       <p class="error-message">没有嗅探到知乎视频.</p>
     </template>
     <template v-else>
-      <el-alert v-if="isDownloading" title="视频下载过程中请勿关闭本页面,若下载格式为MP4,转换过程可能会相当耗时,请耐心等待" type="warning"></el-alert>
+      <el-alert v-if="isDownloading" title="视频下载过程中请勿关闭本页面" description="若下载格式为MP4,可能有兼容性问题并且转换过程可能会相当耗时,请耐心等待" type="warning">
+      </el-alert>
       <el-table :data="playlist" style="width:100%" max-height="300">
         <el-table-column type="expand" fixed>
           <template slot-scope="props">
@@ -38,7 +39,8 @@
                 <span>{{ props.row.playlist[props.row.currentQuality].size | bytesToSize}}</span>
               </el-form-item>
               <el-form-item label="分辨率:">
-                <span>{{ props.row.playlist[props.row.currentQuality].width }} x {{ props.row.playlist[props.row.currentQuality].height }}</span>
+                <span>{{ props.row.playlist[props.row.currentQuality].width }} x {{ props.row.playlist[props.row.currentQuality].height
+                  }}</span>
               </el-form-item>
               <el-form-item label="采集时间:">
                 <span>{{ new Date(props.row.updatedAt).toLocaleString()}}</span>

@@ -5,7 +5,10 @@
                 <el-form-item label="偏爱的视频格式:">
                     <el-select placeholder="请选择你偏好的视频格式" @change="onChange('format', $event)" :value="customSettings.format">
                         <el-option label="MPEG2-TS" value="ts"></el-option>
-                        <el-option label="MP4" value="mp4"></el-option>
+                         <el-option label="MP4" value="MP4">
+                            <span style="float: left">MP4</span>
+                            <span style="padding-left: 13px;float: right; color: red; font-size: 12px"> MP4格式可能存在兼容性问题,请慎用</span>
+                        </el-option>
                     </el-select>
                     <el-tooltip class="item" effect="dark" content="采集到的视频将优先为你展示此格式" placement="top-start">
                         <i class="el-icon-question"></i>
