@@ -23,6 +23,7 @@
                 <a :href="item.actor.url" class="link author" target="_blank">{{item.actor.name}}</a>
               </div>
               <div class="operation-btn-group">
+                <el-button type="danger" icon="el-icon-minus" size="mini" circle @click="deleteVideoByIndex(index)"></el-button>
                 <el-button type="primary" icon="el-icon-plus" size="mini" circle @click="collectByVideoId(item.banner.video.video_id)"></el-button>
               </div>
             </div>
@@ -59,6 +60,9 @@ export default {
     window.removeEventListener('scroll');
   },
   methods: {
+    deleteVideoByIndex(index) {
+      this.recommendList.splice(index, 1);
+    },
     // 采集视频
     collectByVideoId(videoId) {
       this.$emit('collect', videoId);
@@ -210,7 +214,9 @@ export default {
 .operation-btn-group {
   float: right;
 }
-
+.operation-btn-group > button {
+  margin-left: 0px !important;
+}
 .origin_type {
   position: absolute;
   background-color: #1296db;
