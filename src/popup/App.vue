@@ -1,17 +1,10 @@
 <template>
   <el-tabs v-model="activeName">
-    <el-tab-pane label="视频" name="playlist">
-      <playlist :quality-map="qualityMap" ref="playlist" v-on:download="onStartDownloadVideo" v-on:delete="onDeletedVideo"></playlist>
+    <el-tab-pane v-for="(item, key) in tabs" :label="item.label" :key="key" :name="item.name">
     </el-tab-pane>
-    <el-tab-pane label="推荐" name="recommend">
-      <recommend v-on:collect="onCollectVideo"></recommend>
-    </el-tab-pane>
-    <el-tab-pane label="设置" name="settings">
-      <settings :quality-map="qualityMap"></settings>
-    </el-tab-pane>
-    <el-tab-pane label="关于" name="about">
-      <about></about>
-    </el-tab-pane>
+    <keep-alive>
+      <component :ref="currentTabCompoent.name" :is="currentTabCompoent.name" v-on="currentTabCompoent.event" v-bind="currentTabCompoent.props"></component>
+    </keep-alive>
   </el-tabs>
 </template>
 
@@ -44,17 +37,64 @@ export default {
     Recommend,
   },
   data() {
+    const qualityMap = {
+      hd: '高清',
+      sd: '标清',
+      ld: '普清',
+    };
+
     return {
       activeName: 'playlist',
-      qualityMap: {
-        hd: '高清',
-        sd: '标清',
-        ld: '普清',
-      },
+
       port: chrome.runtime.connect({
         name: PORT_NAME,
       }),
+      tabs: [
+        {
+          label: '视频',
+          name: 'playlist',
+          event: {
+            download: this.onStartDownloadVideo,
+            delete: this.onDeletedVideo,
+          },
+          props: {
+            qualityMap,
+          },
+        },
+        {
+          label: '推荐',
+          name: 'recommend',
+          event: {
+            collect: this.onCollectVideo,
+          },
+          props: {},
+        },
+        {
+          label: '设置',
+          name: 'settings',
+          event: {},
+          props: {
+            qualityMap,
+          },
+        },
+        {
+          label: '关于',
+          name: 'about',
+          event: {},
+          props: {},
+        },
+      ],
     };
+  },
+
+  computed: {
+    currentTabCompoent() {
+      let self = this;
+      let selectedTabIndex = this.tabs.findIndex(el => {
+        return el.name === self.activeName;
+      });
+      return self.tabs[selectedTabIndex] || self.tabs[0];
+    },
   },
   mounted() {
     let self = this;

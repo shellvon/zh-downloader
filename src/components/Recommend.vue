@@ -1,37 +1,39 @@
 <template>
-    <el-row v-loading="isLoading" element-loading-text="正在加载中....">
-        <template v-if="recommendList.length===0">
-            <p class="error-message nothing">\_(ツ)_/¯</p>
-            <p class="error-message">暂时没有推荐视频哦</p>
-        </template>
-        <template v-else>
-            <el-col :span="11" v-for="(item, index) in recommendList" :key="index" :offset="index % 2" :style="{'min-height':'300px'}">
-                <el-card :body-style="{padding: '5px'}" shadow="hover">
-                    <div class="origin_type">
-                        {{item.brief.type === 'answer' ? '答' : '文'}}
-                    </div>
-                    <img :src="item.banner.image_url" class="thumbail">
-                    <div style="padding: 14px;">
-                        <div class="title-info">
-                            <a :href="item.origin_url" target="_blank" class="link title"> {{item.object.title}}</a>
-                        </div>
-                        <div class="bottom">
-                            <div class="author-info">
-                                <img :src="item.actor.avatar_url" class="author-avatar">
-                                <a :href="item.actor.url" class="link author" target="_blank">{{item.actor.name}}</a>
-                            </div>
-                            <div class="operation-btn-group">
-                                <el-button type="primary" icon="el-icon-plus" size="mini" circle @click="collectByVideoId(item.banner.video.video_id)"></el-button>
-                            </div>
-                        </div>
-                    </div>
-                </el-card>
-            </el-col>
+  <el-row v-loading="isLoading" element-loading-text="正在加载中....">
+    <template v-if="recommendList.length===0">
+      <p class="error-message nothing">\_(ツ)_/¯</p>
+      <p class="error-message">暂时没有推荐视频哦
+        <el-button type="text" class="el-icon-refresh" @click="loadMore"></el-button>
+      </p>
+    </template>
+    <template v-else>
+      <el-col :span="11" v-for="(item, index) in recommendList" :key="index" :offset="index % 2" :style="{'min-height':'300px'}">
+        <el-card :body-style="{padding: '5px'}" shadow="hover">
+          <div class="origin_type">
+            {{item.brief.type === 'answer' ? '答' : '文'}}
+          </div>
+          <img :src="item.banner.image_url" class="thumbail">
+          <div style="padding: 14px;">
+            <div class="title-info">
+              <a :href="item.origin_url" target="_blank" class="link title"> {{item.object.title}}</a>
+            </div>
+            <div class="bottom">
+              <div class="author-info">
+                <img :src="item.actor.avatar_url" class="author-avatar">
+                <a :href="item.actor.url" class="link author" target="_blank">{{item.actor.name}}</a>
+              </div>
+              <div class="operation-btn-group">
+                <el-button type="primary" icon="el-icon-plus" size="mini" circle @click="collectByVideoId(item.banner.video.video_id)"></el-button>
+              </div>
+            </div>
+          </div>
+        </el-card>
+      </el-col>
 
-            <el-button :style="{'display': showTopButton ? 'block': 'none'}" id="to-top" type="success" icon="el-icon-arrow-up" circle
-                @click="toTop"></el-button>
-        </template>
-    </el-row>
+      <el-button :style="{'display': showTopButton ? 'block': 'none'}" id="to-top" type="success" icon="el-icon-arrow-up" circle
+        @click="toTop"></el-button>
+    </template>
+  </el-row>
 </template>
 
 <script>
@@ -116,7 +118,9 @@ export default {
     loadMore() {
       let self = this;
       this.isLoading = true;
-      fetch(this.videoAPI)
+      fetch(this.videoAPI, {
+        credentials: 'include',
+      })
         .then(resp => resp.json())
         .then(resp => {
           let data = resp.data.map(el => {
@@ -149,9 +153,10 @@ export default {
           self.isLoading = false;
           self.$message({
             showClose: true,
-            message: `加载失败,请尝试刷新重试:${err.message}`,
+            message: '加载失败,请确认您已正确登录知乎!',
             type: 'error',
           });
+          console.err(err.message);
         });
     },
   },
