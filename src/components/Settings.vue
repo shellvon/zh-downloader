@@ -60,7 +60,7 @@ export default {
 </script>
 
 <style>
-#pane-settings label {
+label {
   width: 150px;
   text-align: right;
 }
