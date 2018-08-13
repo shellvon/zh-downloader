@@ -2,6 +2,10 @@
 
 这是Chrome插件, 能进行知乎视频嗅探以及下载功能。支持下载为TS格式( MPEG2-TS 格式) 或者 MP4 格式。
 
+
+[![Chrome Web Store](https://developer.chrome.com/webstore/images/ChromeWebStore_BadgeWBorder_v2_206x58.png)](https://chrome.google.com/webstore/detail/zh-downloader/gcknejnpflbcggigdinhahgngfhaomik?utm_source=chrome-ntp-icon)
+
+
 [点击查看Gif动图](http://wx1.sinaimg.cn/large/9d8084a3gy1fu78jp21s4g20yl0hy4qz.gif)
 
 # 使用说明
@@ -75,7 +79,7 @@
 - [ ] 用户忽略某些条件的视频采集(如大小/清晰度/作者/视频名)?
 - [x] ~~直接搜索知乎视频(不知道有API没有)~~ 知乎推荐视频(无法搜索)
 - [ ] 修复导出 MP4 格式的问题,无论是 `mux.js` 还是 `mpegts_to_mp4`，任一即可
-- [ ] 发布至 Google Chrome 商店
+- [x] 发布至 Google Chrome 商店[Install from Google Chrome Store](https://chrome.google.com/webstore/detail/zh-downloader/gcknejnpflbcggigdinhahgngfhaomik?utm_source=chrome-ntp-icon)
 
 # Change Logs:
 
