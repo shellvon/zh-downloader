@@ -79,8 +79,9 @@
 
 # Change Logs:
 
-#### 2018-08-12
- - [U] 性能优化: 切换为动态组件 
+#### 2018-08-13
+ - [F] 未登录知乎时异常 [issues/2](https://github.com/shellvon/zh-downloader/issues/2)
+ - [U] 性能优化: 切换为动态组件 [issues/1](https://github.com/shellvon/zh-downloader/issues/1)
 
 #### 2018-08-12
  - [A] 增加推荐视频,支持从将推荐视频加入采集队列 [aa068288](https://github.com/shellvon/zh-downloader/commit/aa068288446e57ce0c749ae9d6fb4a634cf00d9e)
