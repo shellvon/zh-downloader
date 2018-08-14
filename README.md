@@ -61,7 +61,7 @@
 
 > ⚠️ 注意:  MP4 尝试了`mpegts_to_mp4`, `mux.js`, `videoconverter.js` 效果均不是很理想。因此不建议下载MP4。
 
-1. mpegts_to_mp4: 读取 SPS 信息的时候宽度/高度信息错误。
+1. mpegts_to_mp4: ~~读取 SPS 信息的时候宽度/高度信息错误~~ (调研发现是没有去掉 [Emulation Prevention Bytes](http://blog.51cto.com/danielllf/1758115). 目前已经修复))
 2. mux.js 能正常读取宽/高，但是无法正常解析Duration(See [videojs/mux.js#210](https://github.com/videojs/mux.js/issues/210))，另一个有趣的问题是部分知乎用户的视频没有音频，因此不会触发 mux.js 的 `data` 事件(See [videojs/mux.js#194](https://github.com/videojs/mux.js/issues/194))，因此需要分开处理音频/视频。
 3. videoconverter.js  Node 直接就爆内存错误
 
@@ -78,18 +78,23 @@
 - [x] 自动删除采集超过一定时间的视频(时间/策略?)
 - [ ] 用户忽略某些条件的视频采集(如大小/清晰度/作者/视频名)?
 - [x] ~~直接搜索知乎视频(不知道有API没有)~~ 知乎推荐视频(无法搜索)
-- [ ] 修复导出 MP4 格式的问题,无论是 `mux.js` 还是 `mpegts_to_mp4`，任一即可
+- [x] 修复导出 MP4 格式的问题,无论是 `mux.js` 还是 `mpegts_to_mp4`，任一即可
 - [x] 发布至 Google Chrome 商店[Install from Google Chrome Store](https://chrome.google.com/webstore/detail/zh-downloader/gcknejnpflbcggigdinhahgngfhaomik?utm_source=chrome-ntp-icon)
 
 # Change Logs:
 
+#### 2018-08-14
+ - [A] 发布1.0.3至Chrome商店
+ - [F] 修复  `mpegts_to_mp4` 导出时长宽数据不对 #4
+ - [U] 优化Components的export机制
+
 #### 2018-08-13
- - [F] 优化版本号展示 [issues/3](https://github.com/shellvon/zh-downloader/issues/3)
+ - [F] 优化版本号展示 #3
  - [F] 更新 [MitsuhaKitsune/vuex-webextensions](https://github.com/MitsuhaKitsune/vuex-webextensions), See [MitsuhaKitsune/vuex-webextensions#7](https://github.com/MitsuhaKitsune/vuex-webextensions/issues/7)
- - [F] 未登录知乎时异常 [issues/2](https://github.com/shellvon/zh-downloader/issues/2)
+ - [F] 未登录知乎时异常 #2
  - [U] 调整部分文案,增加商店评价链接, 发布 1.0.2
  - [U] 发布版本 1.0.1
- - [U] 性能优化: 切换为动态组件 [issues/1](https://github.com/shellvon/zh-downloader/issues/1)
+ - [U] 性能优化: 切换为动态组件 #1
 
 #### 2018-08-12
  - [A] 增加推荐视频,支持从将推荐视频加入采集队列 [aa068288](https://github.com/shellvon/zh-downloader/commit/aa068288446e57ce0c749ae9d6fb4a634cf00d9e)

@@ -26,10 +26,7 @@ import { startDownloadVideo, deleteVideo, collectVideo } from '../actions';
 
 import { version } from '../../package.json';
 
-import Playlist from '../components/Playlist.vue';
-import Settings from '../components/Settings.vue';
-import About from '../components/About.vue';
-import Recommend from '../components/Recommend.vue';
+import { Playlist, Settings, About, Recommend } from '../components';
 
 export default {
   components: {

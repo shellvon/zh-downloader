@@ -7,7 +7,7 @@
                         <el-option label="MPEG2-TS" value="ts"></el-option>
                          <el-option label="MP4" value="MP4">
                             <span style="float: left">MP4</span>
-                            <span style="padding-left: 13px;float: right; color: red; font-size: 12px"> MP4格式可能存在兼容性问题,请慎用</span>
+                            <span :style="{paddingLeft: '13px', float: 'right', color: 'red', fontSize: '12px'}"> MP4格式可能存在兼容性问题,请慎用</span>
                         </el-option>
                     </el-select>
                     <el-tooltip class="item" effect="dark" content="采集到的视频将优先为你展示此格式" placement="top-start">
@@ -18,11 +18,11 @@
                     <el-select placeholder="请选择你MP4转化器" @change="onChange('converter', $event)" :value="customSettings.converter">
                         <el-option label="mux.js" value="mux.js">
                             <span style="float: left">mux.js</span>
-                            <span style="float: right; color: red; font-size: 12px">转化后长宽正确,时间不正确</span>
+                            <span :style="{paddingLeft: '13px', float: 'right', color: 'red', fontSize: '12px'}">转化后长宽正确,时间不正确</span>
                         </el-option>
                         <el-option label="mpegts-to-mp4" value="mpegts-to-mp4">
-                            <span style="float: left">mpegts-to-mp4</span>
-                            <span style="float: right; color: red; font-size: 12px">转化后时间正确,长度不正确</span>
+                            <span style="float: left">mpegts-to-mp4 魔改版</span>
+                            <span :style="{paddingLeft: '13px', float: 'right', color: 'red', fontSize: '12px'}">转换速度较慢</span>
                         </el-option>
                     </el-select>
                 </el-form-item>
