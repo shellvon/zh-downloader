@@ -6,7 +6,7 @@
 [![Chrome Web Store](https://developer.chrome.com/webstore/images/ChromeWebStore_BadgeWBorder_v2_206x58.png)](https://chrome.google.com/webstore/detail/zh-downloader/gcknejnpflbcggigdinhahgngfhaomik?utm_source=chrome-ntp-icon)
 
 
-[点击查看Gif动图](http://wx1.sinaimg.cn/large/9d8084a3gy1fu78jp21s4g20yl0hy4qz.gif)
+[点击查看 GIF 动图](http://wx1.sinaimg.cn/large/9d8084a3gy1fu78jp21s4g20yl0hy4qz.gif)
 
 # 使用说明
 
@@ -37,7 +37,7 @@
 + [Vue2.0](https://vuejs.org/)
 + [Element](http://element.eleme.io/#/zh-CN)
 + [m3u8-parser](https://github.com/videojs/m3u8-parser)
-+ [mpegts_to_mp4](https://github.com/RReverser/mpegts)
++ [mpegts_to_mp4 魔改版](https://github.com/shellvon/mpegts)
 + [mux.js](https://github.com/videojs/mux.js)
 + [vuex-webextensions](https://github.com/MitsuhaKitsune/vuex-webextensions)
 
@@ -68,8 +68,8 @@
 # 限制
 
 1. 下载过程中不能关闭 Popup 页，否则后端无法与之通信然后通知下载结果
-2. 不知道视频链接过期时间, 因此下载过程中会出现403，这时候可以点击ID进入知乎将自动刷新。
-3. 转化的MP4格式宽高不正确，因此普通视频播放器可能难以播放, 请尝试用 `mplayer` 播放。 或者下载 TS 之后用 `ffmpeg` 或者 [https://cloudconvert.com/](https://cloudconvert.com/) 在线转换。
+2. 不知道视频链接过期时间, 因此下载过程中会出现403，这时候可以点击ID进入知乎将自动刷新
+3. 转化的MP4格式宽高不正确，因此普通视频播放器可能难以播放, 请尝试用 `mplayer` 播放。 或者下载 TS 之后用 `ffmpeg` 或者 [https://cloudconvert.com/](https://cloudconvert.com/) 在线转换
 
 # TODO: 
 
@@ -85,16 +85,16 @@
 
 #### 2018-08-14
  - [A] 发布1.0.3至Chrome商店
- - [F] 修复  `mpegts_to_mp4` 导出时长宽数据不对 #4
+ - [F] 修复  `mpegts_to_mp4` 导出时长宽数据不对 [#4](https://github.com/shellvon/zh-downloader/issues/4)
  - [U] 优化Components的export机制
 
 #### 2018-08-13
- - [F] 优化版本号展示 #3
+ - [F] 优化版本号展示 [#3](https://github.com/shellvon/zh-downloader/issues/3)
  - [F] 更新 [MitsuhaKitsune/vuex-webextensions](https://github.com/MitsuhaKitsune/vuex-webextensions), See [MitsuhaKitsune/vuex-webextensions#7](https://github.com/MitsuhaKitsune/vuex-webextensions/issues/7)
- - [F] 未登录知乎时异常 #2
+ - [F] 未登录知乎时异常 [#2](https://github.com/shellvon/zh-downloader/issues/2)
  - [U] 调整部分文案,增加商店评价链接, 发布 1.0.2
  - [U] 发布版本 1.0.1
- - [U] 性能优化: 切换为动态组件 #1
+ - [U] 性能优化: 切换为动态组件 [#1](https://github.com/shellvon/zh-downloader/issues/1)
 
 #### 2018-08-12
  - [A] 增加推荐视频,支持从将推荐视频加入采集队列 [aa068288](https://github.com/shellvon/zh-downloader/commit/aa068288446e57ce0c749ae9d6fb4a634cf00d9e)
