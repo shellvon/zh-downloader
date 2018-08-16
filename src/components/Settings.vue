@@ -5,7 +5,7 @@
                 <el-form-item label="偏爱的视频格式:">
                     <el-select placeholder="请选择你偏好的视频格式" @change="onChange('format', $event)" :value="customSettings.format">
                         <el-option label="MPEG2-TS" value="ts"></el-option>
-                         <el-option label="MP4" value="MP4">
+                         <el-option label="MP4" value="mp4">
                             <span style="float: left">MP4</span>
                             <span :style="{paddingLeft: '13px', float: 'right', color: 'red', fontSize: '12px'}"> MP4格式可能存在兼容性问题,请慎用</span>
                         </el-option>

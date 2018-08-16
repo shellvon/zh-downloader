@@ -61,7 +61,7 @@ export async function fetchRetry(url, options, retryCnt = DEFAULT_FETCH_RETRY_CN
 export function downloadSingleSegment(uri, options = {}, retryCnt = DEFAULT_FETCH_RETRY_CNT) {
   return fetchRetry(uri, options, retryCnt).then(resp => {
     if (!resp.ok) {
-      throw new Error('(;´༎ຶД༎ຶ`)下载失败,服务端返回:' + resp.status);
+      throw new Error(`下载失败,服务端返回:${resp.status}`);
     }
     return resp;
   });
@@ -88,7 +88,6 @@ const mp4ByMuxJSFinishedJob = progressCallback => {
 
   let onConvertedDonePromise = new Promise((resolve, reject) => {
     transmuxer.on('done', () => {
-      console.debug('mux.js trigger done event');
       let offset = 0;
       let bytes = new Uint8Array(remuxedInitSegment.byteLength + remuxedBytesLength);
       bytes.set(remuxedInitSegment, offset);
@@ -98,7 +97,6 @@ const mp4ByMuxJSFinishedJob = progressCallback => {
         bytes.set(remuxedSegments[j].data, i);
         i += remuxedSegments[j].byteLength;
       }
-      console.debug('mux.js generated mp4');
       const mp4Blob = new Blob([bytes], { type: 'video/mp4' });
       let data = { downloadLink: URL.createObjectURL(mp4Blob) };
       resolve(data);
@@ -131,7 +129,6 @@ const mp4ByJbinaryFinishedJob = progressCallback => {
         if (err) {
           reject(err);
         }
-        console.debug('Begin to convert mp4');
         const start = new Date().getTime();
         const mp4Obj = mpegts_to_mp4(mpegts);
         console.debug(`Converted finished, time elapsed: ${new Date().getTime() - start}ms`);
@@ -169,7 +166,8 @@ const tsFinishedJob = progressCallback => {
  * @param {string}   converter        视频转化器,默认是mux.js
  */
 export async function downloadSegments(baseUri, segments, format = DEFAULT_VIDEO_FORMAT, progressCallback = noop, converter = DEFAULT_VIDEO_CONVERTER) {
-  if (format !== VIDEO_FORMAT_MP4 && format !== VIDEO_FORMAT_TS) {
+  let lowerCaseFormat = format.toLowerCase();
+  if (lowerCaseFormat !== VIDEO_FORMAT_MP4 && lowerCaseFormat !== VIDEO_FORMAT_TS) {
     throw new Error(`不支持下载${format}格式`);
   }
   // 单个下载Job.
@@ -205,9 +203,9 @@ export async function downloadSegments(baseUri, segments, format = DEFAULT_VIDEO
 
   // 所有东西都下载完了,需要获取做的工作
   let finishedJob;
-  if (format === VIDEO_FORMAT_TS) {
+  if (lowerCaseFormat === VIDEO_FORMAT_TS) {
     finishedJob = tsFinishedJob(progressCallback);
-  } else if (format === VIDEO_FORMAT_MP4) {
+  } else if (lowerCaseFormat === VIDEO_FORMAT_MP4) {
     finishedJob = converter === 'mux.js' ? mp4ByMuxJSFinishedJob(progressCallback) : mp4ByJbinaryFinishedJob(progressCallback);
   }
 

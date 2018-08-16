@@ -83,6 +83,9 @@
 
 # Change Logs:
 
+#### 2018-08-16
+ - [F] 修复下载MP4时提示不支持MP4格式的BUG[#5] (https://github.com/shellvon/zh-downloader/issues/5)
+
 #### 2018-08-14
  - [A] 发布1.0.3至Chrome商店
  - [F] 修复  `mpegts_to_mp4` 导出时长宽数据不对 [#4](https://github.com/shellvon/zh-downloader/issues/4)

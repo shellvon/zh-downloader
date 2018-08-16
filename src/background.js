@@ -49,7 +49,6 @@ chrome.extension.onConnect.addListener(function(port) {
   if (port.name !== types.PORT_NAME) {
     return;
   }
-  console.debug('Connection onconnect...');
   globalPort = port;
   globalPort.onMessage.addListener(function({ type, payload }) {
     console.debug(`Background.js received event type: ${type}`);
@@ -99,7 +98,7 @@ chrome.extension.onConnect.addListener(function(port) {
                 // 不让它变成100,因为有可能转化需要一定时间
                 downloadInfo.progress = percent >= 100 ? 99.99 : percent;
                 store.commit(ADD_OR_UPDATE_DOWNLOAD_INFO, downloadInfo);
-                msg = `´• ل •\`下载分片数据中(${start}/${total})...请耐心等待`;
+                msg = `下载分片数据中(${start}/${total})...请耐心等待`;
                 break;
               // 开始合并数据了...
               case types.DOWNLOAD_VIDEO_MERGING:
@@ -137,9 +136,7 @@ chrome.extension.onConnect.addListener(function(port) {
         fetchNewVideoById(payload.videoId, payload.preferedFormat || types.DEFAULT_VIDEO_FORMAT, payload.preferedQuality || types.DEFAULT_VIDEO_QUALITY)
           .then(videoInfo => {
             store.commit(ADD_OR_UPDATE_VIDEO, videoInfo);
-            console.log('refreshBadgeText', store.state.playlist.length);
             refreshBadgeText(store.state.playlist.length);
-            // 懒得通知前端了...
           })
           .catch(err => {
             safeSendResponse(errorAction({ msg: `采集视频时出现错误:${err.message}`, type: types.COLLECT_VIDEO }));
