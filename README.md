@@ -10,9 +10,9 @@
 
 # 使用说明
 
-下载本代码之后执行 `npm install && npm run build` 之后在 [Chrome](chrome://extensions/)中选择"加载已解压的扩展程序" 选择 `dist` 目录即可。
+下载本代码之后执行 `npm install && npm run build` 之后在 `chrome://extensions/` 中选择"加载已解压的扩展程序" 选择 `dist` 目录即可。
 
-或者你可以选择已经打包好的CRX格式插件,可以前往这里下载:[https://github.com/shellvon/zh-downloader/releases/](https://github.com/shellvon/zh-downloader/releases/)
+或者你可以选择已经打包好的CRX/ZIP格式插件(1.0.3开始不再提供CRX,参加 [#6](https://github.com/shellvon/zh-downloader/issues/6) ),可以前往这里下载:[https://github.com/shellvon/zh-downloader/releases/](https://github.com/shellvon/zh-downloader/releases/)
 
 # 功能特色
 
@@ -84,7 +84,8 @@
 # Change Logs:
 
 #### 2018-08-16
- - [F] 修复下载MP4时提示不支持MP4格式的BUG[#5] (https://github.com/shellvon/zh-downloader/issues/5)
+ - [F] 修复下载MP4时提示不支持MP4格式的BUG [#5](https://github.com/shellvon/zh-downloader/issues/5)
+ - [U] 发布仅提供ZIP格式, 参加 [#6](https://github.com/shellvon/zh-downloader/issues/6)
 
 #### 2018-08-14
  - [A] 发布1.0.3至Chrome商店
