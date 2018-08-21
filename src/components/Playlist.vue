@@ -337,6 +337,7 @@ export default {
 .thumbnail {
   width: 128px;
   max-height: 72px;
+  object-fit: cover;
   border-radius: 2px;
 }
 

@@ -1,40 +1,41 @@
 <template>
-  <el-row v-loading="isLoading" element-loading-text="正在加载中....">
-    <template v-if="recommendList.length===0">
-      <p class="error-message nothing">\_(ツ)_/¯</p>
-      <p class="error-message">暂时没有推荐视频哦
-        <el-button type="text" class="el-icon-refresh" @click="loadMore"></el-button>
-      </p>
-    </template>
-    <template v-else>
-      <el-col :span="11" v-for="(item, index) in recommendList" :key="index" :offset="index % 2" :style="{'min-height':'300px'}">
-        <el-card :body-style="{padding: '5px'}" shadow="hover">
-          <div class="origin_type">
-            {{item.brief.type === 'answer' ? '答' : '文'}}
-          </div>
-          <img :src="item.banner.image_url" class="thumbail">
-          <div style="padding: 14px;">
-            <div class="title-info">
-              <a :href="item.origin_url" target="_blank" class="link title"> {{item.object.title}}</a>
+  <div class="container" v-on:scroll.passive="handleScroll" :style="{height: '280px', overflow: 'scroll'}">
+    <el-row v-loading="isLoading" element-loading-text="正在加载中....">
+      <template v-if="recommendList.length===0">
+        <p class="error-message nothing">\_(ツ)_/¯</p>
+        <p class="error-message">暂时没有推荐视频哦
+          <el-button type="text" class="el-icon-refresh" @click="loadMore"></el-button>
+        </p>
+      </template>
+      <template v-else>
+        <el-col :span="11" v-for="(item, index) in recommendList" :key="index" :offset="index % 2" :style="{'min-height':'300px'}">
+          <el-card :body-style="{padding: '5px'}" shadow="hover">
+            <div class="origin_type">
+              {{item.brief.type === 'answer' ? '答' : '文'}}
             </div>
-            <div class="bottom">
-              <div class="author-info">
-                <img :src="item.actor.avatar_url" class="author-avatar">
-                <a :href="item.actor.url" class="link author" target="_blank">{{item.actor.name}}</a>
+            <img :src="item.banner.image_url" class="thumbail">
+            <div style="padding: 14px;">
+              <div class="title-info">
+                <a :href="item.origin_url" target="_blank" class="link title"> {{item.object.title}}</a>
               </div>
-              <div class="operation-btn-group">
-                <el-button type="danger" icon="el-icon-minus" size="mini" circle @click="deleteVideoByIndex(index)"></el-button>
-                <el-button type="primary" icon="el-icon-plus" size="mini" circle @click="collectByVideoId(item.banner.video.video_id)"></el-button>
+              <div class="bottom">
+                <div class="author-info">
+                  <img :src="item.actor.avatar_url" class="author-avatar">
+                  <a :href="item.actor.url" class="link author" target="_blank">{{item.actor.name}}</a>
+                </div>
+                <div class="operation-btn-group">
+                  <el-button type="danger" icon="el-icon-minus" size="mini" circle @click="deleteVideo({index:index})"></el-button>
+                  <el-button type="primary" icon="el-icon-plus" size="mini" circle @click="collectVideo({index:index, videoId:item.banner.video.video_id})"></el-button>
+                </div>
               </div>
             </div>
-          </div>
-        </el-card>
-      </el-col>
-
-      <el-button :style="{'display': showTopButton ? 'block': 'none'}" id="to-top" type="success" icon="el-icon-arrow-up" circle
-        @click="toTop"></el-button>
-    </template>
-  </el-row>
+          </el-card>
+        </el-col>
+        <el-button :style="{'display': showTopButton ? 'block': 'none'}" id="to-top" type="success" icon="el-icon-arrow-up" circle
+          @click="toTop"></el-button>
+      </template>
+    </el-row>
+  </div>
 </template>
 
 <script>
@@ -47,25 +48,22 @@ export default {
       isEnd: false,
       // offset=1是为了跳过首页的banners,因为一个元素结构和其他不一样,会导致DOM失败, count没什么用
       videoAPI: 'https://api.zhihu.com/topstory/selected_videos?action=down&count=10&offset=1',
+      timer: +new Date(),
       recommendList: [],
     };
   },
-  beforeMount() {
-    window.addEventListener('scroll', this.handleScroll);
-  },
-  mounted() {
+  created() {
     this.loadMore();
   },
-  destroyed() {
-    window.removeEventListener('scroll');
-  },
   methods: {
-    deleteVideoByIndex(index) {
+    deleteVideo({ index }) {
       this.recommendList.splice(index, 1);
     },
-    // 采集视频
-    collectByVideoId(videoId) {
+    collectVideo({ index, videoId }) {
       this.$emit('collect', videoId);
+      this.deleteVideo({
+        index,
+      });
       this.$message({
         showClose: true,
         message: '已加入采集队列,请前往<视频>栏查看',
@@ -79,35 +77,41 @@ export default {
       t--;
       return (-c / 2) * (t * (t - 2) - 1) + b;
     },
+
     toTop() {
-      let start = Math.max(document.documentElement.scrollTop, document.body.scrollTop);
+      let start = this.$el.scrollTop;
       let to = 0;
       let change = to - start;
       let currentTime = 0;
       let increment = 20;
       let duration = 1000;
       let self = this;
-      let animateScroll = function() {
+      let animateScroll = () => {
         currentTime += increment;
         let val = self.easeInOutQuad(currentTime, start, change, duration);
-        document.documentElement.scrollTop = val;
-        document.body.scrollTop = val;
+        this.$el.scrollTop = val;
         if (currentTime < duration) {
           setTimeout(animateScroll, increment);
         }
       };
       animateScroll();
     },
+
     handleScroll() {
-      if (document.body.scrollTop > 40 || document.documentElement.scrollTop >= 40) {
-        this.showTopButton = true;
-      } else {
-        this.showTopButton = false;
+      let now = +new Date();
+      // 如果在2s内且API返回结束那么不再执行任何操作
+      if (now - this.timer < 2000 && this.isEnd) {
+        return;
       }
-      // https://stackoverflow.com/questions/9439725/javascript-how-to-detect-if-browser-window-is-scrolled-to-bottom
-      const offset = document.body.offsetHeight - (window.innerHeight + window.scrollY);
-      if (offset <= 50) {
-        // 知乎这个神奇的接口似乎没有end的时候..
+
+      this.timer = now;
+      let scrollTop = this.$el.scrollTop;
+      let scrollHeight = this.$el.scrollHeight;
+      let clientHeight = this.$el.clientHeight;
+      this.showTopButton = scrollTop > 40;
+
+      // 判断是否到底部
+      if (scrollTop + clientHeight + 10 >= scrollHeight) {
         if (this.isEnd) {
           this.$message({
             showClose: true,
@@ -119,6 +123,7 @@ export default {
         }
       }
     },
+
     loadMore() {
       let self = this;
       this.isLoading = true;
@@ -157,7 +162,7 @@ export default {
           self.isLoading = false;
           self.$message({
             showClose: true,
-            message: '加载失败,请确认您已正确登录知乎!',
+            message: '加载失败,请确保您已正确登录知乎!',
             type: 'error',
           });
           console.err(err.message);
@@ -178,6 +183,8 @@ export default {
 
 .thumbail {
   width: 280px;
+  height: 156px;
+  object-fit: cover;
 }
 
 .author-avatar {
@@ -187,6 +194,22 @@ export default {
 
 .title-info {
   margin: 10px 0px;
+  position: relative;
+  height: 3.6em;
+  overflow: hidden;
+  line-height: 1.2em;
+}
+
+.title-info:after {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  content: '';
+  height: 1.2em;
+  line-height: 1.2em;
+  text-align: right;
+  width: 30%;
+  background: linear-gradient(to right, rgba(255, 255, 255, 0), rgba(255, 255, 255, 1) 50%);
 }
 
 .title {
@@ -214,9 +237,11 @@ export default {
 .operation-btn-group {
   float: right;
 }
+
 .operation-btn-group > button {
   margin-left: 0px !important;
 }
+
 .origin_type {
   position: absolute;
   background-color: #1296db;
