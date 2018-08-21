@@ -7,7 +7,7 @@
     <template v-else>
       <el-alert v-if="isDownloading" title="视频下载过程中请勿关闭本页面" description="若下载格式为MP4,可能有兼容性问题并且转换过程可能会相当耗时,请耐心等待" type="warning">
       </el-alert>
-      <el-table :data="playlist" style="width:100%" max-height="300">
+      <el-table :data="playlist" style="width:100%">
         <el-table-column type="expand" fixed>
           <template slot-scope="props">
             <el-form label-position="left" inline class="table-expand">
@@ -40,7 +40,8 @@
               </el-form-item>
               <el-form-item label="分辨率:">
                 <span>{{ props.row.playlist[props.row.currentQuality].width }} x {{ props.row.playlist[props.row.currentQuality].height
-                  }}</span>
+                  }}
+                </span>
               </el-form-item>
               <el-form-item label="采集时间:">
                 <span>{{ new Date(props.row.updatedAt).toLocaleString()}}</span>
@@ -96,6 +97,9 @@
           </template>
         </el-table-column>
       </el-table>
+      <el-pagination small @current-change="handlePageChange" layout="total, prev, pager, next" :page-size="pageSize" :current-page="currentPage"
+        :total="total" :style="{textAlign: 'right'}">
+      </el-pagination>
     </template>
   </el-row>
 </template>
@@ -104,8 +108,6 @@
 
 
 <script>
-import { mapGetters } from 'vuex';
-
 import { ADD_OR_UPDATE_VIDEO, ADD_OR_UPDATE_DOWNLOAD_INFO } from '../store/mutation-types';
 
 export default {
@@ -115,13 +117,24 @@ export default {
       downloadingVedioId: 0,
       progressMessage: '',
       isDownloading: false,
+      pageSize: 3,
+      currentPage: 1,
     };
   },
   props: ['qualityMap'],
   computed: {
-    ...mapGetters(['playlist']),
+    playlist() {
+      return this.$store.getters.playlist.slice((this.currentPage - 1) * this.pageSize, this.currentPage * this.pageSize);
+    },
+    total() {
+      return this.$store.getters.playlist.length || 0;
+    },
   },
   methods: {
+    handlePageChange(currentPage) {
+      this.currentPage = currentPage;
+    },
+
     /**
      * 复制
      */

@@ -243,7 +243,7 @@ export async function fetchNewVideoById(videoId, preferedFormat = DEFAULT_VIDEO_
           baseUri: m3u8.replace(/[^/]+$/i, ''),
           size: playlist[quality].size,
           name: videoName,
-          manifest: manifest,
+          // manifest: manifest, // 不再记录此数据, See https://github.com/shellvon/zh-downloader/issues/7
           format: preferedFormat,
           width: playlist[quality].width,
           height: playlist[quality].height,

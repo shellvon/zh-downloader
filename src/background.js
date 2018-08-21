@@ -1,4 +1,4 @@
-import { downloadSegments, fetchNewVideoById, refreshBadgeText } from './utils';
+import { downloadSegments, fetchNewVideoById, refreshBadgeText, parseM3u8File } from './utils';
 
 import * as types from './constants';
 
@@ -67,53 +67,63 @@ chrome.extension.onConnect.addListener(function(port) {
         let videoInfo = payload;
         let quality = videoInfo.currentQuality; // 选择下载的清晰度
         let selectVideoItem = videoInfo.playlist[quality];
-        let segments = selectVideoItem.manifest.segments; // 对应清晰度的视频分片数据.
         let format = selectVideoItem.format || types.DEFAULT_VIDEO_FORMAT; // 下载格式.
         let converter = store.getters.customSettings.converter || types.DEFAULT_VIDEO_CONVERTER; // 默认的转化器
-        let start = 0;
-        let total = segments.length;
 
         // 初始化下载信息.
         let downloadInfo = {
           id: videoInfo.id,
           quality: quality,
-          progress: start,
+          progress: 0,
           format: format,
           name: videoInfo.name + '-' + quality.toUpperCase() + '.' + format,
         };
         store.commit(ADD_OR_UPDATE_DOWNLOAD_INFO, downloadInfo);
 
-        downloadSegments(
-          selectVideoItem.baseUri,
-          segments,
-          format,
-          ({ type, payload }) => {
-            // console.debug(`ProgressCallback : ${type} => `, payload);
-            let msg = payload.msg;
-            switch (type) {
-              // 正在下载中....
-              case types.DOWNLOAD_VIDEO_INPROGRESS:
-                start += 1;
-                let percent = parseInt((start * 100) / total);
-                // 不让它变成100,因为有可能转化需要一定时间
-                downloadInfo.progress = percent >= 100 ? 99.99 : percent;
-                store.commit(ADD_OR_UPDATE_DOWNLOAD_INFO, downloadInfo);
-                msg = `下载分片数据中(${start}/${total})...请耐心等待`;
-                break;
-              // 开始合并数据了...
-              case types.DOWNLOAD_VIDEO_MERGING:
-                break;
-              // ....
+        // See https://github.com/shellvon/zh-downloader/issues/7
+
+        parseM3u8File(selectVideoItem.m3u8)
+          .then(manifest => {
+            let segments = manifest.segments;
+            if (!segments.length) {
+              throw new Error(`无法获取视频分片数据,视频可能已过期,请点击ID重新采集`);
             }
-            // 通知前端刷新
-            safeSendResponse(
-              downloadProgressUpdate({
-                msg,
-              })
+
+            let start = 0;
+            let total = segments.length;
+
+            return downloadSegments(
+              selectVideoItem.baseUri,
+              segments,
+              format,
+              ({ type, payload }) => {
+                // console.debug(`ProgressCallback : ${type} => `, payload);
+                let msg = payload.msg;
+                switch (type) {
+                  // 正在下载中....
+                  case types.DOWNLOAD_VIDEO_INPROGRESS:
+                    start += 1;
+                    let percent = parseInt((start * 100) / total);
+                    // 不让它变成100,因为有可能转化需要一定时间
+                    downloadInfo.progress = percent >= 100 ? 99.99 : percent;
+                    store.commit(ADD_OR_UPDATE_DOWNLOAD_INFO, downloadInfo);
+                    msg = `下载分片数据中(${start}/${total})...请耐心等待`;
+                    break;
+                  // 开始合并数据了...
+                  case types.DOWNLOAD_VIDEO_MERGING:
+                    break;
+                  // ....
+                }
+                // 通知前端刷新
+                safeSendResponse(
+                  downloadProgressUpdate({
+                    msg,
+                  })
+                );
+              },
+              converter
             );
-          },
-          converter
-        )
+          })
           .then(data => {
             downloadInfo.link = data.downloadLink;
             downloadInfo.progress = 100;
@@ -139,11 +149,21 @@ chrome.extension.onConnect.addListener(function(port) {
             refreshBadgeText(store.state.playlist.length);
           })
           .catch(err => {
-            safeSendResponse(errorAction({ msg: `采集视频时出现错误:${err.message}`, type: types.COLLECT_VIDEO }));
+            safeSendResponse(
+              errorAction({
+                msg: `采集视频时出现错误:${err.message}`,
+                type: types.COLLECT_VIDEO,
+              })
+            );
           });
         break;
       default:
-        safeSendResponse(errorAction({ msg: `无法识别的指令:${type}`, type: types.UNKNOWN_ACTION }));
+        safeSendResponse(
+          errorAction({
+            msg: `无法识别的指令:${type}`,
+            type: types.UNKNOWN_ACTION,
+          })
+        );
         break;
     }
 
