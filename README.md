@@ -83,6 +83,11 @@
 
 # Change Logs:
 
+#### 2018-08-21
+ - [A] 发布1.0.5版本
+ - [U] 视频列表从滚动改为分页,提高响应速度 [#7](https://github.com/shellvon/zh-downloader/issues/7)
+ - [U] 优化推荐页界面,统一卡片 [#8](https://github.com/shellvon/zh-downloader/issues/8)
+
 #### 2018-08-16
  - [F] 修复下载MP4时提示不支持MP4格式的BUG [#5](https://github.com/shellvon/zh-downloader/issues/5)
  - [U] 发布仅提供ZIP格式, 参见 [#6](https://github.com/shellvon/zh-downloader/issues/6)
