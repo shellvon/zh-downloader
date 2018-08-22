@@ -22,6 +22,7 @@
 + 支持自定义偏好设置,比如您可以自己设置用于转化MP4的转化器是什么,偏爱的默认格式是什么
 + 实时友好展示下载/转化进度
 + 自动清理超过一定历史的视频文件
++ 可使用二维码分享视频
 + UI 不算太差
 + 纯前端Javascript实现
 + 最新采集的永远放在最前面
@@ -82,6 +83,10 @@
 - [x] 发布至 Google Chrome 商店[Install from Google Chrome Store](https://chrome.google.com/webstore/detail/zh-downloader/gcknejnpflbcggigdinhahgngfhaomik?utm_source=chrome-ntp-icon)
 
 # Change Logs:
+
+#### 2018-08-22
+ - [A] 增加二维码分享功能 [d00d008c](https://github.com/shellvon/zh-downloader/commit/d00d008c1af0b4752f03f7eee21d8067a3795ece)
+ - [U] 优化推荐功能 [#9](https://github.com/shellvon/zh-downloader/issues/9)
 
 #### 2018-08-21
  - [A] 发布1.0.5版本

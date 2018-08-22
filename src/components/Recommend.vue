@@ -82,7 +82,6 @@ export default {
   methods: {
     showQRCode(item) {
       this.isDialogShow = true;
-      console.log(item);
       this.shareItem = {
         text: item.origin_url,
         bgSrc: item.banner.image_url,
