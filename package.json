@@ -36,6 +36,7 @@
     "mpegts_to_mp4": "https://github.com/shellvon/mpegts.git#dc494f9ae3395e31521f23659133d6b5d78abb8e",
     "mux.js": "^4.5.1",
     "vue": "^2.5.17",
+    "vue-qr": "^1.3.8",
     "vuex": "^3.0.1",
     "vuex-webextensions": "^1.2.2"
   },

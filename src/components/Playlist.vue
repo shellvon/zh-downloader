@@ -86,11 +86,12 @@
             <el-tooltip class="item" effect="dark" content="下载" placement="bottom">
               <el-button @click="handleDownloadVideo(scope.row)" type="text" :disabled="isDownloading" icon="el-icon-download"></el-button>
             </el-tooltip>
-
+            <el-tooltip class="item" effect="dark" content="分享" placement="bottom">
+              <el-button @click="showShareQRCode(scope.row)" type="text" icon="el-icon-share"></el-button>
+            </el-tooltip>
             <el-tooltip class="item" effect="dark" content="删除" placement="bottom">
               <el-button @click="handleDeleteVideo(scope.row)" type="text" :disabled="isDownloading" icon="el-icon-delete"></el-button>
             </el-tooltip>
-
             <el-tooltip v-if="progressValue(scope.row) === 100" class="item" effect="dark" content="打开文件所在位置" placement="bottom">
               <el-button @click="handleShowFile(scope.row)" type="text" icon="el-icon-view"></el-button>
             </el-tooltip>
@@ -101,6 +102,7 @@
         :total="total" :style="{textAlign: 'right'}">
       </el-pagination>
     </template>
+    <qr-code-share :share-item="shareItem" :show="isDialogShow" @click="isDialogShow=false"></qr-code-share>
   </el-row>
 </template>
 
@@ -110,17 +112,25 @@
 <script>
 import { ADD_OR_UPDATE_VIDEO, ADD_OR_UPDATE_DOWNLOAD_INFO } from '../store/mutation-types';
 
+import QrCodeShare from './QrCodeShare.vue';
+// import Share from './Share.vue';
 export default {
   name: 'Playlist',
   data() {
     return {
+      isDialogShow: false,
       downloadingVedioId: 0,
       progressMessage: '',
       isDownloading: false,
       pageSize: 3,
       currentPage: 1,
+      shareItem: {},
     };
   },
+  components: {
+    QrCodeShare,
+  },
+
   props: ['qualityMap'],
   computed: {
     playlist() {
@@ -131,6 +141,13 @@ export default {
     },
   },
   methods: {
+    showShareQRCode(videoInfo) {
+      this.isDialogShow = true;
+      this.shareItem = {
+        bgSrc: videoInfo.thumbnail,
+        text: `https://www.zhihu.com/video/${videoInfo.id}`,
+      };
+    },
     handlePageChange(currentPage) {
       this.currentPage = currentPage;
     },
@@ -339,6 +356,10 @@ export default {
 </script>
 
 <style>
+.el-button + .el-button {
+  margin-left: 1px;
+}
+
 .nothing {
   font-size: 36px;
 }

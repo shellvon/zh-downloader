@@ -26,8 +26,9 @@
                   <a :href="item.actor.url" class="link author" target="_blank">{{item.actor.name}}</a>
                 </div>
                 <div class="operation-btn-group">
-                  <el-button type="danger" icon="el-icon-minus" size="mini" circle @click="deleteVideo({index:index})"></el-button>
                   <el-button type="primary" icon="el-icon-plus" size="mini" circle @click="collectVideo({index:index, videoId:item.banner.video.video_id})"></el-button>
+                  <el-button type="info" icon="el-icon-share" size="mini" circle @click="showQRCode(item)"></el-button>
+                  <el-button type="danger" icon="el-icon-minus" size="mini" circle @click="deleteVideo({index:index})"></el-button>
                 </div>
               </div>
             </div>
@@ -43,13 +44,18 @@
           @click="toTop"></el-button>
       </template>
     </el-row>
-
+    <qr-code-share :share-item="shareItem" :show="isDialogShow" @click="isDialogShow=false"></qr-code-share>
   </div>
 </template>
 
 <script>
+import QrCodeShare from './QrCodeShare.vue';
+
 export default {
   name: 'Recommend',
+  components: {
+    QrCodeShare,
+  },
   data() {
     return {
       showTopButton: false,
@@ -59,6 +65,8 @@ export default {
       videoAPI: 'https://api.zhihu.com/topstory/selected_videos?action=down&count=10&offset=1',
       timer: +new Date(),
       recommendList: [],
+      shareItem: {},
+      isDialogShow: true,
     };
   },
   created() {
@@ -72,6 +80,15 @@ export default {
     },
   },
   methods: {
+    showQRCode(item) {
+      this.isDialogShow = true;
+      console.log(item);
+      this.shareItem = {
+        text: item.origin_url,
+        bgSrc: item.banner.image_url,
+        logo: item.actor.avatar_url,
+      };
+    },
     deleteVideo({ index }) {
       this.recommendList.splice(index, 1);
     },
