@@ -27,7 +27,7 @@ const config = {
       new UglifyJsPlugin({
         cache: true,
         parallel: true,
-        sourceMap: false // set to true if you want JS source maps
+        sourceMap: process.NODE_ENV !== 'production'
       }),
       new OptimizeCSSAssetsPlugin({})
     ]

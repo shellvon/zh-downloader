@@ -1,11 +1,13 @@
 <template>
   <div class="container" v-on:scroll.passive="handleScroll" :style="{height: '280px', overflow: 'scroll'}">
-    <el-row v-loading="isLoading" element-loading-text="正在加载中....">
+    <el-row>
       <template v-if="recommendList.length===0">
-        <p class="error-message nothing">\_(ツ)_/¯</p>
-        <p class="error-message">暂时没有推荐视频哦
-          <el-button type="text" class="el-icon-refresh" @click="loadMore"></el-button>
-        </p>
+        <div v-loading="isLoading" element-loading-text="努力加载中...">
+          <p class="error-message nothing">\_(ツ)_/¯</p>
+          <p class="error-message">暂时没有推荐视频哦
+            <el-button type="text" class="el-icon-refresh" @click="loadMore"></el-button>
+          </p>
+        </div>
       </template>
       <template v-else>
         <el-col :span="11" v-for="(item, index) in recommendList" :key="index" :offset="index % 2" :style="{'min-height':'300px'}">
@@ -31,10 +33,17 @@
             </div>
           </el-card>
         </el-col>
+        <el-col :span="23" class="strike">
+          <span v-if="isLoading">拼命加载中
+            <i class="el-icon-loading"></i>
+          </span>
+          <span v-else-if="isEnd">哦豁 \_(ツ)_/¯ 没了...</span>
+        </el-col>
         <el-button :style="{'display': showTopButton ? 'block': 'none'}" id="to-top" type="success" icon="el-icon-arrow-up" circle
           @click="toTop"></el-button>
       </template>
     </el-row>
+
   </div>
 </template>
 
@@ -54,6 +63,13 @@ export default {
   },
   created() {
     this.loadMore();
+  },
+  watch: {
+    recommendList(newVal, oldVal) {
+      if (newVal.length <= 2) {
+        this.isEnd || this.loadMore();
+      }
+    },
   },
   methods: {
     deleteVideo({ index }) {
@@ -173,6 +189,36 @@ export default {
 </script>
 
 <style>
+.strike {
+  text-align: center;
+  color: #409eff;
+}
+
+.strike > span {
+  position: relative;
+  display: inline-block;
+}
+
+.strike > span:before,
+.strike > span:after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  width: 100%;
+  height: 1px;
+  background: #cbcbcb;
+}
+
+.strike > span:before {
+  right: 100%;
+  margin-right: 15px;
+}
+
+.strike > span:after {
+  left: 100%;
+  margin-left: 15px;
+}
+
 .nothing {
   font-size: 36px;
 }
