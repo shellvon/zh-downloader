@@ -27,7 +27,14 @@
                 </div>
                 <div class="operation-btn-group">
                   <el-button type="primary" icon="el-icon-plus" size="mini" circle @click="collectVideo({index:index, videoId:item.banner.video.video_id})"></el-button>
-                  <el-button type="info" icon="el-icon-share" size="mini" circle @click="showQRCode(item)"></el-button>
+                  <el-dropdown trigger="click" @command="handleCommand">
+                    <span class="el-dropdown-link">
+                      <el-button type="info" icon="el-icon-share" size="mini" circle></el-button>
+                    </span>
+                    <el-dropdown-menu slot="dropdown">
+                      <el-dropdown-item v-for="it in dropdownItem" :key="it.key" :command="{command: it.key, payload: item}">{{it.text}} </el-dropdown-item>
+                    </el-dropdown-menu>
+                  </el-dropdown>
                   <el-button type="danger" icon="el-icon-minus" size="mini" circle @click="deleteVideo({index:index})"></el-button>
                 </div>
               </div>
@@ -67,6 +74,21 @@ export default {
       recommendList: [],
       shareItem: {},
       isDialogShow: true,
+      dropdownItem: [
+        {
+          icon: '',
+          key: 'qrcode',
+          text: '二维码',
+        },
+        {
+          key: 'link',
+          text: '复制链接',
+        },
+        {
+          key: 'weibo',
+          text: '新浪微博',
+        },
+      ],
     };
   },
   created() {
@@ -80,6 +102,24 @@ export default {
     },
   },
   methods: {
+    handleCommand({ command, payload }) {
+      switch (command) {
+        case 'qrcode':
+          this.showQRCode(payload);
+          break;
+        case 'link':
+          let text = `${payload.object.title} - ${payload.actor.name} 分享自 Zh-Downloder \n${payload.origin_url}`;
+          this.$emit('copy', text);
+          break;
+        case 'weibo':
+          let shareAPI = 'http://service.weibo.com/share/share.php';
+          let title = `${payload.object.title} - ${payload.actor.name} 分享自 Zh-Downloder \n${payload.origin_url}`;
+          let picture = payload.banner.image_url;
+          window.open(`${shareAPI}?title=${title}&pic=${picture}`, '_blank');
+          break;
+      }
+    },
+
     showQRCode(item) {
       this.isDialogShow = true;
       this.shareItem = {

@@ -55,6 +55,7 @@ export default {
           event: {
             download: this.onStartDownloadVideo,
             delete: this.onDeletedVideo,
+            copy: this.onCopyText,
           },
           props: {
             qualityMap,
@@ -65,6 +66,7 @@ export default {
           name: 'recommend',
           event: {
             collect: this.onCollectVideo,
+            copy: this.onCopyText,
           },
           props: {},
         },
@@ -125,6 +127,26 @@ export default {
     });
   },
   methods: {
+    onCopyText(text) {
+      let self = this;
+      navigator.clipboard
+        .writeText(text)
+        .then(() => {
+          self.$message({
+            showClose: true,
+            message: '已成功复制到粘贴板',
+            type: 'success',
+          });
+        })
+        .catch(() => {
+          self.$message({
+            showClose: true,
+            message: '抱歉,复制失败~请尝试打开此链接Ctrl-C进行复制',
+            type: 'error',
+          });
+        });
+    },
+
     /**
      * 来自子组件通知删除成功的消息
      *

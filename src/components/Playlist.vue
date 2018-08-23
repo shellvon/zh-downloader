@@ -26,7 +26,7 @@
                   <el-tooltip class="item" effect="dark" :content="props.row.playlist[props.row.currentQuality].m3u8" placement="bottom">
                     <a class="link" :href="props.row.playlist[props.row.currentQuality].m3u8" target="_blank">打开</a>
                   </el-tooltip>
-                  <a class="link" href="javascript:void(0);" @click="copy(props.row.playlist[props.row.currentQuality].m3u8)">复制</a>
+                  <a class="link" href="javascript:void(0);" @click="$emit('copy', props.row.playlist[props.row.currentQuality].m3u8)">复制</a>
                 </span>
               </el-form-item>
               <el-form-item label="视频长度:">
@@ -87,7 +87,14 @@
               <el-button @click="handleDownloadVideo(scope.row)" type="text" :disabled="isDownloading" icon="el-icon-download"></el-button>
             </el-tooltip>
             <el-tooltip class="item" effect="dark" content="分享" placement="bottom">
-              <el-button @click="showShareQRCode(scope.row)" type="text" icon="el-icon-share"></el-button>
+              <el-dropdown trigger="click" @command="handleCommand">
+                <span class="el-dropdown-link">
+                  <el-button type="text" icon="el-icon-share"></el-button>
+                </span>
+                <el-dropdown-menu slot="dropdown">
+                  <el-dropdown-item v-for="it in dropdownItem" :key="it.key" :command="{command: it.key, payload: scope.row}">{{it.text}} </el-dropdown-item>
+                </el-dropdown-menu>
+              </el-dropdown>
             </el-tooltip>
             <el-tooltip class="item" effect="dark" content="删除" placement="bottom">
               <el-button @click="handleDeleteVideo(scope.row)" type="text" :disabled="isDownloading" icon="el-icon-delete"></el-button>
@@ -124,6 +131,21 @@ export default {
       pageSize: 3,
       currentPage: 1,
       shareItem: {},
+      dropdownItem: [
+        {
+          icon: '',
+          key: 'qrcode',
+          text: '二维码',
+        },
+        {
+          key: 'link',
+          text: '复制链接',
+        },
+        {
+          key: 'weibo',
+          text: '新浪微博',
+        },
+      ],
     };
   },
   components: {
@@ -140,7 +162,25 @@ export default {
     },
   },
   methods: {
-    showShareQRCode(videoInfo) {
+    handleCommand({ command, payload }) {
+      switch (command) {
+        case 'qrcode':
+          this.showQRCode(payload);
+          break;
+        case 'link':
+          let text = `这个知乎视频不错, 来看看吧 《${payload.name}》 分享自 Zh-Downloder \nhttps://www.zhihu.com/video/${payload.id}`;
+          this.$emit('copy', text);
+          break;
+        case 'weibo':
+          let shareAPI = 'http://service.weibo.com/share/share.php';
+          let title = `这个知乎视频不错, 来看看吧 《${payload.name}》 分享自 Zh-Downloder \nhttps://www.zhihu.com/video/${payload.id}`;
+          let picture = payload.thumbnail;
+          window.open(`${shareAPI}?title=${title}&pic=${picture}`, '_blank');
+          break;
+      }
+    },
+
+    showQRCode(videoInfo) {
       this.isDialogShow = true;
       this.shareItem = {
         bgSrc: videoInfo.thumbnail,
@@ -151,28 +191,6 @@ export default {
       this.currentPage = currentPage;
     },
 
-    /**
-     * 复制
-     */
-    copy(text) {
-      let self = this;
-      navigator.clipboard
-        .writeText(text)
-        .then(() => {
-          self.$message({
-            showClose: true,
-            message: '已成功复制到粘贴板',
-            type: 'success',
-          });
-        })
-        .catch(() => {
-          self.$message({
-            showClose: true,
-            message: '抱歉,复制失败~请尝试打开此链接Ctrl-C进行复制',
-            type: 'error',
-          });
-        });
-    },
     /**
      * 来自父组件通知的信息,当后台某个视频被采集到的消息
      *
