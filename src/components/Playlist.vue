@@ -168,12 +168,12 @@ export default {
           this.showQRCode(payload);
           break;
         case 'link':
-          let text = `这个知乎视频不错, 来看看吧 《${payload.name}》 分享自 Zh-Downloder \nhttps://www.zhihu.com/video/${payload.id}`;
+          let text = `这个知乎视频不错, 来看看吧 《${payload.name}》 分享自 zh-downloder \nhttps://www.zhihu.com/video/${payload.id}`;
           this.$emit('copy', text);
           break;
         case 'weibo':
           let shareAPI = 'http://service.weibo.com/share/share.php';
-          let title = `这个知乎视频不错, 来看看吧 《${payload.name}》 分享自 Zh-Downloder \nhttps://www.zhihu.com/video/${payload.id}`;
+          let title = `这个知乎视频不错, 来看看吧 《${payload.name}》 分享自 zh-downloder \nhttps://www.zhihu.com/video/${payload.id}`;
           let picture = payload.thumbnail;
           window.open(`${shareAPI}?title=${title}&pic=${picture}`, '_blank');
           break;

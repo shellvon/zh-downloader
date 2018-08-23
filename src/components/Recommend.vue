@@ -108,12 +108,12 @@ export default {
           this.showQRCode(payload);
           break;
         case 'link':
-          let text = `${payload.object.title} - ${payload.actor.name} 分享自 Zh-Downloder \n${payload.origin_url}`;
+          let text = `${payload.object.title} - ${payload.actor.name} 分享自 zh-downloder \n${payload.origin_url}`;
           this.$emit('copy', text);
           break;
         case 'weibo':
           let shareAPI = 'http://service.weibo.com/share/share.php';
-          let title = `${payload.object.title} - ${payload.actor.name} 分享自 Zh-Downloder \n${payload.origin_url}`;
+          let title = `${payload.object.title} - ${payload.actor.name} 分享自 zh-downloder \n${payload.origin_url}`;
           let picture = payload.banner.image_url;
           window.open(`${shareAPI}?title=${title}&pic=${picture}`, '_blank');
           break;

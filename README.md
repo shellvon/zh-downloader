@@ -85,6 +85,11 @@
 # Change Logs:
 
 #### 2018-08-22
+ - [A] 发布 1.0.7
+ - [U] 分享功能优化,支持二维码/链接🔗/新浪微博 [9d485b6b](https://github.com/shellvon/zh-downloader/commit/9d485b6bd2b45dda4be8ff702d9c9740e5de3dff)
+
+#### 2018-08-22
+ - [A] 发布 1.0.6
  - [A] 增加二维码分享功能 [d00d008c](https://github.com/shellvon/zh-downloader/commit/d00d008c1af0b4752f03f7eee21d8067a3795ece)
  - [U] 优化推荐功能 [#9](https://github.com/shellvon/zh-downloader/issues/9)
 
