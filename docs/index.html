@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <meta name="author" content="shellvon">
+    <meta name="description" content="zh-downloader 一个支持嗅探知乎视频并支持直接下载的Chrome插件">
+    <meta name="keywords" content="知乎下载器 zh-downloader m3u8 sniffer chrome-extension">
+    <title>知乎视频下载器-Chrome插件</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootswatch/3.3.7/cosmo/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Swiper/3.3.1/css/swiper.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/simple-line-icons/2.4.1/css/simple-line-icons.css">
+</head>
+<style>
+    .lead {
+        font-size: 18px;
+    }
+
+    header {
+        text-align: center;
+        color: white;
+        position: relative;
+        overflow: hidden;
+        font-size: 1.2em;
+        padding: 65px 60px 60px;
+        background: linear-gradient(135deg, #050a0e, #0a131d);
+    }
+
+    header .illustration {
+        margin: 60px auto -60px;
+        text-align: center;
+        max-width: 1194px;
+        font-size: 10px;
+    }
+
+    .windowed {
+        margin: 0 auto;
+        position: relative;
+        padding-top: 2.4em;
+        background: #f3f3f3;
+        border-radius: 5px;
+    }
+
+    .windowed:before {
+        content: "";
+        width: 1em;
+        height: 1em;
+        border-radius: 50%;
+        position: absolute;
+        top: .7em;
+        left: .8em;
+        background: #f46965;
+        box-shadow: 1.4em 0 #e9cd06, 2.8em 0 #81d95e;
+    }
+
+    .navbar-brand img {
+        margin-right: 10px;
+        display: inline-block;
+    }
+
+    header .illustration img {
+        margin: 0 auto;
+        max-width: 100%;
+        height: auto;
+        display: block;
+    }
+
+    .btn {
+        border-radius: 2em;
+        font-weight: 700;
+        outline: 0 !important;
+        transition: .2s;
+    }
+
+    #screenshot {
+        padding: 50px 0;
+        text-align: center;
+        margin-bottom: 40px;
+    }
+
+    .simple-slider {
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+
+    .simple-slider .swiper-slide {
+        display: flex;
+        align-items: center;
+        height: 540px;
+        background-repeat: no-repeat;
+        background-size: cover;
+        background-position: center;
+    }
+
+    s.simple-slider .slide-content {
+        max-width: 90%;
+        max-height: 460px;
+        margin: 20px auto 60px;
+        display: block;
+        border-radius: 6px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, .12);
+        overflow: hidden;
+    }
+
+    .simple-slider .slide-content.windowed img {
+        max-width: 100%;
+        margin: 0 auto;
+    }
+
+    .tinted {
+        background-color: #f4f8fb;
+    }
+
+    #features,
+    .feature {
+        margin-top: 70px;
+    }
+
+    #features .item {
+        padding-left: 70px;
+        position: relative;
+        margin-bottom: 30px;
+    }
+
+    #features .icon {
+        position: absolute;
+        left: 16px;
+        font-size: 28px;
+        color: #2789e4;
+    }
+
+    #change-logs {
+        margin-top: 70px;
+    }
+
+    #change-logs .version {
+        display: flex;
+        padding: 30px 30px 0;
+        border-top: 1px solid #ddd;
+        max-width: 1000px;
+        margin: 0 auto 30px;
+    }
+
+    #change-logs .version:first-of-type {
+        margin-top: 70px;
+    }
+
+    #change-logs .heading {
+        margin-bottom: 20px;
+        font-size: 24px;
+        width: 240px;
+        flex-shrink: 0;
+    }
+
+    #change-logs .heading .date {
+        color: grey;
+        font-size: 16px;
+        display: block;
+        margin-top: 3px;
+    }
+
+    #change-logs .version ul {
+        padding-left: 20px;
+        margin-bottom: 0;
+    }
+
+    .tag {
+        padding: 4px 10px;
+        border-radius: 4px;
+        text-align: center;
+        display: inline-block;
+        font-size: 12px;
+        margin-bottom: 15px;
+        margin-top: 10px;
+        border: 1px solid #fff;
+    }
+
+    .tag.new {
+        border-color: #49aee4;
+        color: #49aee4;
+    }
+
+    .tag.update {
+        border-color: #88bf57;
+        color: #79b544;
+    }
+
+    .tag.fixed {
+        border-color: #6d7a8a;
+        color: #6d7a8a;
+    }
+
+    footer {
+        background-color: #fff;
+        text-align: center;
+        color: #2b3137;
+        border-top: 1px solid #ebf1f5;
+        padding: 50px 30px;
+        margin-top: 50px;
+        line-height: 1.8;
+    }
+</style>
+
+<body>
+    <nav class="navbar navbar-default navbar-fixed-top">
+        <div class="container">
+            <div class="navbar-header">
+                <a class="navbar-brand navbar-link" href="#">
+                    <img src="/assets/logo/icon_128.png" width="34">Zh-downloader</a>
+                <button class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navcol-1">
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+            </div>
+            <div class="collapse navbar-collapse">
+                <ul id="menu" class="nav navbar-nav navbar-right">
+                    <li role="presentation">
+                        <a href="#header">主页</a>
+                    </li>
+                    <li role="presentation">
+                        <a href="#screenshot">截图</a>
+                    </li>
+                    <li role="presentation">
+                        <a href="#features">功能特色</a>
+                    </li>
+                    <li role="presentation">
+                        <a href="#change-logs">日志</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+    <!--Header Section.-->
+    <header id="header">
+        <img src="/assets/logo/icon_128.png" alt="Logo" width="128" height="128">
+        <h1>
+            <strong>Zh-downloader</strong> by shellvon</h1>
+        <p class="text-muted">一个非常给力的用于嗅探和下载知乎视频的Chrome插件</p>
+        <a class="btn button btn-primary hidden-xs hidden-sm" href="https://chrome.google.com/webstore/detail/zh-downloader/gcknejnpflbcggigdinhahgngfhaomik?utm_source=chrome-ntp-icon">
+            Download from Google Store </a>
+        <a class="btn button btn-success hidden-xs hidden-sm" href="https://github.com/shellvon/zh-downloader/releases">
+            <i class="icon icon-social-github"></i> Download from Github</a>
+        <div class="illustration windowed">
+            <img src="http://wx1.sinaimg.cn/large/9d8084a3gy1fu78jp21s4g20yl0hy4qz.gif" alt="App Screenshot">
+        </div>
+    </header>
+    <!--Screenshot Section-->
+    <div id="screenshot" class="tinted">
+        <h3>功能截图</h3>
+        <p class="lead">全自动嗅探知乎视频资源, 并提供丰富多彩的功能:比如下载/复制/分享等</p>
+        <div class="simple-slider">
+            <div class="swiper-container">
+                <div class="swiper-wrapper">
+                    <div class="swiper-slide">
+                        <div class="slide-content windowed">
+                            <img src="/assets/screenshot/screenshot_a.jpg" alt="采集截图">
+                        </div>
+                    </div>
+                    <div class="swiper-slide">
+                        <div class="slide-content windowed">
+                            <img src="/assets/screenshot/screenshot_b.jpg" alt="采集截图">
+                        </div>
+                    </div>
+                    <div class="swiper-slide">
+                        <div class="slide-content windowed">
+                            <img src="/assets/screenshot/screenshot_b.jpg" alt="采集截图">
+                        </div>
+                    </div>
+                </div>
+                <div class="swiper-pagination"></div>
+                <div class="swiper-button-prev"></div>
+                <div class="swiper-button-next"></div>
+            </div>
+        </div>
+    </div>
+    <!--Features Section-->
+    <div id="features">
+        <h3 class="text-center">功能特色</h3>
+        <p class="lead text-center">麻雀虽下, 五脏俱全. zh-downloader 拥有令人难以置信的功能以及特色</p>
+        <div class="container feature">
+            <div class="row">
+                <div class="col-md-5 col-md-offset-2 item">
+                    <i class="icon-magnifier icon"></i>
+                    <h4>自动嗅探</h4>
+                    <p>所有知乎视频自动采集和嗅探,无需用户干预</p>
+                </div>
+                <div class="col-md-5 item">
+                    <i class="icon-eye icon"></i>
+                    <h4>详细数据/参数</h4>
+                    <p>视频信息(ID/视频原地址/封面图/大小/时长/名称/格式)等多规格一览无余,支持复制地址至其他平台下载</p>
+                </div>
+                <div class="clearfix hidden-xs hidden-sm"></div>
+                <div class="col-md-5 col-md-offset-2 item">
+                    <i class="icon-cloud-download icon"></i>
+                    <h4>多格式下载</h4>
+                    <p>支持多清晰度/多种格式(MP4/MPEG-TS2)提供下载 </p>
+                </div>
+                <div class="col-md-5 item">
+                    <i class="icon-heart icon"></i>
+                    <h4>自定义配置</h4>
+                    <p>支持自定义偏好设置,比如您可以自己设置用于转化MP4的转化器是什么,偏爱的默认格式是什么.</p>
+                </div>
+                <div class="clearfix hidden-xs hidden-sm"></div>
+                <div class="col-md-5 col-md-offset-2 item">
+                    <i class="icon-info icon"></i>
+                    <h4>下载反馈</h4>
+                    <p>实时友好展示下载/转化进度</p>
+                </div>
+                <div class="col-md-5 item">
+                    <i class="icon-trash icon"></i>
+                    <h4>自动清理</h4>
+                    <p>自动清理超过一定历史的视频文件</p>
+                </div>
+                <div class="clearfix hidden-xs hidden-sm"></div>
+                <div class="col-md-5 col-md-offset-2 item">
+                    <i class="icon-share icon"></i>
+                    <h4>分享功能</h4>
+                    <p>可使用二维码/微博/链接等分享视频</p>
+                </div>
+                <div class="col-md-5 item">
+                    <i class="icon-star icon"></i>
+                    <h4>精选视频推荐</h4>
+                    <p>支持精选视频推荐,包含优质的回答/博文</p>
+                </div>
+                <div class="clearfix hidden-xs hidden-sm"></div>
+                <div class="col-md-5 col-md-offset-2 item">
+                    <i class="icon-bulb icon"></i>
+                    <h4>简单易用</h4>
+                    <p>纯前端Javascript实现, 不需要任何依赖.下载即用</p>
+                </div>
+                <div class="col-md-5  item">
+                    <i class="icon-rocket icon"></i>
+                    <h4>好看的UI</h4>
+                    <p>采用Element 制作, UI 不算太差</p>
+                </div>
+                <div class="clearfix hidden-xs hidden-sm"></div>
+                <div class="col-md-5 col-md-offset-2 item">
+                    <i class="icon-energy icon"></i>
+                    <h4>自动重试</h4>
+                    <p>当出现网络问题时,系统会自动尝试重试(最多3次)</p>
+                </div>
+
+                <div class="col-md-5 item">
+                    <i class="icon-magic-wand icon"></i>
+                    <h4>更多特色</h4>
+                    <p>原谅我，作者实在编不下去了</p>
+                </div>
+                <div class="clearfix hidden-xs hidden-sm"></div>
+            </div>
+        </div>
+    </div>
+    <!--ChangeLogs Section-->
+    <div id="change-logs" class="tinted">
+        <div class="container">
+            <h2 class="text-center">
+                变更日志</h2>
+            <p class="lead text-center">zh-downloader 保持着一定的频率更新,以保证此程序的稳定允许,以下是app的变更历史</p>
+            <div class="version">
+                <div class="heading">
+                    <strong>Version 1.0.7</strong>
+                    <span class="date"> 2018.8.22</span>
+                </div>
+                <div class="notes">
+                    <div class="tag update">
+                        <strong>UPDATE</strong>
+                    </div>
+                    <ul>
+                        <li>分享功能优化,支持二维码/链接🔗/新浪微博
+                            <a href="https://github.com/shellvon/zh-downloader/commit/9d485b6bd2b45dda4be8ff702d9c9740e5de3dff">9d485b6b</a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            <div class="version">
+                <div class="heading">
+                    <strong>Version 1.0.6</strong>
+                    <span class="date"> 2018.8.22</span>
+                </div>
+                <div class="notes">
+                    <div class="tag new">
+                        <strong>NEW</strong>
+                    </div>
+                    <ul>
+                        <li>新增分享功能</li>
+                    </ul>
+                    <div class="tag fixed">
+                        <strong>FIXED</strong>
+                    </div>
+                    <ul>
+                        <li>优化推荐功能
+                            <a href="https://github.com/shellvon/zh-downloader/issues/9">#9</a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="version">
+                <div class="heading">
+                    <strong>Version 1.0.5</strong>
+                    <span class="date"> 2018.8.21</span>
+                </div>
+                <div class="notes">
+                    <div class="tag update">
+                        <strong>UPDATE</strong>
+                    </div>
+                    <ul>
+                        <li>视频页修改为分页
+                            <a href="https://github.com/shellvon/zh-downloader/issues/7">#7</a>
+                        </li>
+                        <li>优化推荐页卡片功能
+                            <a href="https://github.com/shellvon/zh-downloader/issues/8">#8</a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="version">
+                <div class="heading">
+                    <strong>Version 1.0.4</strong>
+                    <span class="date"> 2018.8.16</span>
+                </div>
+                <div class="notes">
+                    <div class="tag fixed">
+                        <strong>FIXED</strong>
+                    </div>
+                    <ul>
+                        <li>修复下载MP4提示不存在的问题
+                            <a href="https://github.com/shellvon/zh-downloader/issues/5">#5</a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="version">
+                <div class="heading">
+                    <strong>Version 1.0.3</strong>
+                    <span class="date"> 2018.8.14</span>
+                </div>
+                <div class="notes">
+                    <div class="tag update">
+                        <strong>UPDATE</strong>
+                    </div>
+                    <ul>
+                        <li>优化Components的export机制</li>
+                    </ul>
+
+                    <div class="tag fixed">
+                        <strong>FIXED</strong>
+                    </div>
+                    <ul>
+                        <li>修复mpegts_to_mp4下载的视频长宽比例不正确
+                            <a href="https://github.com/shellvon/zh-downloader/issues/4">#4</a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+
+            <div class="version">
+                <div class="heading">
+                    <strong>Version 1.0.2</strong>
+                    <span class="date"> 2018.8.13</span>
+                </div>
+                <div class="notes">
+                    <div class="tag update">
+                        <strong>UPDATE</strong>
+                    </div>
+                    <ul>
+
+                        <li>调整部分文案,增加商店评价链接</li>
+                        <li>优化版本号展示</li>
+                    </ul>
+
+
+                </div>
+            </div>
+
+
+            <div class="version">
+                <div class="heading">
+                    <strong>Version 1.0.1</strong>
+                    <span class="date"> 2018.8.13</span>
+                </div>
+                <div class="notes">
+                    <div class="tag update">
+                        <strong>UPDATE</strong>
+                    </div>
+                    <ul>
+
+                        <li>性能优化: 切换为动态组件
+                            <a href="https://github.com/shellvon/zh-downloader/issues/1">#1</a>
+                        </li>
+                        <li>优化版本号展示</li>
+                    </ul>
+
+
+                </div>
+            </div>
+
+            <div class="version">
+                <div class="heading">
+                    <strong>Version 1.0.0</strong>
+                    <span class="date"> 2018.8.5</span>
+                </div>
+                <div class="notes">
+                    <div class="tag new">
+                        <strong>NEW</strong>
+                    </div>
+                    <ul>
+
+                        <li>初版代码发布,支持采集视频和下载视频
+                            <a href="https://github.com/shellvon/zh-downloader/commit/3b99a2d7d8fef4dc6ea26a432ebbc960ae36aa95">3b99a2d7</a>
+                        </li>
+                        <li>增加文档/增加设置按钮</li>
+                    </ul>
+
+
+                </div>
+            </div>
+
+        </div>
+    </div>
+    <footer>
+        <h3>都看完了,不来
+            <a href="https://chrome.google.com/webstore/detail/zh-downloader/gcknejnpflbcggigdinhahgngfhaomik?utm_source=chrome-ntp-icon">试一试</a>?</h3>
+        <p class="copyright">Copyright © 2018
+            <a href="/package-lock.json" target="_blank">Zh-downloader</a> 知乎视频下载器</p>
+    </footer>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Swiper/3.3.1/js/swiper.jquery.min.js"></script>
+
+    <script>
+        // http://idangero.us/swiper/get-started/
+
+        var mySwiper = new Swiper('.swiper-container', {
+            pagination: ".swiper-pagination",
+            paginationClickable: true,
+            nextButton: '.swiper-button-next',
+            prevButton: '.swiper-button-prev'
+        })
+    </script>
+</body>
+
+</html>
