@@ -1,0 +1,139 @@
+[
+    {
+        "version": "1.0.7",
+        "date": "2018.08.22",
+        "crx": "https://chrome.google.com/webstore/detail/zh-downloader/gcknejnpflbcggigdinhahgngfhaomik?utm_source=chrome-ntp-icon",
+        "zip": "https://github.com/shellvon/zh-downloader/releases/download/1.0.7/zh-downloader-v1.0.7.zip",
+        "logs": {
+            "new": [],
+            "update": [
+                {
+                    "text": "分享功能优化,支持二维码,链接🔗 新浪微博",
+                    "commit": ["9d485b6b"]
+                }
+            ]
+        }
+    },
+    {
+        "version": "1.0.6",
+        "date": "2018.08.22",
+        "zip": "https://github.com/shellvon/zh-downloader/releases/download/1.0.6/zh-downloader-v1.0.6.zip",
+        "logs": {
+            "new": [
+                {
+                    "text": "增加二维码发布功能",
+                    "commit": ["d00d008c"]
+                }
+            ],
+            "update": [
+                {
+                    "text": "推荐功能优化",
+                    "issues": ["9"]
+                }
+            ]
+        }
+    },
+    {
+        "version": "1.0.5",
+        "date": "2018.08.21",
+        "zip": "https://github.com/shellvon/zh-downloader/releases/download/1.0.5/zh-downloader-v1.0.5.zip",
+        "logs": {
+            "new": [
+                {
+                    "text": "视频列表从滚动改为分页,提高响应速度",
+                    "issue": ["7"]
+                }
+            ],
+            "update": [
+                {
+                    "text": "优化推荐页界面,统一卡片大小",
+                    "issues": ["8"]
+                }
+            ]
+        }
+    },
+    {
+        "version": "1.0.4",
+        "date": "2018.08.16",
+        "zip": "https://github.com/shellvon/zh-downloader/releases/download/1.0.4/zh-downloader-v1.0.4.zip",
+        "logs": {
+            "fixed": [
+                {
+                    "text": "修复下载MP4时提示不支持MP4格式的BUG",
+                    "issues": ["5"]
+                }
+            ]
+        }
+    },
+    {
+        "version": "1.0.3",
+        "date": "2018.08.16",
+        "zip": "https://github.com/shellvon/zh-downloader/releases/download/1.0.3/zh-downloader-v1.0.3.zip",
+        "logs": {
+            "update": [
+                {
+                    "text": "优化Components的export机制,提升性能"
+                }
+            ],
+            "fixed": [
+                {
+                    "text": "更新 MitsuhaKitsune/vuex-webextensions, See ",
+                    "issues": ["MitsuhaKitsune/vuex-webextensions#7"]
+                },
+                {
+                    "text": "未登录知乎时异常",
+                    "issues": [2]
+                }
+            ]
+        }
+    },
+    {
+        "version": "1.0.2",
+        "crx": "https://github.com/shellvon/zh-downloader/releases/download/v1.0.2/zh-downloader-v1.0.2.crx",
+        "date": "2018.08.13",
+        "logs": {
+            "update": [
+                {
+                    "text": "推荐页增加删除功能"
+                },
+                {
+                    "text": "部分文案调整,增加商店评价链接"
+                }
+            ]
+        }
+    },
+    {
+        "version": "1.0.1",
+        "date": "2018.08.16",
+        "crx": "https://github.com/shellvon/zh-downloader/releases/download/v1.0.1/zh-downloader-v1.0.1.crx",
+        "logs": {
+            "new": [
+                {
+                    "text": "增加推荐视频,支持从将推荐视频加入采集队列",
+                    "commit": ["aa068288"]
+                },
+                {
+                    "text": "增加M3u8复制功能以及查看采集时间/分辨率功能",
+                    "commit": ["01479b38"]
+                },
+                {
+                    "text": "自动删除采集超过一定时间的视频,用户可在设置页面自行设置",
+                    "commit": ["dd39c90b"]
+                }
+            ]
+        }
+    },
+    {
+        "version": "1.0.0",
+        "date": "2018.08.09",
+        "crx": "https://github.com/shellvon/zh-downloader/releases/download/v1.0.0/zh-downloader-v1.0.0.crx",
+        "logs": {
+            "new": [
+                {
+                    "text": "发布CRX版本,支持支持采集视频和下载视频",
+                    "commit": ["3b99a2d7", "c5bfc568", "688afd0e", "f1851b5c"]
+                }
+            ]
+        }
+    }
+]

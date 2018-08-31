@@ -6,30 +6,14 @@
 [![Chrome Web Store](https://developer.chrome.com/webstore/images/ChromeWebStore_BadgeWBorder_v2_206x58.png)](https://chrome.google.com/webstore/detail/zh-downloader/gcknejnpflbcggigdinhahgngfhaomik?utm_source=chrome-ntp-icon)
 
 
-[点击查看 GIF 动图](http://wx1.sinaimg.cn/large/9d8084a3gy1fu78jp21s4g20yl0hy4qz.gif)
+更多介绍/下载信息请访问: [http://zh-downloader.tw](http://zh-downloader.tw)
+
 
 # 使用说明
 
 下载本代码之后执行 `npm install && npm run build` 之后在 `chrome://extensions/` 中选择"加载已解压的扩展程序" 选择 `dist` 目录即可。
 
 或者你可以选择已经打包好的CRX/ZIP格式插件(1.0.3开始不再提供CRX,参见 [#6](https://github.com/shellvon/zh-downloader/issues/6) ),可以前往这里下载:[https://github.com/shellvon/zh-downloader/releases/](https://github.com/shellvon/zh-downloader/releases/)
-
-# 功能特色
-
-+ 所有知乎视频自动采集和嗅探,无需用户干预(Badge上实时显示已采集的视频数量))
-+ 视频信息(ID/视频原地址/封面图/大小/时长/名称/格式)等多规格一览无余,支持复制地址至其他平台下载
-+ 多清晰度/多种格式提供下载
-+ 支持自定义偏好设置,比如您可以自己设置用于转化MP4的转化器是什么,偏爱的默认格式是什么
-+ 实时友好展示下载/转化进度
-+ 自动清理超过一定历史的视频文件
-+ 可使用二维码分享视频
-+ UI 不算太差
-+ 纯前端Javascript实现
-+ 最新采集的永远放在最前面
-+ 自动重试机制(默认3次,每次重试间隔时间为5秒)
-+ 精选视频推荐
-+ 我编不下去了...
-
 
 # 技术
 
@@ -77,73 +61,11 @@
 - [x] 用户可自定义设置
 - [x] 已下载视频增加打开功能
 - [x] 自动删除采集超过一定时间的视频(时间/策略?)
-- [ ] 用户忽略某些条件的视频采集(如大小/清晰度/作者/视频名)?
+- [ ] ~~用户忽略某些条件的视频采集(如大小/清晰度/作者/视频名)?~~ (似乎没什么用,此功能不打算实现)
 - [x] ~~直接搜索知乎视频(不知道有API没有)~~ 知乎推荐视频(无法搜索)
 - [x] 修复导出 MP4 格式的问题,无论是 `mux.js` 还是 `mpegts_to_mp4`，任一即可
 - [x] 发布至 Google Chrome 商店[Install from Google Chrome Store](https://chrome.google.com/webstore/detail/zh-downloader/gcknejnpflbcggigdinhahgngfhaomik?utm_source=chrome-ntp-icon)
 
-# Change Logs:
+# Change Logs
 
-#### 2018-08-22
- - [A] 发布 1.0.7
- - [U] 分享功能优化,支持二维码/链接🔗/新浪微博 [9d485b6b](https://github.com/shellvon/zh-downloader/commit/9d485b6bd2b45dda4be8ff702d9c9740e5de3dff)
-
-#### 2018-08-22
- - [A] 发布 1.0.6
- - [A] 增加二维码分享功能 [d00d008c](https://github.com/shellvon/zh-downloader/commit/d00d008c1af0b4752f03f7eee21d8067a3795ece)
- - [U] 优化推荐功能 [#9](https://github.com/shellvon/zh-downloader/issues/9)
-
-#### 2018-08-21
- - [A] 发布1.0.5版本
- - [U] 视频列表从滚动改为分页,提高响应速度 [#7](https://github.com/shellvon/zh-downloader/issues/7)
- - [U] 优化推荐页界面,统一卡片 [#8](https://github.com/shellvon/zh-downloader/issues/8)
-
-#### 2018-08-16
- - [F] 修复下载MP4时提示不支持MP4格式的BUG [#5](https://github.com/shellvon/zh-downloader/issues/5)
- - [U] 发布仅提供ZIP格式, 参见 [#6](https://github.com/shellvon/zh-downloader/issues/6)
-
-#### 2018-08-14
- - [A] 发布1.0.3至Chrome商店
- - [F] 修复  `mpegts_to_mp4` 导出时长宽数据不对 [#4](https://github.com/shellvon/zh-downloader/issues/4)
- - [U] 优化Components的export机制
-
-#### 2018-08-13
- - [F] 优化版本号展示 [#3](https://github.com/shellvon/zh-downloader/issues/3)
- - [F] 更新 [MitsuhaKitsune/vuex-webextensions](https://github.com/MitsuhaKitsune/vuex-webextensions), See [MitsuhaKitsune/vuex-webextensions#7](https://github.com/MitsuhaKitsune/vuex-webextensions/issues/7)
- - [F] 未登录知乎时异常 [#2](https://github.com/shellvon/zh-downloader/issues/2)
- - [U] 调整部分文案,增加商店评价链接, 发布 1.0.2
- - [U] 发布版本 1.0.1
- - [U] 性能优化: 切换为动态组件 [#1](https://github.com/shellvon/zh-downloader/issues/1)
-
-#### 2018-08-12
- - [A] 增加推荐视频,支持从将推荐视频加入采集队列 [aa068288](https://github.com/shellvon/zh-downloader/commit/aa068288446e57ce0c749ae9d6fb4a634cf00d9e)
-
-#### 2018-08-11
- - [A] 增加M3u8复制功能以及查看采集时间/分辨率功能 [01479b38](https://github.com/shellvon/zh-downloader/commit/01479b3841908e97d08d74479a0fa6bf5e572663)
- - [U] 调整UI宽度为640px [01479b38](https://github.com/shellvon/zh-downloader/commit/01479b3841908e97d08d74479a0fa6bf5e572663)
-
-#### 2018-08-10
- - [A] 自动删除采集超过一定时间的视频,用户可在设置页面自行设置 [dd39c90b](https://github.com/shellvon/zh-downloader/commit/dd39c90b235866b10999c494febced3a1ddee5dc)
- - [U] 优化下载信息的存储结构,进一步提供代码可读性 [65993b5a](https://github.com/shellvon/zh-downloader/commit/65993b5a1eaeb38bce1a2b5cd0f6a536c3f5db6c)
- - [U] 更新文档,增加 ChangeLogs 栏
-
-#### 2018-08-09
- - [A] 增加查看已下载视频功能 [b9753a95](https://github.com/shellvon/zh-downloader/commit/b9753a9536b89e6b331c05f3dc3766d3619281ab)
- - [U] 重构拆分组件/CSS以及发布CRX
-
-#### 2018-08-08
- - [A] 增加设置面板,可自行设置偏好的格式/清晰度 [f1851b5c](https://github.com/shellvon/zh-downloader/commit/f1851b5c3c42437f55858c16661395dff585112e)
- - [U] 下载详细进度,修改代码风格 [f1851b5c](https://github.com/shellvon/zh-downloader/commit/f1851b5c3c42437f55858c16661395dff585112e)
-
-#### 2018-08-07
- - [A] 视频按照采集时间排序 [688afd0e](https://github.com/shellvon/zh-downloader/commit/688afd0e0b5ff39ca4e34f03c11a899944fd2332)
- - [F] 修改文档错别字 [22d0bc8a](https://github.com/shellvon/zh-downloader/commit/22d0bc8a06167391e571b3ce39a02ee62d04078e)
-
-
-#### 2018-08-06
- - [A] 增加下载时文案提示 [c5bfc568](https://github.com/shellvon/zh-downloader/commit/c5bfc568d308701cf36ca4c0a01f5ad46c9b0c12)
- - [F] 修复`mpegts_to_mp4`不存在以及进度条不更新的BUG [c5bfc568](https://github.com/shellvon/zh-downloader/commit/c5bfc568d308701cf36ca4c0a01f5ad46c9b0c12)
- - [U] 更新文档
-
-#### 2018-08-05
- - [A] 初版代码发布,支持采集视频和下载视频 [3b99a2d7](https://github.com/shellvon/zh-downloader/commit/3b99a2d7d8fef4dc6ea26a432ebbc960ae36aa95)
+关于本项目的 Change Logs 您可以访问 http://zh-downloader.tw/#change-logs 查看详情 或者可以查看 `docs/changelog.json` 文件。

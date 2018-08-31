@@ -161,9 +161,28 @@
         margin-top: 3px;
     }
 
+    #change-logs .heading .download-btn-group a {
+        padding: 4px 10px;
+        border-radius: 4px;
+        text-align: center;
+        display: inline-block;
+        font-size: 12px;
+        margin-bottom: 15px;
+        margin-top: 10px;
+        border: 1px solid #fff;
+    }
+
+    #change-logs .heading .download-btn-group .icon {
+        padding-right: 4px;
+    }
+
     #change-logs .version ul {
         padding-left: 20px;
         margin-bottom: 0;
+    }
+
+    #change-logs .version ul li a {
+        padding: 0 5px;
     }
 
     .tag {
@@ -175,6 +194,10 @@
         margin-bottom: 15px;
         margin-top: 10px;
         border: 1px solid #fff;
+    }
+
+    .tag strong {
+        text-transform: uppercase;
     }
 
     .tag.new {
@@ -216,6 +239,7 @@
                 </button>
             </div>
             <div class="collapse navbar-collapse" id="navcol-1">
+                <a class="btn btn-primary navbar-btn navbar-right" target="_blank" role="button" href="https://chrome.google.com/webstore/detail/zh-downloader/gcknejnpflbcggigdinhahgngfhaomik?utm_source=chrome-ntp-icon">下载插件</a>
                 <ul id="menu" class="nav navbar-nav navbar-right">
                     <li role="presentation">
                         <a href="#header">主页</a>
@@ -266,7 +290,7 @@
                     </div>
                     <div class="swiper-slide">
                         <div class="slide-content windowed">
-                            <img src="/assets/screenshot/screenshot_b.jpg" alt="采集截图">
+                            <img src="/assets/screenshot/screenshot_c.jpg" alt="采集截图">
                         </div>
                     </div>
                 </div>
@@ -358,164 +382,59 @@
             <h2 class="text-center">
                 变更日志</h2>
             <p class="lead text-center">zh-downloader 一直保持着更新迭代,以保证此应用的稳定. 以下是版本变更历史</p>
-            <div class="version">
-                <div class="heading">
-                    <strong>Version 1.0.7</strong>
-                    <span class="date"> 2018.8.22</span>
-                </div>
-                <div class="notes">
-                    <div class="tag update">
-                        <strong>UPDATE</strong>
-                    </div>
-                    <ul>
-                        <li>分享功能优化,支持二维码,链接🔗 新浪微博
-                            <a href="https://github.com/shellvon/zh-downloader/commit/9d485b6bd2b45dda4be8ff702d9c9740e5de3dff">9d485b6b</a>
-                        </li>
-                    </ul>
-                </div>
-            </div>
-            <div class="version">
-                <div class="heading">
-                    <strong>Version 1.0.6</strong>
-                    <span class="date"> 2018.8.22</span>
-                </div>
-                <div class="notes">
-                    <div class="tag new">
-                        <strong>NEW</strong>
-                    </div>
-                    <ul>
-                        <li>新增分享功能</li>
-                    </ul>
-                    <div class="tag fixed">
-                        <strong>FIXED</strong>
-                    </div>
-                    <ul>
-                        <li>优化推荐功能
-                            <a href="https://github.com/shellvon/zh-downloader/issues/9">#9</a>
-                        </li>
-                    </ul>
-                </div>
-            </div>
-
-            <div class="version">
-                <div class="heading">
-                    <strong>Version 1.0.5</strong>
-                    <span class="date"> 2018.8.21</span>
-                </div>
-                <div class="notes">
-                    <div class="tag update">
-                        <strong>UPDATE</strong>
-                    </div>
-                    <ul>
-                        <li>视频页修改为分页
-                            <a href="https://github.com/shellvon/zh-downloader/issues/7">#7</a>
-                        </li>
-                        <li>优化推荐页卡片功能
-                            <a href="https://github.com/shellvon/zh-downloader/issues/8">#8</a>
-                        </li>
-                    </ul>
-                </div>
-            </div>
-
-            <div class="version">
-                <div class="heading">
-                    <strong>Version 1.0.4</strong>
-                    <span class="date"> 2018.8.16</span>
-                </div>
-                <div class="notes">
-                    <div class="tag fixed">
-                        <strong>FIXED</strong>
-                    </div>
-                    <ul>
-                        <li>修复下载MP4提示不存在的问题
-                            <a href="https://github.com/shellvon/zh-downloader/issues/5">#5</a>
-                        </li>
-                    </ul>
-                </div>
-            </div>
-
-            <div class="version">
-                <div class="heading">
-                    <strong>Version 1.0.3</strong>
-                    <span class="date"> 2018.8.14</span>
-                </div>
-                <div class="notes">
-                    <div class="tag update">
-                        <strong>UPDATE</strong>
-                    </div>
-                    <ul>
-                        <li>优化Components的export机制</li>
-                    </ul>
-                    <div class="tag fixed">
-                        <strong>FIXED</strong>
-                    </div>
-                    <ul>
-                        <li>修复mpegts_to_mp4下载的视频长宽比例不正确
-                            <a href="https://github.com/shellvon/zh-downloader/issues/4">#4</a>
-                        </li>
-                    </ul>
-                </div>
-            </div>
-            <div class="version">
-                <div class="heading">
-                    <strong>Version 1.0.2</strong>
-                    <span class="date"> 2018.8.13</span>
-                </div>
-                <div class="notes">
-                    <div class="tag update">
-                        <strong>UPDATE</strong>
-                    </div>
-                    <ul>
-                        <li>调整部分文案,增加商店评价链接</li>
-                        <li>优化版本号展示</li>
-                    </ul>
-                </div>
-            </div>
-            <div class="version">
-                <div class="heading">
-                    <strong>Version 1.0.1</strong>
-                    <span class="date"> 2018.8.13</span>
-                </div>
-                <div class="notes">
-                    <div class="tag update">
-                        <strong>UPDATE</strong>
-                    </div>
-                    <ul>
-                        <li>性能优化: 切换为动态组件
-                            <a href="https://github.com/shellvon/zh-downloader/issues/1">#1</a>
-                        </li>
-                        <li>优化版本号展示</li>
-                    </ul>
-                </div>
-            </div>
-
-            <div class="version">
-                <div class="heading">
-                    <strong>Version 1.0.0</strong>
-                    <span class="date"> 2018.8.5</span>
-                </div>
-                <div class="notes">
-                    <div class="tag new">
-                        <strong>NEW</strong>
-                    </div>
-                    <ul>
-                        <li>初版代码发布,支持采集视频和下载视频
-                            <a href="https://github.com/shellvon/zh-downloader/commit/3b99a2d7d8fef4dc6ea26a432ebbc960ae36aa95">3b99a2d7</a>
-                        </li>
-                        <li>增加文档/增加设置按钮</li>
-                    </ul>
-                </div>
-            </div>
-
+            <!--😊-->
         </div>
     </div>
+
     <footer>
-        <h3>都看完了,不来
+        <h3>官网都看完了,不来
             <a href="https://chrome.google.com/webstore/detail/zh-downloader/gcknejnpflbcggigdinhahgngfhaomik?utm_source=chrome-ntp-icon">试一试</a>?</h3>
         <p class="copyright">Copyright © 2018
-            <a href="https://chrome.google.com/webstore/detail/zh-downloader/gcknejnpflbcggigdinhahgngfhaomik?utm_source=chrome-ntp-icon"
-                target="_blank">Zh-downloader</a> 知乎视频下载器</p>
+            <a href="https://github.com/shellvon/zh-downloader" target="_blank">Zh-downloader</a> 知乎视频下载器</p>
     </footer>
+
+
+    <script id="template-change-log" type="text/template">
+        <%for(var i=0, l=this.data.length; i < l; i++) {
+            var currentVersion = this.data[i];
+            var logs = currentVersion.logs;
+            %>
+            <div class="version">
+                <div class="heading">
+                    <strong>
+                        Version <%currentVersion.version%>
+                    </strong>
+                    <span class="date">
+                        <%currentVersion.date%>
+                    </span>
+                    <div class="download-btn-group">
+                        <%if (currentVersion.crx) {%>
+                            <a class="btn btn-primary" href="<%currentVersion.crx%>">
+                                <i class="icon icon-pin"></i>CRX</a>
+                        <%} if (currentVersion.zip) {%>
+                            <a class="btn btn-success" href="<%currentVersion.zip%>">
+                                <i class="icon icon-paper-clip"></i>ZIP</a>
+                        <%}%>
+                    </div>
+                </div>
+                <div class="notes">
+                    <% for (var type in logs) {
+                        var items = logs[type];
+                    %>
+                        <div class="tag <%type%>">
+                            <strong><%type%></strong>
+                        </div>
+                        <ul><%for(var idx in items) {
+                                var text = items[idx].text;
+                                var links = (items[idx].links || []).join(',');
+                            %><li><%text + links%></li>
+                            <%}%>
+                        </ul>
+                    <%}%>
+                </div>
+            </div>
+            <%}%>
+    </script>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script>
@@ -525,11 +444,89 @@
         // http://idangero.us/swiper/get-started/
 
         var mySwiper = new Swiper('.swiper-container', {
+            loop: true,
             pagination: ".swiper-pagination",
             paginationClickable: true,
             nextButton: '.swiper-button-next',
             prevButton: '.swiper-button-prev'
-        })
+        });
+
+        // 简单的JS模版引擎.
+        // see => http://krasimirtsonev.com/blog/article/Javascript-template-engine-in-just-20-line
+        var simpleTemplateEngine = function (html, options) {
+            var re = /<%([^%>]+)?%>/g,
+                reExp = /(^( )?(var|if|for|else|switch|case|break|{|}))(.*)?/g,
+                code = 'var r=[];\n',
+                cursor = 0,
+                match;
+            var add = function (line, js) {
+                js ? (code += line.match(reExp) ? line + '\n' : 'r.push(' + line + ');\n') :
+                    (code += line != '' ? 'r.push("' + line.replace(/"/g, '\\"') + '");\n' : '');
+                return add;
+            }
+            while (match = re.exec(html)) {
+                add(html.slice(cursor, match.index))(match[1], true);
+                cursor = match.index + match[0].length;
+            }
+            add(html.substr(cursor, html.length - cursor));
+            code += 'return r.join("");';
+            return new Function(code.replace(/[\r\t\n]/g, '')).apply(options);
+        }
+
+        // 根据用户输入生成链接
+        // 格式:
+        //  a. commit-hash-id or #commit-hash-id or user/project#commit-hash-id
+        //  b. issue-id or #issue-id or user/project#issue-id
+        //  c. https://xx or http://xx 
+        // 其他格式一律返回空null.
+        var makeHref = function (input) {
+            githubCommitOrIssuesRegex = /^(?:([^#]*)#)?(\d+|[a-z\d]{8,})$/
+            result = githubCommitOrIssuesRegex.exec(input)
+            if (/^https?:\/\//.test(input)) {
+                href = input
+                text = input
+            } else if (result) {
+                project = result[1] || 'shellvon/zh-downloader'
+                commitOrIssues = result[2]
+                type = commitOrIssues.match(/^\d+$/) ? 'issuses' : 'commit'
+                href = 'https://github.com/' + project + '/' + type + '/' + commitOrIssues;
+                // 如果类型是issuses并且没有指定用用户,则需要加上#在前面
+                text = (type === 'issuses' && !result[1]) ? '#' + commitOrIssues : input;
+            } else {
+                console.error('invalid input to make href:', input)
+                return;
+            }
+            return '<a href="{href}">{text}</a>'.replace('{href}', href).replace('{text}', text);
+
+        }
+        
+        $(document).ready(function () {
+            $.ajax({
+                url: '/changelog.json',
+                dataType: 'json'
+            }).done(function (data) {
+                var parsedData = data.map(function (el) {
+                    var logs = el.logs;
+                    for (var type in logs) {
+                        if (!logs[type] || logs[type].length === 0) {
+                            delete el.logs[type]
+                            continue;
+                        }
+                        details = logs[type]
+                        details.map(function (el) {
+                            el.links = (el.issues || []).map(makeHref).concat((el.commit ||
+                                []).map(makeHref));
+                        });
+                        el.logs[type] = details
+                    }
+                    return el;
+                });
+                var html = simpleTemplateEngine($('#template-change-log').html(), {
+                    data: parsedData
+                })
+                $('#change-logs').append(html);
+            });
+        });
     </script>
 </body>
 
