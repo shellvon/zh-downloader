@@ -488,10 +488,10 @@
             } else if (result) {
                 project = result[1] || 'shellvon/zh-downloader'
                 commitOrIssues = result[2]
-                type = commitOrIssues.match(/^\d+$/) ? 'issuses' : 'commit'
+                type = commitOrIssues.match(/^\d+$/) ? 'issues' : 'commit'
                 href = 'https://github.com/' + project + '/' + type + '/' + commitOrIssues;
-                // 如果类型是issuses并且没有指定用用户,则需要加上#在前面
-                text = (type === 'issuses' && !result[1]) ? '#' + commitOrIssues : input;
+                // 如果类型是issues并且没有指定用用户,则需要加上#在前面
+                text = (type === 'issues' && !result[1]) ? '#' + commitOrIssues : input;
             } else {
                 console.error('invalid input to make href:', input)
                 return;
