@@ -40,3 +40,5 @@ export const getDownloadInfoByVideoItemInfo = state => {
  * @param {object} state
  */
 export const customSettings = state => state.customSettings || {};
+
+export const latestTab = state => state.latestTab;

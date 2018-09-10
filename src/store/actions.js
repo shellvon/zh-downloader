@@ -38,3 +38,7 @@ export const updateSettings = ({ commit, state }, payload) => {
   }
   commit(types.UPDATE_SETTINGS, newSettings);
 };
+
+export const updateLatestTab = ({ commit }, payload) => {
+  commit(types.UPDATE_LATEST_TAB, payload);
+};

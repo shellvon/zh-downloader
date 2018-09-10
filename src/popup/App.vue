@@ -1,6 +1,6 @@
 <template>
-  <el-tabs v-model="activeName">
-    <el-tab-pane v-for="(item, key) in tabs" :label="item.label" :key="key" :name="item.name">
+  <el-tabs v-model="latestTab">
+    <el-tab-pane v-for="(item, key) in showTabs" :label="item.label" :key="key" :name="item.name">
     </el-tab-pane>
     <keep-alive>
       <component :ref="currentTabCompoent.name" :is="currentTabCompoent.name" v-on="currentTabCompoent.event" v-bind="currentTabCompoent.props"></component>
@@ -26,7 +26,7 @@ import { startDownloadVideo, deleteVideo, collectVideo } from '../actions';
 
 import { version } from '../../package.json';
 
-import { Playlist, Settings, About, Recommend } from '../components';
+import { Playlist, Settings, About, Recommend, Sniffer } from '../components';
 
 export default {
   components: {
@@ -34,6 +34,7 @@ export default {
     Settings,
     About,
     Recommend,
+    Sniffer,
   },
   data() {
     const qualityMap = {
@@ -41,10 +42,7 @@ export default {
       sd: '标清',
       ld: '普清',
     };
-
     return {
-      activeName: 'playlist',
-
       port: chrome.runtime.connect({
         name: PORT_NAME,
       }),
@@ -60,6 +58,15 @@ export default {
           props: {
             qualityMap,
           },
+        },
+        {
+          label: '高级嗅探',
+          name: 'sniffer',
+          show: this.$store.getters.customSettings.advancedSniffer,
+          event: {
+            copy: this.onCopyText,
+          },
+          props: {},
         },
         {
           label: '推荐',
@@ -91,12 +98,26 @@ export default {
   },
 
   computed: {
+    showTabs() {
+      this.tabs[1].show = !!this.$store.getters.customSettings.advancedSniffer;
+      return this.tabs.filter(el => {
+        return el.show !== false;
+      });
+    },
     currentTabCompoent() {
       let self = this;
       let selectedTabIndex = this.tabs.findIndex(el => {
-        return el.name === self.activeName;
+        return el.name === self.$store.getters.latestTab;
       });
       return self.tabs[selectedTabIndex] || self.tabs[0];
+    },
+    latestTab: {
+      get() {
+        return this.$store.getters.latestTab;
+      },
+      set(val) {
+        this.$store.dispatch('updateLatestTab', val);
+      },
     },
   },
   mounted() {
@@ -127,6 +148,9 @@ export default {
     });
   },
   methods: {
+    handleTabClick({ tabName }, event) {
+      this.$store.dispatch('updateLatestTab', tabName);
+    },
     onCopyText(text) {
       let self = this;
       navigator.clipboard

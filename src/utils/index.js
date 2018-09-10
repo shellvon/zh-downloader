@@ -214,8 +214,13 @@ export async function downloadSegments(baseUri, segments, format = DEFAULT_VIDEO
 }
 
 // 更新Badge的文字
-export const refreshBadgeText = text => {
-  chrome.browserAction.setBadgeText({ text: '' + (text || '') });
+export const refreshBadgeText = (text, color = 'red', tabId = undefined) => {
+  text = (text || '') + '';
+  chrome.browserAction.setBadgeText({ text, tabId });
+  chrome.browserAction.setBadgeBackgroundColor({
+    color,
+    tabId,
+  });
 };
 
 /**
@@ -262,3 +267,52 @@ export async function fetchNewVideoById(videoId, preferedFormat = DEFAULT_VIDEO_
       };
     });
 }
+
+export const getFilenameFromDisposition = disposition => {
+  if (!disposition) {
+    return;
+  }
+  let macthed = disposition.match(/filename="(.*?)"/);
+  if (macthed && macthed[1]) {
+    let filename = decodeURIComponent(macthed[1]);
+    return filename;
+  }
+};
+
+export const getSnifferResultFromHeaders = (headers, snifferRules) => {
+  const findByKey = (key, defaultValue = null, caseSensitive = false) => {
+    let cb = el => el.name.toLowerCase() === key.toLowerCase();
+    if (caseSensitive) {
+      cb = el => el.name === key;
+    }
+    let index = headers.findIndex(cb);
+    return index < 0 ? defaultValue : headers[index].value;
+  };
+
+  let contentType = findByKey('content-type');
+
+  let cfg = snifferRules[contentType];
+
+  // 没有开启此类型嗅探
+  const isEnable = cfg && cfg.enable !== false;
+  if (!isEnable) {
+    return;
+  }
+  let contentLength = findByKey('content-length');
+
+  // 如果指定了最小文件大小(单位Kb)
+  if (cfg.minSize && cfg.minSize * 1024 > contentLength) {
+    return;
+  }
+
+  let contentRange = findByKey('content-range');
+
+  let contentDisposition = findByKey('content-disposition');
+
+  return {
+    filename: getFilenameFromDisposition(contentDisposition),
+    size: contentLength,
+    range: contentRange,
+    mimetype: contentType,
+  };
+};

@@ -60,3 +60,13 @@ export const ACTION_ERROR_OCCURRED = 'ACTION_ERROR_OCCURRED';
 
 // 采集视频
 export const COLLECT_VIDEO = 'COLLECT_VIDEO';
+
+export const SNIFFER_TYPE_ZHIHU = 'zhihuSniffer';
+export const SNIFFER_TYPE_ADVANCED = 'advanceSniffer';
+
+// 高级嗅探默认配置
+export const DEFAULT_ADVANCED_SNIFFER_CONFIG = {
+  'video/mp4': { minSize: 0 },
+  'audio/mpeg': { minSize: 1024 },
+  excludes: [], // 排除站点
+};

@@ -269,6 +269,9 @@ export default {
      * @param {object} videoInfo 需要删除的视频信息
      */
     handleDeleteVideo(videoInfo) {
+      if (this.playlist.length === 1 && this.currentPage > 1) {
+        this.currentPage -= 1;
+      }
       this.$store.dispatch('deleteVideo', videoInfo);
       this.$message({
         showClose: true,

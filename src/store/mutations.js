@@ -70,4 +70,11 @@ export default {
   [types.UPDATE_SETTINGS](state, newSettings) {
     state.customSettings = newSettings;
   },
+
+  /**
+   * 最近最新的Tab页
+   */
+  [types.UPDATE_LATEST_TAB](state, latestTab) {
+    state.latestTab = latestTab;
+  },
 };
