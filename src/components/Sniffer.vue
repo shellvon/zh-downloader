@@ -4,7 +4,7 @@
         </el-table-column>
         <el-table-column prop="host" label="预览">
             <template slot-scope="scope">
-                <video width="100%" autoplay controls :src="scope.row.url" v-if="scope.row.mimetype.match(/video/)"></video>
+                <video width="100%" controls :src="scope.row.url" v-if="scope.row.mimetype.match(/video/)"></video>
                 <audio :style="{width: '50px'}" controls :src="scope.row.url" v-else-if="scope.row.mimetype.match(/audio/)"></audio>
                 <img class="thumbnail" :src="scope.row.url" v-else-if="scope.row.mimetype.match(/image/)"/>
                 <span v-else>暂不支持此格式预览</span>

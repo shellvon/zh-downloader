@@ -108,10 +108,6 @@ label {
   text-align: right;
 }
 
-label.el-checkbox {
-  width: auto;
-}
-
 .el-textarea {
   width: 50%;
 }

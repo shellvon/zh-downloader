@@ -62,7 +62,7 @@ export default {
         {
           label: '高级嗅探',
           name: 'sniffer',
-          show: this.$store.getters.customSettings.advancedSniffer,
+          show: false,
           event: {
             copy: this.onCopyText,
           },
@@ -148,9 +148,6 @@ export default {
     });
   },
   methods: {
-    handleTabClick({ tabName }, event) {
-      this.$store.dispatch('updateLatestTab', tabName);
-    },
     onCopyText(text) {
       let self = this;
       navigator.clipboard
