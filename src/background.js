@@ -253,7 +253,7 @@ chrome.webRequest.onResponseStarted.addListener(
     const { url: requestUrl, type: requestType, responseHeaders: headers } = details;
 
     chrome.tabs.get(tabId, function(info) {
-      if (!info) {
+      if (chrome.runtime.lastError || !info) {
         return;
       }
       const originUrl = info.url;
@@ -280,7 +280,6 @@ chrome.tabs.onUpdated.addListener(function(tabId, changeInfo) {
   if (changeInfo.status !== 'loading' || tabId < 0) {
     return;
   }
-  window.snifferObj[tabId] = [];
   onResourceSizeChange(tabId);
 });
 

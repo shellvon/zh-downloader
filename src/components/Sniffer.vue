@@ -52,7 +52,6 @@ export default {
       });
     },
     handleDelete(index) {
-      index = this.snifferLst.length - index - 1;
       this.snifferLst.splice(index, 1);
       this.$message({
         showClose: true,
