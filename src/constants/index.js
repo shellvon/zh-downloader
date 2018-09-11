@@ -68,5 +68,6 @@ export const SNIFFER_TYPE_ADVANCED = 'advanceSniffer';
 export const DEFAULT_ADVANCED_SNIFFER_CONFIG = {
   'video/mp4': { minSize: 0 },
   'audio/mpeg': { minSize: 1024 },
-  excludes: [], // 排除站点
+  excludes: ['zhihu.com'], // 排除站点
+  includes: ['https?://.*\\.m3u8'], // 匹配的请求地址
 };

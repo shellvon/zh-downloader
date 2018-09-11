@@ -65,6 +65,7 @@ export default {
           show: false,
           event: {
             copy: this.onCopyText,
+            delete: this.onDeletedVideo,
           },
           props: {},
         },
@@ -99,8 +100,10 @@ export default {
 
   computed: {
     showTabs() {
-      this.tabs[1].show = !!this.$store.getters.customSettings.advancedSniffer;
-      return this.tabs.filter(el => {
+      // Avoid Unexpected side effect in computed property
+      let tabs = this.tabs;
+      tabs[1].show = !!this.$store.getters.customSettings.advancedSniffer;
+      return tabs.filter(el => {
         return el.show !== false;
       });
     },

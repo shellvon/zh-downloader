@@ -279,40 +279,72 @@ export const getFilenameFromDisposition = disposition => {
   }
 };
 
-export const getSnifferResultFromHeaders = (headers, snifferRules) => {
-  const findByKey = (key, defaultValue = null, caseSensitive = false) => {
-    let cb = el => el.name.toLowerCase() === key.toLowerCase();
-    if (caseSensitive) {
-      cb = el => el.name === key;
+export const getHost = url => {
+  let a = document.createElement('a');
+  a.href = url;
+  return a;
+};
+
+export const getHeaderValue = (headers, key, defaultValue = null, caseSensitive = false) => {
+  let cb = el => el.name.toLowerCase() === key.toLowerCase();
+  if (caseSensitive) {
+    cb = el => el.name === key;
+  }
+  let index = headers.findIndex(cb);
+  return index < 0 ? defaultValue : headers[index].value;
+};
+
+/**
+ *  根据嗅探规则进行数据嗅探.
+ *
+ * @param {stirng} originUrl      请求发起的来源站点
+ * @param {stirng} requestUrl     请求地址
+ * @param {string} requestType    请求类型, See https://developer.chrome.com/extensions/webRequest#type-ResourceType
+ * @param {array}  headers        请求响应头, See https://developer.chrome.com/extensions/webRequest#type-HttpHeaders
+ * @param {object} snifferRuleCfg 请求嗅探配置 See https://developer.chrome.com/extensions/webRequest#type-HttpHeaders
+ */
+export const snifferByRules = (originUrl, requestUrl, requestType, headers, snifferRuleCfg) => {
+  let includesUrlPatterns = snifferRuleCfg.includes || [];
+  let excludesUrlPatterns = snifferRuleCfg.excludes || [];
+
+  const getRegex = (pattern, flags = 'i') => {
+    try {
+      return new RegExp(pattern, flags);
+    } catch (error) {
+      return new RegExp('a^', flags);
     }
-    let index = headers.findIndex(cb);
-    return index < 0 ? defaultValue : headers[index].value;
   };
 
-  let contentType = findByKey('content-type');
-
-  let cfg = snifferRules[contentType];
-
-  // 没有开启此类型嗅探
-  const isEnable = cfg && cfg.enable !== false;
-  if (!isEnable) {
-    return;
-  }
-  let contentLength = findByKey('content-length');
-
-  // 如果指定了最小文件大小(单位Kb)
-  if (cfg.minSize && cfg.minSize * 1024 > contentLength) {
+  // Step 1. 判断此站点是否被排除了
+  let isExclude = excludesUrlPatterns && excludesUrlPatterns.some(el => originUrl && originUrl.match(getRegex(el)));
+  if (isExclude) {
     return;
   }
 
-  let contentRange = findByKey('content-range');
+  // Step 2. 判断是否指定了必须要采集的视频URL规则
+  let isHit = includesUrlPatterns && includesUrlPatterns.some(el => requestUrl.match(getRegex(el)));
 
-  let contentDisposition = findByKey('content-disposition');
+  const mimeType = getHeaderValue(headers, 'content-type');
+  const contentSize = getHeaderValue(headers, 'content-length', 0);
+  const filename = getFilenameFromDisposition(getHeaderValue(headers, 'content-disposition'));
+  // Step 3. 如果没有命中,尝试是否制定了对应的MimeType规则
+  if (!isHit) {
+    const mimeTypeCfg = snifferRuleCfg[mimeType];
+    const isEnable = mimeTypeCfg && mimeTypeCfg.enable !== false;
+    if (!isEnable) {
+      return;
+    }
+    if (mimeTypeCfg.minSize && mimeTypeCfg.minSize * 1024 > contentSize) {
+      return;
+    }
+  }
 
   return {
-    filename: getFilenameFromDisposition(contentDisposition),
-    size: contentLength,
-    range: contentRange,
-    mimetype: contentType,
+    host: getHost(originUrl).hostname,
+    url: requestUrl,
+    type: requestType,
+    filename: filename,
+    size: contentSize,
+    mimetype: mimeType,
   };
 };

@@ -1,4 +1,4 @@
-import { downloadSegments, fetchNewVideoById, refreshBadgeText, parseM3u8File, getSnifferResultFromHeaders } from './utils';
+import { downloadSegments, fetchNewVideoById, refreshBadgeText, parseM3u8File, snifferByRules } from './utils';
 
 import * as types from './constants';
 
@@ -13,21 +13,36 @@ import {
 import { ADD_OR_UPDATE_VIDEO, ADD_OR_UPDATE_DOWNLOAD_INFO } from './store/mutation-types';
 
 /**
- * @param {*} type
- * @param {*} tabId
+ * 当列表资源变更时触发的回调函数,用于更新BadgeText以及颜色.
+ *
+ * @param {number} tabId 需要修改的Tab,如果为空则自动获取当前Tab.
+ * @param {string} resourceType 资源类型,有知乎视频和高级嗅探两种,保留字段.
  */
-let onResourceSizeChange = (type = types.SNIFFER_TYPE_ZHIHU, tabId = undefined) => {
-  if (type === types.SNIFFER_TYPE_ZHIHU) {
-    refreshBadgeText(store.state.playlist.length, 'red');
-    if (store.getters.latestTab === 'sniffer') {
-      store.dispatch('updateLatestTab', 'playlist');
-    }
-  } else if (type === types.SNIFFER_TYPE_ADVANCED) {
+const onResourceSizeChange = (tabId = undefined, resourceType = null) => {
+  const updateCallback = () => {
     let snifferLst = window.snifferObj[tabId] || [];
-    refreshBadgeText(snifferLst.length, 'blue', tabId);
-    if (store.getters.latestTab === 'playlist') {
-      store.dispatch('updateLatestTab', 'sniffer');
+    let count = snifferLst.length;
+    let color = 'blue';
+    let latestTab = store.getters.latestTab;
+    if (count === 0) {
+      latestTab = (latestTab === 'sniffer' && 'playlist') || latestTab;
+      count = store.getters.playlist.length;
+      color = 'red';
     }
+    refreshBadgeText(count, color, tabId);
+    store.dispatch('updateLatestTab', latestTab);
+  };
+
+  if (tabId === undefined) {
+    chrome.tabs.query({ active: true, currentWindow: true }, tabs => {
+      if (!tabs) {
+        return;
+      }
+      tabId = tabs[0].id;
+      updateCallback();
+    });
+  } else {
+    updateCallback();
   }
 };
 
@@ -43,7 +58,7 @@ chrome.webRequest.onBeforeRequest.addListener(
     fetchNewVideoById(videoId, preferedFormat, preferedQuality)
       .then(videoInfo => {
         store.commit(ADD_OR_UPDATE_VIDEO, videoInfo);
-        onResourceSizeChange(types.SNIFFER_TYPE_ZHIHU);
+        onResourceSizeChange(details.tabId);
       })
       .catch(error => {
         console.error(error);
@@ -152,15 +167,15 @@ chrome.extension.onConnect.addListener(function(port) {
 
       // 删除视频,更新一下当前的Badge
       case types.DELETED_VIDEO:
-        onResourceSizeChange(types.SNIFFER_TYPE_ZHIHU);
+        onResourceSizeChange();
         break;
 
       // 前端消息: 采集视频
       case types.COLLECT_VIDEO:
         fetchNewVideoById(payload.videoId, payload.preferedFormat || types.DEFAULT_VIDEO_FORMAT, payload.preferedQuality || types.DEFAULT_VIDEO_QUALITY)
-          .then(videoInfo => {
+          .then(async videoInfo => {
             store.commit(ADD_OR_UPDATE_VIDEO, videoInfo);
-            onResourceSizeChange(types.SNIFFER_TYPE_ZHIHU);
+            await onResourceSizeChange();
           })
           .catch(err => {
             safeSendResponse(
@@ -213,19 +228,16 @@ chrome.alarms.onAlarm.addListener(alarm => {
   store.dispatch('deletedExpiredVideo', {
     expiredAt: (store.state.customSettings.expiredAt || types.DEFAULT_EXPIRED_AT) * 6e4,
   });
-  onResourceSizeChange(types.SNIFFER_TYPE_ZHIHU);
+  onResourceSizeChange();
   // 刷新替换之
   chrome.alarms.create(types.ALARM_NAME, getAlarmsConfig());
 });
 
 window.snifferObj = {};
 
-const getHost = url => {
-  let a = document.createElement('a');
-  a.href = url;
-  return a;
-};
-
+/**
+ * 当响应返回给浏览器时触发的回调函数,用于高级嗅探, See https://github.com/shellvon/zh-downloader/issues/11
+ */
 chrome.webRequest.onResponseStarted.addListener(
   async details => {
     const tabId = details.tabId;
@@ -233,41 +245,30 @@ chrome.webRequest.onResponseStarted.addListener(
       return;
     }
     const customSettings = store.getters.customSettings;
-    const type = details.type;
     if (!customSettings.advancedSniffer) {
       // 站点并未开启高级嗅探
       return;
     }
     const advancedSnifferCfg = customSettings.advancedSnifferConfig || types.DEFAULT_ADVANCED_SNIFFER_CONFIG;
-    let snifferReuslt = getSnifferResultFromHeaders(details.responseHeaders, advancedSnifferCfg);
-    // 如果没有返回则没有嗅探到或者已经匹配规则
-    if (!snifferReuslt) {
-      return;
-    }
+    const { url: requestUrl, type: requestType, responseHeaders: headers } = details;
 
     chrome.tabs.get(tabId, function(info) {
-      let host = getHost(info.url).hostname;
-      // 如果此站点已经被忽略
-      if (advancedSnifferCfg.excludes.some(el => el === host)) {
+      if (!info) {
         return;
       }
-
-      let item = {
-        type,
-        host,
-        url: details.url,
-        title: info.title,
-        ...snifferReuslt,
-      };
-
+      const originUrl = info.url;
+      let snifferResult = snifferByRules(originUrl, requestUrl, requestType, headers, advancedSnifferCfg);
+      if (!snifferResult) {
+        return;
+      }
+      snifferResult.title = info.title;
       // 获取当前站点的配置
       let currentPageSnifferList = window.snifferObj[tabId] || [];
       let index = currentPageSnifferList.findIndex(el => el.url === details.url);
       index = index < 0 ? currentPageSnifferList.length : index;
-      currentPageSnifferList[index] = item;
+      currentPageSnifferList[index] = snifferResult;
       window.snifferObj[tabId] = currentPageSnifferList;
-
-      onResourceSizeChange(types.SNIFFER_TYPE_ADVANCED, tabId);
+      onResourceSizeChange(tabId);
     });
   },
   {
@@ -280,11 +281,18 @@ chrome.tabs.onUpdated.addListener(function(tabId, changeInfo) {
     return;
   }
   window.snifferObj[tabId] = [];
-  onResourceSizeChange(types.SNIFFER_TYPE_ADVANCED, tabId);
+  onResourceSizeChange(tabId);
 });
 
 chrome.tabs.onRemoved.addListener(function(tabId) {
   if (window.snifferObj[tabId]) {
     delete window.snifferObj[tabId];
   }
+});
+
+chrome.tabs.onActivated.addListener(function(activeInfo) {
+  if (activeInfo.tabId < 0) {
+    return;
+  }
+  onResourceSizeChange(activeInfo.tabId);
 });

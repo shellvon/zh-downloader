@@ -50,8 +50,8 @@
                 <template v-if="advancedSniffer">
                     <el-form-item label="嗅探配置(JSON):" >
                         <el-input type="textarea" placeholder="请输入高级嗅探配置" :value="customSettings.advancedSnifferConfig | toJSONStr" @change="onChange('advancedSnifferConfig', $event)"></el-input>
-                        <el-tooltip class="item" effect="dark" content="供专业用户使用,可配置需要嗅探的格式/大小/站点,留空则为默认配置" placement="top-start">
-                            <i class="el-icon-question exclude-icon"></i>
+                        <el-tooltip class="item" effect="dark" content="点击查看配置说明,留空则为默认配置" placement="top-start">
+                            <i class="el-icon-question exclude-icon" @click="handleClickHelp('https://github.com/shellvon/zh-downloader/wiki/%E9%85%8D%E7%BD%AE%E8%AF%B4%E6%98%8E')"></i>
                         </el-tooltip>
                     </el-form-item>
                 </template>
@@ -84,6 +84,9 @@ export default {
       this.$store.dispatch('updateSettings', {
         [key]: value,
       });
+    },
+    handleClickHelp(url) {
+      window.open(url, '_blank');
     },
   },
   computed: {
@@ -120,6 +123,7 @@ textarea {
 }
 
 .exclude-icon {
+  color: #2997ff;
   position: absolute;
   top: 50%;
   margin-top: -6px;

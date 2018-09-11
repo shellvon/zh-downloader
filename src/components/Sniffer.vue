@@ -19,11 +19,14 @@
         </el-table-column>
         <el-table-column fixed="right" label="操作" width="100">
             <template slot-scope="scope">
+                <el-tooltip class="item" effect="dark" content="下载" placement="bottom">
+                    <el-button @click="handleDownload(scope.row)" type="text" icon="el-icon-download"></el-button>
+                </el-tooltip>
                 <el-tooltip class="item" effect="dark" content="复制链接" placement="bottom">
                     <el-button @click="$emit('copy', scope.row.url);" type="text" icon="el-icon-tickets"></el-button>
                 </el-tooltip>
-                <el-tooltip class="item" effect="dark" content="下载" placement="bottom">
-                    <el-button @click="handleDownload(scope.row)" type="text" icon="el-icon-download"></el-button>
+                 <el-tooltip class="item" effect="dark" content="删除" placement="bottom">
+                    <el-button @click="handleDelete(scope.$index)" type="text" icon="el-icon-delete"></el-button>
                 </el-tooltip>
             </template>
         </el-table-column>
@@ -48,13 +51,24 @@ export default {
         // filename
       });
     },
+    handleDelete(index) {
+      index = this.snifferLst.length - index - 1;
+      this.snifferLst.splice(index, 1);
+      this.$message({
+        showClose: true,
+        message: ' (✌ﾟ∀ﾟ)☞ 删除成功',
+        type: 'success',
+      });
+      // 通知父组件
+      this.$emit('delete');
+    },
   },
   created() {
     let self = this;
     let snifferObj = chrome.extension.getBackgroundPage().snifferObj || {};
     chrome.windows.getCurrent(wnd => {
       chrome.tabs.getSelected(wnd.id, tab => {
-        self.snifferLst = snifferObj[tab.id] || [];
+        self.snifferLst = (snifferObj[tab.id] || []).reverse();
         self.tabId = tab.id;
       });
     });
