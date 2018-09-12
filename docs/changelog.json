@@ -1,8 +1,27 @@
 [
     {
+        "version": "1.0.8",
+        "date": "2018.09.12",
+        "crx": "https://chrome.google.com/webstore/detail/zh-downloader/gcknejnpflbcggigdinhahgngfhaomik?utm_source=chrome-ntp-icon",
+        "zip": "https://github.com/shellvon/zh-downloader/releases/download/1.0.8/zh-downloader-v1.0.8.zip",
+        "logs": {
+            "new": [
+                {
+                    "text": "增加高级嗅探,用户可自定义嗅探任意网站的任意资源",
+                    "issues": ["11"]
+                }
+            ],
+            "fixed": [
+                {
+                    "text": "修复手动删除视频时页面刷新问题",
+                    "issues": ["10"]
+                }
+            ]
+        }
+    },
+    {
         "version": "1.0.7",
         "date": "2018.08.22",
-        "crx": "https://chrome.google.com/webstore/detail/zh-downloader/gcknejnpflbcggigdinhahgngfhaomik?utm_source=chrome-ntp-icon",
         "zip": "https://github.com/shellvon/zh-downloader/releases/download/1.0.7/zh-downloader-v1.0.7.zip",
         "logs": {
             "new": [],
