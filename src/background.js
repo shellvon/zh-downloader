@@ -35,7 +35,7 @@ const onResourceSizeChange = (tabId = undefined, resourceType = null) => {
 
   if (tabId === undefined) {
     chrome.tabs.query({ active: true, currentWindow: true }, tabs => {
-      if (!tabs) {
+      if (!tabs || !tabs[0]) {
         return;
       }
       tabId = tabs[0].id;
@@ -240,6 +240,10 @@ window.snifferObj = {};
  */
 chrome.webRequest.onResponseStarted.addListener(
   async details => {
+    const statusCode = details.statusCode;
+    if (statusCode < 200 || statusCode >= 300) {
+      return;
+    }
     const tabId = details.tabId;
     if (tabId < 0) {
       return;
@@ -276,11 +280,14 @@ chrome.webRequest.onResponseStarted.addListener(
   },
   ['responseHeaders']
 );
+
+// 在更新之前清除之前的记录
+// 但是如果请求的URL地址本就是需要采集的资源,可能会导致先触发Sniffer再触发onUpdate，导致刚采集的数据被充值
 chrome.tabs.onUpdated.addListener(function(tabId, changeInfo) {
-  if (changeInfo.status !== 'loading' || tabId < 0) {
-    return;
+  if (changeInfo.status === 'loading' && tabId > 0) {
+    delete window.snifferObj[tabId];
+    onResourceSizeChange(tabId);
   }
-  onResourceSizeChange(tabId);
 });
 
 chrome.tabs.onRemoved.addListener(function(tabId) {

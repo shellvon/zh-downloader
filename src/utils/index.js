@@ -324,8 +324,8 @@ export const snifferByRules = (originUrl, requestUrl, requestType, headers, snif
   // Step 2. 判断是否指定了必须要采集的视频URL规则
   let isHit = includesUrlPatterns && includesUrlPatterns.some(el => requestUrl.match(getRegex(el)));
 
-  const mimeType = getHeaderValue(headers, 'content-type');
-  const contentSize = getHeaderValue(headers, 'content-length', 0);
+  const mimeType = getHeaderValue(headers, 'content-type', '');
+  const contentSize = parseInt(getHeaderValue(headers, 'content-length', 0));
   const filename = getFilenameFromDisposition(getHeaderValue(headers, 'content-disposition'));
   // Step 3. 如果没有命中,尝试是否制定了对应的MimeType规则
   if (!isHit) {
