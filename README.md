@@ -1,10 +1,11 @@
 # Zh-Downloader
 
-这是Chrome插件, 能进行知乎视频嗅探以及下载功能。支持下载为TS格式( MPEG2-TS 格式) 或者 MP4 格式。
+这是Chrome插件(亦支持Firefox), 能进行知乎视频嗅探以及下载功能。支持下载为TS格式( MPEG2-TS 格式) 或者 MP4 格式。
 
 
 [![Chrome Web Store](https://developer.chrome.com/webstore/images/ChromeWebStore_BadgeWBorder_v2_206x58.png)](https://chrome.google.com/webstore/detail/zh-downloader/gcknejnpflbcggigdinhahgngfhaomik?utm_source=chrome-ntp-icon)
 
+Firefox 用户请下载 1.0.9 版本以后的zip文件. See [#12](https://github.com/shellvon/zh-downloader/issues/12)
 
 更多介绍/下载信息请访问: [http://zh-downloader.tw](http://zh-downloader.tw)
 
