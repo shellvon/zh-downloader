@@ -77,4 +77,33 @@ export default {
   [types.UPDATE_LATEST_TAB](state, latestTab) {
     state.latestTab = latestTab;
   },
+
+  /**
+   * 增加/更新嗅探项
+   */
+  [types.ADD_OR_UPDATE_SNIFFER_ITEM](state, { tabId, item }) {
+    let snifferList = state.snifferObj[tabId] || [];
+    let index = snifferList.findIndex(el => el.url === item.url);
+    index = index < 0 ? snifferList.length : index;
+    snifferList[index] = item;
+    state.snifferObj[tabId] = snifferList;
+  },
+
+  /**
+   * Tab被移除,需要清空数据
+   */
+  [types.REMOVE_TAB](state, tabId) {
+    delete state.snifferObj[tabId];
+  },
+
+  /**
+   * 删除某个Tab下的数据.
+   */
+  [types.DELETE_SNIFFER_ITEM](state, { tabId, index }) {
+    let snifferList = state.snifferObj[tabId];
+    if (snifferList) {
+      snifferList.splice(index, 1);
+      state.snifferObj[tabId] = snifferList;
+    }
+  },
 };

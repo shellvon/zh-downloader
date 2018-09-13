@@ -22,6 +22,9 @@ export const UPDATE_DOWNLOAD_PROGRESS = 'UPDATE_DOWNLOAD_PROGRESS';
 // 有新的视频加入
 export const ADD_NEW_VIDEO = 'ADD_NEW_VIDEO';
 
+// 有新的采集项加入
+export const ADD_NEW_SNIFFER_ITEM = 'ADD_NEW_SNIFFER_ITEM';
+
 // 未知事件
 export const UNKNOWN_ACTION = 'UNKNOWN_ACTION';
 

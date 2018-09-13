@@ -48,8 +48,9 @@
                     </el-tooltip>
                 </el-form-item>
                 <template v-if="advancedSniffer">
-                    <el-form-item label="嗅探配置(JSON):" >
-                        <el-input type="textarea" placeholder="请输入高级嗅探配置" :value="customSettings.advancedSnifferConfig | toJSONStr" @change="onChange('advancedSnifferConfig', $event)"></el-input>
+                    <el-form-item label="嗅探配置(JSON):">
+                        <el-input type="textarea" placeholder="请输入高级嗅探配置" :value="customSettings.advancedSnifferConfig | toJSONStr"
+                            @change="onChange('advancedSnifferConfig', $event)"></el-input>
                         <el-tooltip class="item" effect="dark" content="点击查看配置说明,留空则为默认配置" placement="top-start">
                             <i class="el-icon-question exclude-icon" @click="handleClickHelp('https://github.com/shellvon/zh-downloader/wiki/%E9%85%8D%E7%BD%AE%E8%AF%B4%E6%98%8E')"></i>
                         </el-tooltip>
@@ -114,6 +115,7 @@ label {
 .el-textarea {
   width: 50%;
 }
+
 .el-icon-question {
   cursor: pointer;
 }

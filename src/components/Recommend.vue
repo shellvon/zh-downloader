@@ -32,7 +32,8 @@
                       <el-button type="info" icon="el-icon-share" size="mini" circle></el-button>
                     </span>
                     <el-dropdown-menu slot="dropdown">
-                      <el-dropdown-item v-for="it in dropdownItem" :key="it.key" :command="{command: it.key, payload: item}">{{it.text}} </el-dropdown-item>
+                      <el-dropdown-item v-for="it in dropdownItem" :key="it.key" :command="{command: it.key, payload: item}">{{it.text}}
+                      </el-dropdown-item>
                     </el-dropdown-menu>
                   </el-dropdown>
                   <el-button type="danger" icon="el-icon-minus" size="mini" circle @click="deleteVideo({index:index})"></el-button>
@@ -47,8 +48,8 @@
           </span>
           <span v-else-if="isEnd">哦豁 \_(ツ)_/¯ 没了...</span>
         </el-col>
-        <el-button :style="{'display': showTopButton ? 'block': 'none'}" id="to-top" type="success" icon="el-icon-arrow-up" circle
-          @click="toTop"></el-button>
+        <el-button :style="{'display': showTopButton ? 'block': 'none'}" id="to-top" type="success" icon="el-icon-arrow-up"
+          circle @click="toTop"></el-button>
       </template>
     </el-row>
     <qr-code-share :share-item="shareItem" :show="isDialogShow" @click="isDialogShow=false"></qr-code-share>
@@ -220,6 +221,7 @@ export default {
                 break;
             }
             el.origin_url = originURL;
+            el.actor.url = el.actor.url.replace('//api.', '//');
             return el;
           });
           self.recommendList = self.recommendList.concat(data);
@@ -297,9 +299,9 @@ export default {
 .title-info {
   margin: 10px 0px;
   position: relative;
-  height: 3.6em;
+  height: 45px;
   overflow: hidden;
-  line-height: 1.2em;
+  line-height: 24px;
 }
 
 .title-info:after {
@@ -307,24 +309,23 @@ export default {
   bottom: 0;
   right: 0;
   content: '';
-  height: 1.2em;
-  line-height: 1.2em;
+  height: 15px;
+  line-height: 15px;
   text-align: right;
   width: 30%;
   background: linear-gradient(to right, rgba(255, 255, 255, 0), rgba(255, 255, 255, 1) 50%);
 }
 
 .title {
-  font-size: 1.2em;
+  font-size: 13px;
 }
 
 .author {
-  font-size: 0.8em;
+  font-size: 10px;
   color: #8590a6 !important;
 }
 
 .author:hover {
-  font-size: 0.8em;
   color: #5f6879 !important;
 }
 
@@ -350,7 +351,7 @@ export default {
   color: white;
   padding: 5px;
   border-radius: 2px;
-  font-size: 1.2em;
+  font-size: 15px;
   width: 18px;
   height: 18px;
   cursor: pointer;

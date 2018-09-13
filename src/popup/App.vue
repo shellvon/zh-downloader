@@ -151,24 +151,38 @@ export default {
     });
   },
   methods: {
+    /**
+     * https://stackoverflow.com/questions/400212/how-do-i-copy-to-the-clipboard-in-javascript
+     */
+    fallbackCopyText(text, success, error) {
+      let textarea = document.createElement('textarea');
+      textarea.value = text;
+      document.body.appendChild(textarea);
+      textarea.focus();
+      textarea.select();
+      try {
+        document.execCommand('copy');
+        success && success();
+      } catch (err) {
+        error && error(err);
+      } finally {
+        document.body.removeChild(textarea);
+      }
+    },
+
     onCopyText(text) {
-      let self = this;
-      navigator.clipboard
-        .writeText(text)
-        .then(() => {
-          self.$message({
-            showClose: true,
-            message: '已成功复制到粘贴板',
-            type: 'success',
-          });
-        })
-        .catch(() => {
-          self.$message({
-            showClose: true,
-            message: '抱歉,复制失败~请尝试打开此链接Ctrl-C进行复制',
-            type: 'error',
-          });
-        });
+      let copiedCallback = error => {
+        this.$message({ showClose: true, message: error ? '抱歉,复制失败～' : '已成功复制到粘贴板', type: error ? 'error' : 'success' });
+      };
+      // See https://stackoverflow.com/a/30810322
+      if (navigator.clipboard) {
+        navigator.clipboard
+          .writeText(text)
+          .then(copiedCallback)
+          .catch(err => copiedCallback(err));
+      } else {
+        this.fallbackCopyText(text, copiedCallback, copiedCallback);
+      }
     },
 
     /**

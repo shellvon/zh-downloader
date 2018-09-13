@@ -23,7 +23,8 @@
               </el-form-item>
               <el-form-item label="M3U8地址:">
                 <span>
-                  <el-tooltip class="item" effect="dark" :content="props.row.playlist[props.row.currentQuality].m3u8" placement="bottom">
+                  <el-tooltip class="item" effect="dark" :content="props.row.playlist[props.row.currentQuality].m3u8"
+                    placement="bottom">
                     <a class="link" :href="props.row.playlist[props.row.currentQuality].m3u8" target="_blank">打开</a>
                   </el-tooltip>
                   <a class="link" href="javascript:void(0);" @click="$emit('copy', props.row.playlist[props.row.currentQuality].m3u8)">复制</a>
@@ -39,7 +40,8 @@
                 <span>{{ props.row.playlist[props.row.currentQuality].size | bytesToSize}}</span>
               </el-form-item>
               <el-form-item label="分辨率:">
-                <span>{{ props.row.playlist[props.row.currentQuality].width }} x {{ props.row.playlist[props.row.currentQuality].height
+                <span>{{ props.row.playlist[props.row.currentQuality].width }} x {{
+                  props.row.playlist[props.row.currentQuality].height
                   }}
                 </span>
               </el-form-item>
@@ -59,7 +61,8 @@
         <el-table-column label="清晰度">
           <template slot-scope="scope">
             <el-select v-model="scope.row.currentQuality" size="small">
-              <el-option v-for="(item, key) in scope.row.playlist" :key="key" :label="qualityMap[item.quality] || item.quality" :value="item.quality">
+              <el-option v-for="(item, key) in scope.row.playlist" :key="key" :label="qualityMap[item.quality] || item.quality"
+                :value="item.quality">
               </el-option>
             </el-select>
           </template>
@@ -75,7 +78,8 @@
         <el-table-column label="下载进度" width="80">
           <template slot-scope="scope">
             <el-tooltip>
-              <div slot="content">{{isDownloading && progressMessage && scope.row.id === downloadingVedioId ? progressMessage: '点击右边下载按钮即会自动更新此进度'}}
+              <div slot="content">{{isDownloading && progressMessage && scope.row.id === downloadingVedioId ?
+                progressMessage: '点击右边下载按钮即会自动更新此进度'}}
               </div>
               <el-progress :percentage="progressValue(scope.row)" type="circle" :width=40 color="#8e71c7"></el-progress>
             </el-tooltip>
@@ -92,7 +96,8 @@
                   <el-button type="text" icon="el-icon-share"></el-button>
                 </span>
                 <el-dropdown-menu slot="dropdown">
-                  <el-dropdown-item v-for="it in dropdownItem" :key="it.key" :command="{command: it.key, payload: scope.row}">{{it.text}} </el-dropdown-item>
+                  <el-dropdown-item v-for="it in dropdownItem" :key="it.key" :command="{command: it.key, payload: scope.row}">{{it.text}}
+                  </el-dropdown-item>
                 </el-dropdown-menu>
               </el-dropdown>
             </el-tooltip>
@@ -105,8 +110,8 @@
           </template>
         </el-table-column>
       </el-table>
-      <el-pagination small @current-change="handlePageChange" layout="total, prev, pager, next" :page-size="pageSize" :current-page="currentPage"
-        :total="total" :style="{textAlign: 'right'}">
+      <el-pagination small @current-change="handlePageChange" layout="total, prev, pager, next" :page-size="pageSize"
+        :current-page="currentPage" :total="total" :style="{textAlign: 'right'}">
       </el-pagination>
     </template>
     <qr-code-share :share-item="shareItem" :show="isDialogShow" @click="isDialogShow=false"></qr-code-share>
@@ -239,7 +244,9 @@ export default {
       var a = document.createElement('a');
       a.href = link;
       a.download = filename || new Date().getTime() + '.mp4';
+      document.body.appendChild(a);
       a.click();
+      document.body.removeChild(a);
     },
 
     /**

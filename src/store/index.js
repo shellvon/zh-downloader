@@ -22,7 +22,8 @@ export default new Vuex.Store({
     },
     latestTab: 'playlist',
     playlist: [], // 视频列表
-    downloadInfo: [], // 下载列表信息
+    downloadInfo: [], // 下载列表信息,
+    snifferObj: {},
   },
   plugins: [new VuexWebExtensions({ persistentStates: ['playlist', 'latestTab', 'downloadInfo', 'customSettings'] })],
   getters,

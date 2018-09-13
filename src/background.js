@@ -10,7 +10,7 @@ import {
   errorAction,
 } from './actions';
 
-import { ADD_OR_UPDATE_VIDEO, ADD_OR_UPDATE_DOWNLOAD_INFO } from './store/mutation-types';
+import { ADD_OR_UPDATE_VIDEO, ADD_OR_UPDATE_DOWNLOAD_INFO, ADD_OR_UPDATE_SNIFFER_ITEM, REMOVE_TAB } from './store/mutation-types';
 
 /**
  * 当列表资源变更时触发的回调函数,用于更新BadgeText以及颜色.
@@ -20,7 +20,7 @@ import { ADD_OR_UPDATE_VIDEO, ADD_OR_UPDATE_DOWNLOAD_INFO } from './store/mutati
  */
 const onResourceSizeChange = (tabId = undefined, resourceType = null) => {
   const updateCallback = () => {
-    let snifferLst = window.snifferObj[tabId] || [];
+    let snifferLst = store.getters.snifferObj[tabId] || [];
     let count = snifferLst.length;
     let color = 'blue';
     let latestTab = store.getters.latestTab;
@@ -74,7 +74,7 @@ chrome.webRequest.onBeforeRequest.addListener(
 let globalPort;
 
 // 处理来自Popup的消息
-chrome.extension.onConnect.addListener(function(port) {
+chrome.runtime.onConnect.addListener(function(port) {
   if (port.name !== types.PORT_NAME) {
     return;
   }
@@ -233,8 +233,6 @@ chrome.alarms.onAlarm.addListener(alarm => {
   chrome.alarms.create(types.ALARM_NAME, getAlarmsConfig());
 });
 
-window.snifferObj = {};
-
 /**
  * 当响应返回给浏览器时触发的回调函数,用于高级嗅探, See https://github.com/shellvon/zh-downloader/issues/11
  */
@@ -266,12 +264,8 @@ chrome.webRequest.onResponseStarted.addListener(
         return;
       }
       snifferResult.title = info.title;
-      // 获取当前站点的配置
-      let currentPageSnifferList = window.snifferObj[tabId] || [];
-      let index = currentPageSnifferList.findIndex(el => el.url === details.url);
-      index = index < 0 ? currentPageSnifferList.length : index;
-      currentPageSnifferList[index] = snifferResult;
-      window.snifferObj[tabId] = currentPageSnifferList;
+
+      store.commit(ADD_OR_UPDATE_SNIFFER_ITEM, { tabId, item: snifferResult });
       onResourceSizeChange(tabId);
     });
   },
@@ -285,15 +279,13 @@ chrome.webRequest.onResponseStarted.addListener(
 // 但是如果请求的URL地址本就是需要采集的资源,可能会导致先触发Sniffer再触发onUpdate，导致刚采集的数据被充值
 chrome.tabs.onUpdated.addListener(function(tabId, changeInfo) {
   if (changeInfo.status === 'loading' && tabId > 0) {
-    delete window.snifferObj[tabId];
+    store.commit(REMOVE_TAB, tabId);
     onResourceSizeChange(tabId);
   }
 });
 
 chrome.tabs.onRemoved.addListener(function(tabId) {
-  if (window.snifferObj[tabId]) {
-    delete window.snifferObj[tabId];
-  }
+  store.commit(REMOVE_TAB, tabId);
 });
 
 chrome.tabs.onActivated.addListener(function(activeInfo) {

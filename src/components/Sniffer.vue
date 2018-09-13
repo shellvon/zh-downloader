@@ -56,12 +56,14 @@
 </template>
 
 <script>
+import { DELETE_SNIFFER_ITEM } from '../store/mutation-types';
+
 export default {
   name: 'sniffer',
   data() {
     return {
-      snifferLst: [],
-      tabId: -1,
+      // snifferLst: [],
+      tabId: null,
       types: [
         {
           text: '视频',
@@ -109,7 +111,10 @@ export default {
       });
     },
     handleDelete(index) {
-      this.snifferLst.splice(index, 1);
+      this.$store.commit(DELETE_SNIFFER_ITEM, {
+        tabId: this.tabId,
+        index,
+      });
       this.$message({
         showClose: true,
         message: ' (✌ﾟ∀ﾟ)☞ 删除成功',
@@ -119,15 +124,25 @@ export default {
       this.$emit('delete');
     },
   },
+  computed: {
+    snifferLst() {
+      return (this.tabId && this.$store.getters.snifferObj[this.tabId]) || [];
+    },
+  },
   created() {
     let self = this;
-    let snifferObj = chrome.extension.getBackgroundPage().snifferObj || {};
-    chrome.windows.getCurrent(wnd => {
-      chrome.tabs.getSelected(wnd.id, tab => {
-        self.snifferLst = (snifferObj[tab.id] || []).reverse();
-        self.tabId = tab.id;
-      });
-    });
+    chrome.tabs.query(
+      {
+        active: true,
+        currentWindow: true,
+      },
+      function(tabs) {
+        if (!tabs || !tabs[0]) {
+          return;
+        }
+        self.tabId = tabs[0].id;
+      }
+    );
   },
   filters: {
     /**

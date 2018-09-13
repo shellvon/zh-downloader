@@ -42,3 +42,5 @@ export const getDownloadInfoByVideoItemInfo = state => {
 export const customSettings = state => state.customSettings || {};
 
 export const latestTab = state => state.latestTab;
+
+export const snifferObj = state => state.snifferObj || {};
