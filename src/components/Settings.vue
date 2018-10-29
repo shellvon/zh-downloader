@@ -8,10 +8,10 @@
                         <el-option label="MP4" value="mp4">
                             <span style="float: left">MP4</span>
                             <span :style="{paddingLeft: '13px', float: 'right', color: 'red', fontSize: '12px'}">
-                                MP4格式可能存在兼容性问题,请慎用</span>
+                                若数据源格式不是MP4,转换MP4可能存在兼容性问题,请慎用</span>
                         </el-option>
                     </el-select>
-                    <el-tooltip class="item" effect="dark" content="采集到的视频将优先为你展示此格式" placement="top-start">
+                    <el-tooltip class="item" effect="dark" content="采集到的视频将优先为你展示此格式(如果有的话)" placement="top-start">
                         <i class="el-icon-question"></i>
                     </el-tooltip>
                 </el-form-item>

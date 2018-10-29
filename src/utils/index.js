@@ -238,22 +238,21 @@ export async function fetchNewVideoById(videoId, preferedFormat = DEFAULT_VIDEO_
       let playlist = resp.playlist;
       let parsedPlaylist = {};
       for (var quality in playlist) {
-        var m3u8 = playlist[quality].play_url;
-        var manifest = await parseM3u8File(m3u8);
-        var videoItem = {
-          id: resp.id,
-          quality: quality,
-          duration: manifest.segments.reduce((a, b) => a + b.duration, 0) * 1000, // second -> ms
-          m3u8: m3u8,
-          baseUri: m3u8.replace(/[^/]+$/i, ''),
-          size: playlist[quality].size,
-          name: videoName,
-          // manifest: manifest, // 不再记录此数据, See https://github.com/shellvon/zh-downloader/issues/7
-          format: preferedFormat,
-          width: playlist[quality].width,
-          height: playlist[quality].height,
-          bitrate: playlist[quality].bitrate,
-        };
+        const metaInfo = playlist[quality];
+        const format = metaInfo.format || preferedFormat;
+        let videoItem = { ...metaInfo, name: videoName, quality, sourceFormat: format };
+
+        if (format !== VIDEO_FORMAT_MP4) {
+          console.warn(`不支持的视频格式:${format}, 尝试m3u8格式`);
+          const manifest = await parseM3u8File(videoItem.play_url);
+          // m3u8格式的duration需要自己计算.
+          (videoItem.duration = manifest.segments.reduce((a, b) => a + b.duration, 0) * 1000), // second -> ms
+            (videoItem.m3u8 = videoItem.play_url);
+          videoItem.baseUri = videoItem.play_url.replace(/[^/]+$/i, '');
+        } else {
+          videoItem.mp4 = videoItem.play_url;
+          videoItem.duration = metaInfo.duration * 1000; // second -> ms
+        }
         parsedPlaylist[quality] = videoItem;
       }
 

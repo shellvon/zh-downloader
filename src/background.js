@@ -97,6 +97,7 @@ chrome.runtime.onConnect.addListener(function(port) {
         let quality = videoInfo.currentQuality; // 选择下载的清晰度
         let selectVideoItem = videoInfo.playlist[quality];
         let format = selectVideoItem.format || types.DEFAULT_VIDEO_FORMAT; // 下载格式.
+        let sourceFormat = selectVideoItem.sourceFormat;
         let converter = store.getters.customSettings.converter || types.DEFAULT_VIDEO_CONVERTER; // 默认的转化器
 
         // 初始化下载信息.
@@ -108,6 +109,13 @@ chrome.runtime.onConnect.addListener(function(port) {
           name: videoInfo.name + '-' + quality.toUpperCase() + '.' + format,
         };
         store.commit(ADD_OR_UPDATE_DOWNLOAD_INFO, downloadInfo);
+
+        // 如果视频源本来就是MP4,不需要转化,直接通知认为下载OK.
+        if (sourceFormat === types.VIDEO_FORMAT_MP4) {
+          downloadInfo = { ...downloadInfo, link: selectVideoItem.mp4, progress: 100 };
+          safeSendResponse(finishedDownloadVideo(downloadInfo));
+          return;
+        }
 
         // See https://github.com/shellvon/zh-downloader/issues/7
 

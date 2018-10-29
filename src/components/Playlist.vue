@@ -5,7 +5,7 @@
       <p class="error-message">没有嗅探到知乎视频.</p>
     </template>
     <template v-else>
-      <el-alert v-if="isDownloading" title="视频下载过程中请勿关闭本页面" description="若下载格式为MP4,可能有兼容性问题并且转换过程可能会相当耗时,请耐心等待" type="warning">
+      <el-alert v-if="isDownloading" title="视频下载过程中请勿关闭本页面" description="若视频源不是MP4,下载为MP4可能有兼容性问题并且转换过程可能会相当耗时,请耐心等待" type="warning">
       </el-alert>
       <el-table :data="playlist" style="width:100%">
         <el-table-column type="expand" fixed>
@@ -21,13 +21,13 @@
               <el-form-item label="视频名称:">
                 <span>{{ props.row.name }}</span>
               </el-form-item>
-              <el-form-item label="M3U8地址:">
+              <el-form-item :label="props.row.playlist[props.row.currentQuality].m3u8 ? 'm3u8地址:' : 'mp4地址:'">
                 <span>
-                  <el-tooltip class="item" effect="dark" :content="props.row.playlist[props.row.currentQuality].m3u8"
+                  <el-tooltip class="item" effect="dark" :content="props.row.playlist[props.row.currentQuality].play_url"
                     placement="bottom">
-                    <a class="link" :href="props.row.playlist[props.row.currentQuality].m3u8" target="_blank">打开</a>
+                    <a class="link" :href="props.row.playlist[props.row.currentQuality].play_url" target="_blank">打开</a>
                   </el-tooltip>
-                  <a class="link" href="javascript:void(0);" @click="$emit('copy', props.row.playlist[props.row.currentQuality].m3u8)">复制</a>
+                  <a class="link" href="javascript:void(0);" @click="$emit('copy', props.row.playlist[props.row.currentQuality].play_url)">复制</a>
                 </span>
               </el-form-item>
               <el-form-item label="视频长度:">
@@ -69,10 +69,11 @@
         </el-table-column>
         <el-table-column label="视频格式">
           <template slot-scope="scope">
-            <el-select v-model="scope.row.playlist[scope.row.currentQuality].format" size="small">
+            <el-select v-if="scope.row.playlist[scope.row.currentQuality].m3u8" v-model="scope.row.playlist[scope.row.currentQuality].format" size="small">
               <el-option label="MPEG2-TS" value="ts"></el-option>
               <el-option label="MP4" value="mp4"></el-option>
             </el-select>
+            <span v-else>MP4</span>
           </template>
         </el-table-column>
         <el-table-column label="下载进度" width="80">
@@ -243,6 +244,8 @@ export default {
     downloadFile(link, filename = undefined) {
       var a = document.createElement('a');
       a.href = link;
+      // See https://stackoverflow.com/a/33910145
+      // See https://developer.mozilla.org/en-US/docs/Web/HTML/Element/a#attr-download
       a.download = filename || new Date().getTime() + '.mp4';
       document.body.appendChild(a);
       a.click();
