@@ -1,5 +1,24 @@
 [
     {
+        "version": "1.0.10",
+        "date": "2018.10.29",
+        "crx": "https://chrome.google.com/webstore/detail/zh-downloader/gcknejnpflbcggigdinhahgngfhaomik?utm_source=chrome-ntp-icon",
+        "zip": "https://github.com/shellvon/zh-downloader/releases/download/1.0.10/zh-downloader-v1.0.10.zip",
+        "logs": {
+            "new": [
+                {
+                    "text": "适配知乎新的视频格式",
+                    "issues": ["13"]
+                }
+            ],
+            "fixed": [
+                {
+                    "text": "修正分享时的文案"
+                }
+            ]
+        }
+    },
+    {
         "version": "1.0.9",
         "date": "2018.09.13",
         "crx": "https://chrome.google.com/webstore/detail/zh-downloader/gcknejnpflbcggigdinhahgngfhaomik?utm_source=chrome-ntp-icon",
