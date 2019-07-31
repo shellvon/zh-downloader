@@ -257,7 +257,7 @@ export async function fetchNewVideoById(videoId, preferedFormat = DEFAULT_VIDEO_
       }
 
       return {
-        id: resp.id,
+        id: videoId,
         name: videoName,
         thumbnail: resp.cover_info.thumbnail,
         updatedAt: new Date().getTime(),
