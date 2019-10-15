@@ -283,17 +283,17 @@
                 <div class="swiper-wrapper">
                     <div class="swiper-slide">
                         <div class="slide-content windowed">
-                            <img src="/assets/screenshot/screenshot_a.jpg" alt="采集截图">
+                            <img src="./assets/screenshot/screenshot_a.jpg" alt="采集截图">
                         </div>
                     </div>
                     <div class="swiper-slide">
                         <div class="slide-content windowed">
-                            <img src="/assets/screenshot/screenshot_b.jpg" alt="采集截图">
+                            <img src="./assets/screenshot/screenshot_b.jpg" alt="采集截图">
                         </div>
                     </div>
                     <div class="swiper-slide">
                         <div class="slide-content windowed">
-                            <img src="/assets/screenshot/screenshot_c.jpg" alt="采集截图">
+                            <img src="./assets/screenshot/screenshot_c.jpg" alt="采集截图">
                         </div>
                     </div>
                 </div>
@@ -507,7 +507,7 @@
         
         $(document).ready(function () {
             $.ajax({
-                url: '/changelog.json',
+                url: './changelog.json',
                 dataType: 'json'
             }).done(function (data) {
                 var parsedData = data.map(function (el) {
