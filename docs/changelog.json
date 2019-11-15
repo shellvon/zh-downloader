@@ -1,8 +1,30 @@
 [
     {
+        "version": "1.0.12",
+        "date": "2019.11.15",
+        "crx": "https://chrome.google.com/webstore/detail/zh-downloader/gcknejnpflbcggigdinhahgngfhaomik?utm_source=chrome-ntp-icon",
+        "zip": "https://github.com/shellvon/zh-downloader/releases/download/1.0.12/zh-downloader-v1.0.12.zip",
+        "logs": {
+            "new": [
+                {
+                    "text": "关于页增加作者知乎地址用于及时处理用户问题"
+                }
+            ],
+            "fixed": [
+                {
+                    "text": "修复因知乎接口调整导致无法嗅探下载支付视频的BUG"
+                }
+            ],
+            "update": [
+                {
+                    "text": "调整因知乎去掉m3u8格式视频后的的文案以及修复部分错别字"
+                }
+            ]
+        }
+    },
+    {
         "version": "1.0.11",
         "date": "2019.07.31",
-        "crx": "https://chrome.google.com/webstore/detail/zh-downloader/gcknejnpflbcggigdinhahgngfhaomik?utm_source=chrome-ntp-icon",
         "zip": "https://github.com/shellvon/zh-downloader/releases/download/1.0.11/zh-downloader-v1.0.11.zip",
         "logs": {
             "fixed": [
@@ -16,7 +38,6 @@
     {
         "version": "1.0.10",
         "date": "2018.10.29",
-        "crx": "https://chrome.google.com/webstore/detail/zh-downloader/gcknejnpflbcggigdinhahgngfhaomik?utm_source=chrome-ntp-icon",
         "zip": "https://github.com/shellvon/zh-downloader/releases/download/1.0.10/zh-downloader-v1.0.10.zip",
         "logs": {
             "new": [
