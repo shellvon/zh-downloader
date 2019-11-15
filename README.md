@@ -7,7 +7,7 @@
 
 Firefox 用户请下载 1.0.9 版本以后的zip文件. See [#12](https://github.com/shellvon/zh-downloader/issues/12)
 
-更多介绍/下载信息请访问: [http://zh-downloader.tw](http://zh-downloader.tw)
+更多介绍/下载信息请访问: [http://von.sh/zh-downloader](http://von.sh/zh-downloader)
 
 
 # 使用说明
@@ -69,4 +69,4 @@ Firefox 用户请下载 1.0.9 版本以后的zip文件. See [#12](https://github
 
 # Change Logs
 
-关于本项目的 Change Logs 您可以访问 http://zh-downloader.tw/#change-logs 查看详情 或者可以查看 `docs/changelog.json` 文件。
+关于本项目的 Change Logs 您可以访问 http://von.sh/zh-downloader/#change-logs 查看详情 或者可以查看 `docs/changelog.json` 文件。
