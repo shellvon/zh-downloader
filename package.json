@@ -63,7 +63,7 @@
     "eslint-plugin-vue": "^5.0.0-beta.2",
     "file-loader": "^2.0.0",
     "mini-css-extract-plugin": "^0.4.2",
-    "node-sass": "^4.9.3",
+    "node-sass": "^4.13.1",
     "optimize-css-assets-webpack-plugin": "^5.0.0",
     "prettier": "^1.14.2",
     "sass-loader": "^7.1.0",
