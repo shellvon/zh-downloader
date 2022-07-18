@@ -1,11 +1,16 @@
 <template>
   <el-row>
-    <template v-if="playlist.length===0">
+    <template v-if="playlist.length === 0">
       <p class="error-message nothing">\_(ツ)_/¯</p>
       <p class="error-message">没有嗅探到知乎视频.</p>
     </template>
     <template v-else>
-      <el-alert v-if="isDownloading" title="视频下载过程中请勿关闭本页面" description="若视频源不是MP4,下载为MP4可能有兼容性问题并且转换过程可能会相当耗时,请耐心等待" type="warning">
+      <el-alert
+        v-if="isDownloading"
+        title="视频下载过程中请勿关闭本页面"
+        description="若视频源不是MP4,下载为MP4可能有兼容性问题并且转换过程可能会相当耗时,请耐心等待"
+        type="warning"
+      >
       </el-alert>
       <el-table :data="playlist" style="width:100%">
         <el-table-column type="expand" fixed>
@@ -14,7 +19,7 @@
               <el-form-item label="视频ID:">
                 <span>
                   <el-tooltip class="item" effect="dark" content="点击可直接进入知乎播放" placement="bottom">
-                    <a class="link" :href="'https://www.zhihu.com/video/'+props.row.id" target="_blank">{{props.row.id}}</a>
+                    <a class="link" :href="'https://www.zhihu.com/video/' + props.row.id" target="_blank">{{ props.row.id }}</a>
                   </el-tooltip>
                 </span>
               </el-form-item>
@@ -23,30 +28,26 @@
               </el-form-item>
               <el-form-item :label="props.row.playlist[props.row.currentQuality].m3u8 ? 'm3u8地址:' : 'mp4地址:'">
                 <span>
-                  <el-tooltip class="item" effect="dark" :content="props.row.playlist[props.row.currentQuality].play_url"
-                    placement="bottom">
+                  <el-tooltip class="item" effect="dark" :content="props.row.playlist[props.row.currentQuality].play_url" placement="bottom">
                     <a class="link" :href="props.row.playlist[props.row.currentQuality].play_url" target="_blank">打开</a>
                   </el-tooltip>
                   <a class="link" href="javascript:void(0);" @click="$emit('copy', props.row.playlist[props.row.currentQuality].play_url)">复制</a>
                 </span>
               </el-form-item>
               <el-form-item label="视频长度:">
-                <span>{{ props.row.playlist[props.row.currentQuality].duration | msToTime}}</span>
+                <span>{{ props.row.playlist[props.row.currentQuality].duration | msToTime }}</span>
               </el-form-item>
               <el-form-item label="清晰度:">
-                <span>{{ qualityMap[props.row.playlist[props.row.currentQuality].quality] || '未知'}}</span>
+                <span>{{ qualityMap[props.row.playlist[props.row.currentQuality].quality] || '未知' }}</span>
               </el-form-item>
               <el-form-item label="视频大小:">
-                <span>{{ props.row.playlist[props.row.currentQuality].size | bytesToSize}}</span>
+                <span>{{ props.row.playlist[props.row.currentQuality].size | bytesToSize }}</span>
               </el-form-item>
               <el-form-item label="分辨率:">
-                <span>{{ props.row.playlist[props.row.currentQuality].width }} x {{
-                  props.row.playlist[props.row.currentQuality].height
-                  }}
-                </span>
+                <span>{{ props.row.playlist[props.row.currentQuality].width }} x {{ props.row.playlist[props.row.currentQuality].height }} </span>
               </el-form-item>
               <el-form-item label="采集时间:">
-                <span>{{ new Date(props.row.updatedAt).toLocaleString()}}</span>
+                <span>{{ new Date(props.row.updatedAt).toLocaleString() }}</span>
               </el-form-item>
             </el-form>
           </template>
@@ -56,14 +57,11 @@
             <img class="thumbnail" :src="scope.row.thumbnail" />
           </template>
         </el-table-column>
-        <el-table-column prop="name" label="视频名字">
-        </el-table-column>
+        <el-table-column prop="name" label="视频名字"> </el-table-column>
         <el-table-column label="清晰度">
           <template slot-scope="scope">
             <el-select v-model="scope.row.currentQuality" size="small">
-              <el-option v-for="(item, key) in scope.row.playlist" :key="key" :label="qualityMap[item.quality] || item.quality"
-                :value="item.quality">
-              </el-option>
+              <el-option v-for="(item, key) in scope.row.playlist" :key="key" :label="qualityMap[item.quality] || item.quality" :value="item.quality"> </el-option>
             </el-select>
           </template>
         </el-table-column>
@@ -79,10 +77,8 @@
         <el-table-column label="下载进度" width="80">
           <template slot-scope="scope">
             <el-tooltip>
-              <div slot="content">{{isDownloading && progressMessage && scope.row.id === downloadingVedioId ?
-                progressMessage: '点击右边下载按钮即会自动更新此进度'}}
-              </div>
-              <el-progress :percentage="progressValue(scope.row)" type="circle" :width=40 color="#8e71c7"></el-progress>
+              <div slot="content">{{ isDownloading && progressMessage && scope.row.id === downloadingVedioId ? progressMessage : '点击右边下载按钮即会自动更新此进度' }}</div>
+              <el-progress :percentage="progressValue(scope.row)" type="circle" :width="40" color="#8e71c7"></el-progress>
             </el-tooltip>
           </template>
         </el-table-column>
@@ -97,8 +93,7 @@
                   <el-button type="text" icon="el-icon-share"></el-button>
                 </span>
                 <el-dropdown-menu slot="dropdown">
-                  <el-dropdown-item v-for="it in dropdownItem" :key="it.key" :command="{command: it.key, payload: scope.row}">{{it.text}}
-                  </el-dropdown-item>
+                  <el-dropdown-item v-for="it in dropdownItem" :key="it.key" :command="{ command: it.key, payload: scope.row }">{{ it.text }} </el-dropdown-item>
                 </el-dropdown-menu>
               </el-dropdown>
             </el-tooltip>
@@ -111,16 +106,20 @@
           </template>
         </el-table-column>
       </el-table>
-      <el-pagination small @current-change="handlePageChange" layout="total, prev, pager, next" :page-size="pageSize"
-        :current-page="currentPage" :total="total" :style="{textAlign: 'right'}">
+      <el-pagination
+        small
+        @current-change="handlePageChange"
+        layout="total, prev, pager, next"
+        :page-size="pageSize"
+        :current-page="currentPage"
+        :total="total"
+        :style="{ textAlign: 'right' }"
+      >
       </el-pagination>
     </template>
-    <qr-code-share :share-item="shareItem" :show="isDialogShow" @click="isDialogShow=false"></qr-code-share>
+    <qr-code-share :share-item="shareItem" :show="isDialogShow" @click="isDialogShow = false"></qr-code-share>
   </el-row>
 </template>
-
-
-
 
 <script>
 import { ADD_OR_UPDATE_VIDEO, ADD_OR_UPDATE_DOWNLOAD_INFO } from '../store/mutation-types';

@@ -1,6 +1,6 @@
 {
   "name": "zh-downloader",
-  "version": "1.0.12",
+  "version": "1.0.13",
   "description": "Zhihu Video Downloader",
   "author": "shellvon <iamshellvon@gmail.com>",
   "homepage": "https://github.com/shellvon/zh-downloader",
@@ -17,7 +17,7 @@
     {
       "name": "shellvon",
       "email": "iamshellvon@gmail.com",
-      "url": "https://von.sh/"
+      "url": "https://github.com/shellvon"
     }
   ],
   "scripts": {

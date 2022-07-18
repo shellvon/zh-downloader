@@ -12,19 +12,7 @@
     "default_popup": "popup/popup.html"
   },
   "background": {
-    "scripts": [
-      "background.js"
-    ]
+    "scripts": ["background.js"]
   },
-  "permissions": [
-    "webRequest",
-    "webRequestBlocking",
-    "downloads",
-    "downloads.open",
-    "notifications",
-    "alarms",
-    "storage",
-    "http://*/*",
-    "https://*/*"
-  ]
+  "permissions": ["webRequest", "webRequestBlocking", "downloads", "downloads.open", "alarms", "storage", "http://*/*", "https://*/*"]
 }

@@ -1,12 +1,10 @@
 <template>
   <div v-if="show && shareItem.bgSrc && shareItem.text" class="qr-code-mask" @click="$emit('click')">
     <div class="qr-code">
-      <p>{{title}}</p>
-      <vue-qr :margin="margin" :bgSrc="shareItem.bgSrc" :text="shareItem.text" :logoSrc="shareItem.logo" :size="size">
-      </vue-qr>
+      <p>{{ title }}</p>
+      <vue-qr :margin="margin" :bgSrc="shareItem.bgSrc" :text="shareItem.text" :logoSrc="shareItem.logo" :size="size"> </vue-qr>
     </div>
   </div>
-
 </template>
 
 <script>

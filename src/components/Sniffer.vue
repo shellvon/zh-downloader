@@ -1,37 +1,34 @@
 <template>
   <el-row>
-    <template v-if="snifferLst.length===0">
+    <template v-if="snifferLst.length === 0">
       <p class="error-message nothing">\_(ツ)_/¯</p>
     </template>
     <template v-else>
       <el-table :data="snifferLst" style="width: 100%">
-        <el-table-column prop="host" label="来源站点">
-        </el-table-column>
+        <el-table-column prop="host" label="来源站点"> </el-table-column>
         <el-table-column prop="host" label="预览">
           <template slot-scope="scope">
             <video width="100%" controls :src="scope.row.url" v-if="scope.row.mimetype.match(/video\//)"></video>
-            <audio :style="{width: '50px'}" controls :src="scope.row.url" v-else-if="scope.row.mimetype.match(/audio\//)"></audio>
+            <audio :style="{ width: '50px' }" controls :src="scope.row.url" v-else-if="scope.row.mimetype.match(/audio\//)"></audio>
             <img class="thumbnail" :src="scope.row.url" v-else-if="scope.row.mimetype.match(/image\//)" />
             <span v-else>暂不支持此格式预览</span>
           </template>
         </el-table-column>
         <el-table-column prop="size" label="大小" sortable>
           <template slot-scope="scope">
-            {{scope.row.size | bytesToSize}}
+            {{ scope.row.size | bytesToSize }}
           </template>
         </el-table-column>
         <!-- <el-table-column prop="mimetype" label="MIME格式" sortable>
         </el-table-column> -->
-        <el-table-column prop="type" label="分类" width="100" :filters="this.types" :filter-method="filterType"
-          filter-placement="bottom-end">
+        <el-table-column prop="type" label="分类" width="100" :filters="this.types" :filter-method="filterType" filter-placement="bottom-end">
           <template slot-scope="scope">
             <el-popover trigger="hover" placement="top">
               <p>请求类型: {{ scope.row.type }}</p>
               <p>MIME: {{ scope.row.mimetype }}</p>
               <p v-if="scope.row.filename">文件名: {{ scope.row.filename }}</p>
               <div slot="reference" class="name-wrapper">
-                <el-tag size="medium" :type="getTypeInfo(scope.row.mimetype).cls">{{
-                  getTypeInfo(scope.row.mimetype).text }}</el-tag>
+                <el-tag size="medium" :type="getTypeInfo(scope.row.mimetype).cls">{{ getTypeInfo(scope.row.mimetype).text }}</el-tag>
               </div>
             </el-popover>
           </template>
@@ -42,14 +39,13 @@
               <el-button @click="handleDownload(scope.row)" type="text" icon="el-icon-download"></el-button>
             </el-tooltip>
             <el-tooltip class="item" effect="dark" content="复制链接" placement="bottom">
-              <el-button @click="$emit('copy', scope.row.url);" type="text" icon="el-icon-tickets"></el-button>
+              <el-button @click="$emit('copy', scope.row.url)" type="text" icon="el-icon-tickets"></el-button>
             </el-tooltip>
             <el-tooltip class="item" effect="dark" content="删除" placement="bottom">
               <el-button @click="handleDelete(scope.$index)" type="text" icon="el-icon-delete"></el-button>
             </el-tooltip>
           </template>
         </el-table-column>
-
       </el-table>
     </template>
   </el-row>

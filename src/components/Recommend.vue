@@ -1,58 +1,58 @@
 <template>
-  <div class="container" v-on:scroll.passive="handleScroll" :style="{height: '280px', overflow: 'scroll'}">
+  <div class="container" v-on:scroll.passive="handleScroll" :style="{ height: '280px', overflow: 'scroll' }">
     <el-row>
-      <template v-if="recommendList.length===0">
+      <template v-if="recommendList.length === 0">
         <div v-loading="isLoading" element-loading-text="努力加载中...">
           <p class="error-message nothing">\_(ツ)_/¯</p>
-          <p class="error-message">暂时没有推荐视频哦
+          <p class="error-message">
+            暂时没有推荐视频哦
             <el-button type="text" class="el-icon-refresh" @click="loadMore"></el-button>
           </p>
         </div>
       </template>
       <template v-else>
-        <el-col :span="11" v-for="(item, index) in recommendList" :key="index" :offset="index % 2" :style="{'min-height':'300px'}">
-          <el-card :body-style="{padding: '5px'}" shadow="hover">
+        <el-col :span="11" v-for="(item, index) in recommendList" :key="index" :offset="index % 2" :style="{ 'min-height': '300px' }">
+          <el-card :body-style="{ padding: '5px' }" shadow="hover">
             <div class="origin_type">
-              {{item.brief.type === 'answer' ? '答' : '文'}}
+              {{ item.brief.type === 'answer' ? '答' : '文' }}
             </div>
-            <img :src="item.banner.image_url" class="thumbail">
+            <img :src="item.banner.image_url" class="thumbail" />
             <div style="padding: 14px;">
               <div class="title-info">
-                <a :href="item.origin_url" target="_blank" class="link title"> {{item.object.title}}</a>
+                <a :href="item.origin_url" target="_blank" class="link title"> {{ item.object.title }}</a>
               </div>
               <div class="bottom">
                 <div class="author-info">
-                  <img :src="item.actor.avatar_url" class="author-avatar">
-                  <a :href="item.actor.url" class="link author" target="_blank">{{item.actor.name}}</a>
+                  <img :src="item.actor.avatar_url" class="author-avatar" />
+                  <a :href="item.actor.url" class="link author" target="_blank">{{ item.actor.name }}</a>
                 </div>
                 <div class="operation-btn-group">
-                  <el-button type="primary" icon="el-icon-plus" size="mini" circle @click="collectVideo({index:index, videoId:item.banner.video.video_id})"></el-button>
+                  <el-button type="primary" icon="el-icon-plus" size="mini" circle @click="collectVideo({ index: index, videoId: item.banner.video.video_id })"></el-button>
                   <el-dropdown trigger="click" @command="handleCommand">
                     <span class="el-dropdown-link">
                       <el-button type="info" icon="el-icon-share" size="mini" circle></el-button>
                     </span>
                     <el-dropdown-menu slot="dropdown">
-                      <el-dropdown-item v-for="it in dropdownItem" :key="it.key" :command="{command: it.key, payload: item}">{{it.text}}
-                      </el-dropdown-item>
+                      <el-dropdown-item v-for="it in dropdownItem" :key="it.key" :command="{ command: it.key, payload: item }">{{ it.text }} </el-dropdown-item>
                     </el-dropdown-menu>
                   </el-dropdown>
-                  <el-button type="danger" icon="el-icon-minus" size="mini" circle @click="deleteVideo({index:index})"></el-button>
+                  <el-button type="danger" icon="el-icon-minus" size="mini" circle @click="deleteVideo({ index: index })"></el-button>
                 </div>
               </div>
             </div>
           </el-card>
         </el-col>
         <el-col :span="23" class="strike">
-          <span v-if="isLoading">拼命加载中
+          <span v-if="isLoading"
+            >拼命加载中
             <i class="el-icon-loading"></i>
           </span>
           <span v-else-if="isEnd">哦豁 \_(ツ)_/¯ 没了...</span>
         </el-col>
-        <el-button :style="{'display': showTopButton ? 'block': 'none'}" id="to-top" type="success" icon="el-icon-arrow-up"
-          circle @click="toTop"></el-button>
+        <el-button :style="{ display: showTopButton ? 'block' : 'none' }" id="to-top" type="success" icon="el-icon-arrow-up" circle @click="toTop"></el-button>
       </template>
     </el-row>
-    <qr-code-share :share-item="shareItem" :show="isDialogShow" @click="isDialogShow=false"></qr-code-share>
+    <qr-code-share :share-item="shareItem" :show="isDialogShow" @click="isDialogShow = false"></qr-code-share>
   </div>
 </template>
 

@@ -284,7 +284,7 @@ chrome.webRequest.onResponseStarted.addListener(
 );
 
 // 在更新之前清除之前的记录
-// 但是如果请求的URL地址本就是需要采集的资源，可能会导致先触发Sniffer再触发onUpdate，导致刚采集的数据被重置
+// 但是如果请求的URL地址本就是需要采集的资源，可能会导致先触发Sniffer再触发onUpdate，导致刚采集的数据被重置
 chrome.tabs.onUpdated.addListener(function(tabId, changeInfo) {
   if (changeInfo.status === 'loading' && tabId > 0) {
     store.commit(REMOVE_TAB, tabId);

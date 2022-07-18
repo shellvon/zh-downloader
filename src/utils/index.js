@@ -8,7 +8,7 @@ import { DEFAULT_VIDEO_CONVERTER, DEFAULT_FETCH_RETRY_CNT, DEFAULT_VIDEO_FORMAT,
 
 import muxjs from 'mux.js';
 
-const noop = data => {};
+const noop = () => {};
 
 /**
  * 将m3u8给定的地址下载下来使用m3u8-parser进行处理.
@@ -122,7 +122,10 @@ const mp4ByMuxJSFinishedJob = progressCallback => {
  */
 const mp4ByJbinaryFinishedJob = progressCallback => {
   let finishedJob = async dataChunks => {
-    const blob = new Blob(dataChunks.map(el => new Uint8Array(el.resp)), { type: 'video/mp2t' });
+    const blob = new Blob(
+      dataChunks.map(el => new Uint8Array(el.resp)),
+      { type: 'video/mp2t' }
+    );
 
     return new Promise((resolve, reject) => {
       jBinary.load(blob, MPEGTS, (err, mpegts) => {
@@ -147,7 +150,10 @@ const mp4ByJbinaryFinishedJob = progressCallback => {
  */
 const tsFinishedJob = progressCallback => {
   const finishedJob = async dataChunks => {
-    const mp4Blob = new Blob(dataChunks.map(el => new Uint8Array(el.resp)), { type: 'video/mp2t' });
+    const mp4Blob = new Blob(
+      dataChunks.map(el => new Uint8Array(el.resp)),
+      { type: 'video/mp2t' }
+    );
     const link = URL.createObjectURL(mp4Blob);
     let data = { downloadLink: link };
     progressCallback(finishedMergeVideo(data));
@@ -246,8 +252,8 @@ export async function fetchNewVideoById(videoId, preferedFormat = DEFAULT_VIDEO_
           console.warn(`不支持的视频格式:${format}, 尝试m3u8格式`);
           const manifest = await parseM3u8File(videoItem.play_url);
           // m3u8格式的duration需要自己计算.
-          (videoItem.duration = manifest.segments.reduce((a, b) => a + b.duration, 0) * 1000), // second -> ms
-            (videoItem.m3u8 = videoItem.play_url);
+          videoItem.duration = manifest.segments.reduce((a, b) => a + b.duration, 0) * 1000; // second -> ms
+          videoItem.m3u8 = videoItem.play_url;
           videoItem.baseUri = videoItem.play_url.replace(/[^/]+$/i, '');
         } else {
           videoItem.mp4 = videoItem.play_url;

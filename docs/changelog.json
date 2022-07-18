@@ -1,8 +1,21 @@
 [
     {
+        "version": "1.0.13",
+        "date": "2022.07.18",
+        "crx": "https://chrome.google.com/webstore/detail/zh-downloader/gcknejnpflbcggigdinhahgngfhaomik?utm_source=chrome-ntp-icon",
+        "zip": "https://github.com/shellvon/zh-downloader/releases/download/1.0.12/zh-downloader-v1.0.13.zip",
+        "logs": {
+           "fixed": [
+               {
+                    "text": "去掉不需要的权限notification",
+                    "issues": ["31"]
+               }
+           ]
+        }
+    },
+    {
         "version": "1.0.12",
         "date": "2019.11.15",
-        "crx": "https://chrome.google.com/webstore/detail/zh-downloader/gcknejnpflbcggigdinhahgngfhaomik?utm_source=chrome-ntp-icon",
         "zip": "https://github.com/shellvon/zh-downloader/releases/download/1.0.12/zh-downloader-v1.0.12.zip",
         "logs": {
             "new": [

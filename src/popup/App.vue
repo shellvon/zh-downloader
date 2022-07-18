@@ -1,7 +1,6 @@
 <template>
   <el-tabs v-model="latestTab">
-    <el-tab-pane v-for="(item, key) in showTabs" :label="item.label" :key="key" :name="item.name">
-    </el-tab-pane>
+    <el-tab-pane v-for="(item, key) in showTabs" :label="item.label" :key="key" :name="item.name"> </el-tab-pane>
     <keep-alive>
       <component :ref="currentTabCompoent.name" :is="currentTabCompoent.name" v-on="currentTabCompoent.event" v-bind="currentTabCompoent.props"></component>
     </keep-alive>
