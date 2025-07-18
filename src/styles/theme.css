@@ -1,0 +1,378 @@
+:root {
+  /* 亮色模式配色方案 */
+  --background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 50%, #cbd5e1 100%);
+  --background-solid: #ffffff;
+  --foreground: #1e293b;
+  --foreground-muted: #475569;
+
+  /* 卡片和表面 */
+  --card: rgba(255, 255, 255, 0.9);
+  --card-hover: rgba(255, 255, 255, 0.95);
+  --card-foreground: #0f172a;
+  --glass: rgba(255, 255, 255, 0.7);
+  --glass-border: rgba(148, 163, 184, 0.3);
+
+  /* 主色调 - 科技蓝紫渐变 */
+  --primary: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+  --primary-solid: #3b82f6;
+  --primary-foreground: #ffffff;
+  --primary-light: rgba(59, 130, 246, 0.15);
+  --primary-dark: #1d4ed8;
+  --primary-glow: rgba(59, 130, 246, 0.4);
+
+  /* 次要色调 - 青色 */
+  --secondary: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);
+  --secondary-solid: #06b6d4;
+  --secondary-foreground: #ffffff;
+  --secondary-light: rgba(6, 182, 212, 0.15);
+  --secondary-dark: #0e7490;
+
+  /* 强调色 - 翠绿 */
+  --accent: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  --accent-solid: #10b981;
+  --accent-foreground: #ffffff;
+  --accent-glow: rgba(16, 185, 129, 0.4);
+
+  /* 警告和危险色 */
+  --warning: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+  --warning-solid: #f59e0b;
+  --destructive: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+  --destructive-solid: #ef4444;
+  --destructive-foreground: #ffffff;
+
+  /* 边框和输入 */
+  --border: rgba(148, 163, 184, 0.4);
+  --border-hover: rgba(148, 163, 184, 0.6);
+  --input: rgba(248, 250, 252, 0.8);
+  --input-border: rgba(148, 163, 184, 0.4);
+  --ring: rgba(59, 130, 246, 0.3);
+
+  /* 静音色调 */
+  --muted: rgba(148, 163, 184, 0.2);
+  --muted-foreground: #64748b;
+
+  /* 阴影 */
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow:
+    0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --shadow-lg:
+    0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  --shadow-xl:
+    0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  --shadow-glow: 0 0 20px rgba(59, 130, 246, 0.2);
+  --shadow-glow-accent: 0 0 20px rgba(16, 185, 129, 0.2);
+}
+
+.dark {
+  /* 深色模式配色方案 */
+  --background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 50%, #16213e 100%);
+  --background-solid: #0f0f23;
+  --foreground: #e2e8f0;
+  --foreground-muted: #94a3b8;
+
+  /* 卡片和表面 */
+  --card: rgba(30, 41, 59, 0.8);
+  --card-hover: rgba(30, 41, 59, 0.9);
+  --card-foreground: #f1f5f9;
+  --glass: rgba(255, 255, 255, 0.05);
+  --glass-border: rgba(255, 255, 255, 0.1);
+
+  /* 主色调 - 科技蓝紫渐变 */
+  --primary: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+  --primary-solid: #3b82f6;
+  --primary-foreground: #ffffff;
+  --primary-light: rgba(59, 130, 246, 0.1);
+  --primary-dark: #1d4ed8;
+  --primary-glow: rgba(59, 130, 246, 0.3);
+
+  /* 次要色调 - 青色 */
+  --secondary: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);
+  --secondary-solid: #06b6d4;
+  --secondary-foreground: #ffffff;
+  --secondary-light: rgba(6, 182, 212, 0.1);
+  --secondary-dark: #0e7490;
+
+  /* 强调色 - 霓虹绿 */
+  --accent: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  --accent-solid: #10b981;
+  --accent-foreground: #ffffff;
+  --accent-glow: rgba(16, 185, 129, 0.4);
+
+  /* 警告和危险色 */
+  --warning: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+  --warning-solid: #f59e0b;
+  --destructive: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+  --destructive-solid: #ef4444;
+  --destructive-foreground: #ffffff;
+
+  /* 边框和输入 */
+  --border: rgba(148, 163, 184, 0.2);
+  --border-hover: rgba(148, 163, 184, 0.4);
+  --input: rgba(30, 41, 59, 0.6);
+  --input-border: rgba(148, 163, 184, 0.3);
+  --ring: rgba(59, 130, 246, 0.5);
+
+  /* 静音色调 */
+  --muted: rgba(100, 116, 139, 0.3);
+  --muted-foreground: #64748b;
+
+  /* 阴影 */
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow:
+    0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --shadow-lg:
+    0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  --shadow-xl:
+    0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  --shadow-glow: 0 0 20px rgba(59, 130, 246, 0.3);
+  --shadow-glow-accent: 0 0 20px rgba(16, 185, 129, 0.3);
+}
+
+/* 全局样式重置和基础样式 */
+* {
+  box-sizing: border-box;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family:
+    "Inter",
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    Roboto,
+    sans-serif;
+  margin: 0;
+  padding: 0;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* 现代化按钮样式 */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 0.75rem;
+  font-weight: 600;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+  backdrop-filter: blur(10px);
+}
+
+.btn::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.2),
+    transparent
+  );
+  transition: left 0.5s;
+}
+
+.btn:hover::before {
+  left: 100%;
+}
+
+.btn-primary {
+  background: var(--primary);
+  color: var(--primary-foreground);
+  box-shadow:
+    var(--shadow),
+    0 0 0 1px var(--glass-border);
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg), var(--shadow-glow);
+}
+
+.btn-secondary {
+  background: var(--secondary);
+  color: var(--secondary-foreground);
+  box-shadow: var(--shadow);
+}
+
+.btn-accent {
+  background: var(--accent);
+  color: var(--accent-foreground);
+  box-shadow: var(--shadow);
+}
+
+.btn-accent:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg), var(--shadow-glow-accent);
+}
+
+.btn-ghost {
+  background: var(--glass);
+  color: var(--foreground);
+  border: 1px solid var(--glass-border);
+}
+
+.btn-ghost:hover {
+  background: var(--card-hover);
+  border-color: var(--border-hover);
+}
+
+/* 现代化卡片样式 */
+.card {
+  background: var(--card);
+  border: 1px solid var(--glass-border);
+  border-radius: 1rem;
+  backdrop-filter: blur(20px);
+  box-shadow: var(--shadow-lg);
+  transition: all 0.3s ease;
+}
+
+.card:hover {
+  background: var(--card-hover);
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-xl);
+}
+
+.card-glass {
+  background: var(--glass);
+  border: 1px solid var(--glass-border);
+  backdrop-filter: blur(20px);
+}
+
+/* 现代化输入框样式 */
+.input {
+  background: var(--input);
+  border: 1px solid var(--input-border);
+  border-radius: 0.75rem;
+  padding: 0.75rem 1rem;
+  color: var(--foreground);
+  font-size: 0.875rem;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+}
+
+.input:focus {
+  outline: none;
+  border-color: var(--primary-solid);
+  box-shadow: 0 0 0 3px var(--ring);
+  background: var(--card);
+}
+
+.input::placeholder {
+  color: var(--muted-foreground);
+}
+
+/* 渐变文字效果 */
+.text-gradient {
+  background: var(--primary);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.text-gradient-accent {
+  background: var(--accent);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* 发光效果 */
+.glow {
+  box-shadow: var(--shadow-glow);
+}
+
+.glow-accent {
+  box-shadow: var(--shadow-glow-accent);
+}
+
+/* 动画效果 */
+@keyframes pulse-glow {
+  0%,
+  100% {
+    box-shadow: 0 0 5px var(--primary-glow);
+  }
+  50% {
+    box-shadow:
+      0 0 20px var(--primary-glow),
+      0 0 30px var(--primary-glow);
+  }
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
+
+/* 响应式工具类 */
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+
+/* 现代化滚动条 */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--muted);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--primary-solid);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--primary-dark);
+}
+
+/* 选择文本样式 */
+::selection {
+  background: var(--primary-light);
+  color: var(--primary-foreground);
+}
+
+/* 工具类 */
+.backdrop-blur {
+  backdrop-filter: blur(20px);
+}
+
+.text-shadow {
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.border-gradient {
+  border: 1px solid transparent;
+  background:
+    linear-gradient(var(--card), var(--card)) padding-box,
+    var(--primary) border-box;
+}

@@ -1,0 +1,31 @@
+{
+  "manifest_version": 3,
+  "name": "知乎视频下载器",
+  "version": "2.0.0",
+  "description": "支持知乎的一键视频下载和截图工具",
+  "permissions": ["activeTab", "downloads", "storage", "contextMenus", "scripting"],
+  "host_permissions": ["<all_urls>"],
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content.js"],
+      "css": ["style.css"],
+      "run_at": "document_end",
+      "type": "module"
+    }
+  ],
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "action": {
+    "default_popup": "src/popup/index.html",
+    "default_title": "知乎视频下载器"
+  },
+  "options_page": "src/options/index.html",
+  "icons": {
+    "16": "icon.png",
+    "48": "icon.png",
+    "128": "icon.png"
+  }
+}

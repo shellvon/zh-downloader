@@ -2,3 +2,7 @@
 /*.log
 /dist
 /dist-zip
+yarn.lock
+.DS_Store
+.vscode
+
