@@ -1,72 +1,87 @@
-# Zh-Downloader
+# 知乎视频下载器（zh-downloader）
 
-这是Chrome插件(亦支持Firefox), 能进行知乎视频嗅探以及下载功能。支持下载为TS格式( MPEG2-TS 格式) 或者 MP4 格式。
+> 🚀 基于 Manifest V3、TypeScript、React、Vite 的现代化 Chrome 视频下载插件  
+> 仅专注于知乎的视频下载与截图，极简、好用、界面美观
 
+更新原因参见 [shellvon/zh-downloader#issues33](https://github.com/shellvon/zh-downloader/issues/33)
 
-[![Chrome Web Store](https://developer.chrome.com/webstore/images/ChromeWebStore_BadgeWBorder_v2_206x58.png)](https://chrome.google.com/webstore/detail/zh-downloader/gcknejnpflbcggigdinhahgngfhaomik?utm_source=chrome-ntp-icon)
+新版本截图:
 
-Firefox 用户请下载 1.0.9 版本以后的zip文件. See [#12](https://github.com/shellvon/zh-downloader/issues/12)
+![弹出框以及Content设置](./docs//assets/screenshot/screenshot_v2_content.png)
+![配置功能](./docs//assets//screenshot//screenshot_v2_opt.png)
+![历史记录](./docs//assets//screenshot//screenshot_v2_history.png)
 
-更多介绍/下载信息请访问: [https://github.com/shellvon/zh-downloader](https://github.com/shellvon/zh-downloader)
+---
 
+## ✨ 特性
 
-# 使用说明
+- **支持 Manifest V3**：安全、现代、兼容 Chrome 最新扩展平台
+- **极简 UI**：采用 React + TailwindCSS，界面科技感、现代化
+- **一键下载**：支持 mp4/ogg 等主流格式视频的直接下载
+- **任意帧截图**：可对当前视频任意时间点进行截图保存
+- **智能元素选择**：可自定义标题选择器，适配复杂网页结构(WIP)
+- **历史记录**：自动保存下载与截图历史，方便回溯
+- **多主题支持**：亮色/暗色主题自由切换
+- **高鲁棒性**：支持自定义选择器，兼容各种嵌套/动态/Shadow DOM 场景
 
-下载本代码之后执行 `npm install && npm run build` 之后在 `chrome://extensions/` 中选择"加载已解压的扩展程序" 选择 `dist` 目录即可。
+---
 
-或者你可以选择已经打包好的CRX/ZIP格式插件(1.0.3开始不再提供CRX,参见 [#6](https://github.com/shellvon/zh-downloader/issues/6) ),可以前往这里下载:[https://github.com/shellvon/zh-downloader/releases/](https://github.com/shellvon/zh-downloader/releases/)
+## 🛠 技术栈
 
-# 技术
+- [Manifest V3](https://developer.chrome.com/docs/extensions/mv3/)
+- [TypeScript](https://www.typescriptlang.org/)
+- [React 18+](https://react.dev/)
+- [Vite](https://vitejs.dev/)
+- [TailwindCSS](https://tailwindcss.com/)
 
-本次计划使用 Vue，因此选择了 [Kocal/vue-web-extension](https://github.com/Kocal/vue-web-extension) 模版
+---
 
-+ [Vue2.0](https://vuejs.org/)
-+ [Element](http://element.eleme.io/#/zh-CN)
-+ [m3u8-parser](https://github.com/videojs/m3u8-parser)
-+ [mpegts_to_mp4 魔改版](https://github.com/shellvon/mpegts)
-+ [mux.js](https://github.com/videojs/mux.js)
-+ [vuex-webextensions](https://github.com/MitsuhaKitsune/vuex-webextensions)
+## 📦 安装
 
-# 原理解释
+1. **克隆仓库**
 
-本插件主要由 Popup Script 以及 Background Script 合作完成，参见:[Understanding Google Chrome Extensions](https://gist.github.com/jjperezaguinaga/4243341)
+   ```bash
+   git clone https://github.com/shellvon/zh-downloader.git
+   cd zh-downloader
+   ```
 
-大体步骤:
+2. **安装依赖**
 
--  使用 [chrome.webRequest.onBeforeRequest](https://developer.chrome.com/webRequest) 监听所有知乎发起的视频请求，根据简单抓包可以看到知乎当有视频的时候会向这个地址:[https://v.vzuu.com/video/ZHIHU_VIDEO_ID](https://v.vzuu.com/video) 发起请求，其中`ZHIHU_VIDEO_ID`即为知乎视频ID. 之后利用知乎 API: https://lens.zhihu.com/api/videos/ZHIHU_VIDEO_ID 找到视频的 m3u8 地址。
+   ```bash
+   yarn install
+   # 或 npm install
+   ```
 
-- 利用 [M3U8-Parser](https://github.com/videojs/m3u8-parser) 解析上述 API 返回的数据，并提交数据至 Popup 页面进行查看。
+3. **构建扩展**
 
-- 提交数据利用了 Vue 的 Store 状态管理，由于 Popup 生命周期的原因，因此将 Store 也存入了 [chrome.storage](https://developer.chrome.com/apps/storage) 进行持久化, 插件是 `vuex-webextensions`。
+   ```bash
+   yarn build
+   # 产物在 dist/ 目录
+   ```
 
-- Popup(前端)接受用户下载请求，利用 `chrome.runtime.connect` 连接 Port 与 Background.js (后端)进行双向通讯，通知其下载请求。
+4. **加载到 Chrome**
+   - 打开 `chrome://extensions/`
+   - 开启「开发者模式」
+   - 选择「加载已解压的扩展程序」，选择 `dist/` 目录
 
-- Background.js 遍历所有 TS 数据包并将起合并为一个 TS 包，如果发现下载的是 mp4 格式，则利用 `mpegts_to_mp4` 或则 `mux.js` 进行数据转化。
+---
 
-- 利用 Port 实时通知 Popup 页的下载进度以及下载结果。
+## 🖥️ 使用说明
 
-> ⚠️ 注意:  MP4 尝试了`mpegts_to_mp4`, `mux.js`, `videoconverter.js` 效果均不是很理想。因此不建议下载MP4。
+- 点击浏览器右上角插件图标，弹出主界面
+- 支持自动检测当前页面视频数量
+- 支持自定义标题选择器，适配复杂网页
+- 支持历史记录查看与配置导入/导出
+- 支持亮/暗主题切换
 
-1. mpegts_to_mp4: ~~读取 SPS 信息的时候宽度/高度信息错误~~ (调研发现是没有去掉 [Emulation Prevention Bytes](http://blog.51cto.com/danielllf/1758115). 目前已经修复))
-2. mux.js 能正常读取宽/高，但是无法正常解析Duration(See [videojs/mux.js#210](https://github.com/videojs/mux.js/issues/210))，另一个有趣的问题是部分知乎用户的视频没有音频，因此不会触发 mux.js 的 `data` 事件(See [videojs/mux.js#194](https://github.com/videojs/mux.js/issues/194))，因此需要分开处理音频/视频。
-3. videoconverter.js  Node 直接就爆内存错误
+---
 
-# 限制
+## ⚡ 进阶配置
 
-1. 下载过程中不能关闭 Popup 页，否则后端无法与之通信然后通知下载结果
-2. 不知道视频链接过期时间, 因此下载过程中会出现403，这时候可以点击ID进入知乎将自动刷新
-3. 转化的MP4格式宽高不正确，因此普通视频播放器可能难以播放, 请尝试用 `mplayer` 播放。 或者下载 TS 之后用 `ffmpeg` 或者 [https://cloudconvert.com/](https://cloudconvert.com/) 在线转换
+- **自定义选择器**
+  - 针对特殊站点，可在「选项」页面自定义 `videoSelectors`、`titleSelectors`、`containerSelectors`
+  - 支持 Shadow DOM、动态加载、非标准嵌入等复杂场景
+- **只需选择标题**
+  - 大多数情况下，视频元素自动识别，用户只需选择标题即可
 
-# TODO: 
-
-- [x] 用户可自定义设置
-- [x] 已下载视频增加打开功能
-- [x] 自动删除采集超过一定时间的视频(时间/策略?)
-- [ ] ~~用户忽略某些条件的视频采集(如大小/清晰度/作者/视频名)?~~ (似乎没什么用,此功能不打算实现)
-- [x] ~~直接搜索知乎视频(不知道有API没有)~~ 知乎推荐视频(无法搜索)
-- [x] 修复导出 MP4 格式的问题,无论是 `mux.js` 还是 `mpegts_to_mp4`，任一即可
-- [x] 发布至 Google Chrome 商店[Install from Google Chrome Store](https://chrome.google.com/webstore/detail/zh-downloader/gcknejnpflbcggigdinhahgngfhaomik?utm_source=chrome-ntp-icon)
-
-# Change Logs
-
-关于本项目的 Change Logs 您可以访问 [https://github.com/shellvon/zh-downloader](https://htmlpreview.github.io/?https://github.com/shellvon/zh-downloader/blob/master/docs/index.html) 查看详情 或者可以查看 `docs/changelog.json` 文件。
+---

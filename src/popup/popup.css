@@ -1,0 +1,473 @@
+body {
+  width: 380px;
+  height: 580px;
+  padding: 0;
+  margin: 0;
+  font-family:
+    "Inter",
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    Roboto,
+    sans-serif;
+  background: var(--background);
+  color: var(--foreground);
+  overflow: hidden;
+}
+
+.popup-container {
+  width: 100%;
+  height: 580px;
+  background: var(--background);
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* 背景装饰 */
+.popup-container::before {
+  content: "";
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, var(--primary-glow) 0%, transparent 70%);
+  opacity: 0.1;
+  animation: float 6s ease-in-out infinite;
+  pointer-events: none;
+}
+
+/* 头部区域 - 固定在顶部 */
+.popup-header {
+  padding: 1.5rem;
+  background: var(--glass);
+  border-bottom: 1px solid var(--glass-border);
+  backdrop-filter: blur(20px);
+  position: sticky; /* 固定在滚动容器内 */
+  top: 0; /* 固定在顶部 */
+  z-index: 10; /* 确保在内容之上 */
+  flex-shrink: 0;
+}
+
+.popup-header-top {
+  /* 新增样式，用于flex布局标题和主题切换按钮 */
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem; /* 调整与副标题的间距 */
+}
+
+.popup-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  background: var(--primary);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  text-shadow: none;
+}
+
+.popup-title svg {
+  color: var(--primary-solid);
+  filter: drop-shadow(0 0 8px var(--primary-glow));
+}
+
+.popup-subtitle {
+  font-size: 0.875rem;
+  color: var(--muted-foreground);
+  margin: 0; /* 移除顶部 margin，因为已由 popup-header-top 控制 */
+  font-weight: 400;
+}
+
+/* 主题切换按钮样式 */
+.theme-toggle-button {
+  background: var(--glass);
+  border: 1px solid var(--glass-border);
+  border-radius: 0.5rem;
+  width: 40px; /* 固定宽度 */
+  height: 40px; /* 固定高度 */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--foreground);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex-shrink: 0; /* 防止被压缩 */
+}
+
+.theme-toggle-button:hover {
+  background: var(--card-hover);
+  border-color: var(--border-hover);
+  transform: scale(1.05);
+}
+
+.theme-toggle-button svg {
+  width: 20px;
+  height: 20px;
+}
+
+/* 可滚动内容区域 */
+.popup-content {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* 状态卡片 */
+.status-card {
+  margin: 1.5rem;
+  padding: 1.25rem;
+  background: var(--card);
+  border: 1px solid var(--glass-border);
+  border-radius: 1rem;
+  backdrop-filter: blur(20px);
+  box-shadow: var(--shadow-lg);
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.status-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: var(--primary);
+  border-radius: 1rem 1rem 0 0;
+}
+
+.status-card.active {
+  border-color: var(--primary-solid);
+  box-shadow: var(--shadow-lg), var(--shadow-glow);
+}
+
+.status-card.active::before {
+  background: var(--accent);
+  box-shadow: var(--shadow-glow-accent);
+}
+
+.status-info {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.status-icon {
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 0.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--primary-light);
+  color: var(--primary-solid);
+  flex-shrink: 0;
+}
+
+.status-card.active .status-icon {
+  background: var(--accent-solid);
+  color: white;
+  box-shadow: var(--shadow-glow-accent);
+}
+
+.status-text {
+  flex: 1;
+}
+
+.status-title {
+  font-weight: 600;
+  font-size: 0.875rem;
+  color: var(--foreground);
+  margin: 0;
+}
+
+.status-description {
+  font-size: 0.75rem;
+  color: var(--muted-foreground);
+  margin: 0.25rem 0 0 0;
+}
+
+/* 视频计数器 */
+.video-counter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1rem;
+  background: var(--glass);
+  border: 1px solid var(--glass-border);
+  border-radius: 0.75rem;
+  backdrop-filter: blur(10px);
+}
+
+.counter-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--foreground);
+}
+
+.counter-value {
+  font-size: 1.5rem;
+  font-weight: 700;
+  background: var(--accent);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  min-width: 2rem;
+  text-align: right;
+}
+
+/* 配置状态 */
+.config-status {
+  margin: 0 1.5rem 1rem 1.5rem;
+  padding: 0.75rem 1rem;
+  background: var(--glass);
+  border: 1px solid var(--glass-border);
+  border-radius: 0.75rem;
+  backdrop-filter: blur(10px);
+  flex-shrink: 0;
+}
+
+.config-info {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  color: var(--muted-foreground);
+  font-weight: 500;
+}
+
+.config-info svg {
+  color: var(--accent-solid);
+}
+
+/* 操作按钮区域 */
+.action-buttons {
+  padding: 0 1.5rem 1rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  flex: 1;
+}
+
+.action-button {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem 1.25rem;
+  background: var(--glass);
+  border: 1px solid var(--glass-border);
+  border-radius: 0.75rem;
+  color: var(--foreground);
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 0.875rem;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  backdrop-filter: blur(10px);
+  position: relative;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.action-button::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.1),
+    transparent
+  );
+  transition: left 0.5s;
+}
+
+.action-button:hover::before {
+  left: 100%;
+}
+
+.action-button:hover {
+  background: var(--card-hover);
+  border-color: var(--border-hover);
+  transform: translateX(4px);
+  box-shadow: var(--shadow-lg);
+}
+
+.action-button.primary {
+  background: var(--primary);
+  color: var(--primary-foreground);
+  border-color: transparent;
+}
+
+.action-button.primary:hover {
+  box-shadow: var(--shadow-lg), var(--shadow-glow);
+  transform: translateX(4px) translateY(-2px);
+}
+
+.action-icon {
+  width: 1.25rem;
+  height: 1.25rem;
+  flex-shrink: 0;
+}
+
+.action-text {
+  flex: 1;
+}
+
+/* 版本信息 - 固定在底部 */
+.version-info {
+  padding: 1rem 1.5rem;
+  text-align: center;
+  border-top: 1px solid var(--glass-border);
+  background: var(--glass);
+  backdrop-filter: blur(20px);
+  flex-shrink: 0;
+  position: sticky;
+  bottom: 0;
+  z-index: 10;
+}
+
+.version-text {
+  font-size: 0.75rem;
+  color: var(--muted-foreground);
+  margin: 0;
+  font-weight: 400;
+}
+
+/* 加载状态 */
+.loading-container {
+  width: 100%;
+  height: 580px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: var(--background);
+  gap: 1rem;
+}
+
+.loading-spinner {
+  width: 2.5rem;
+  height: 2.5rem;
+  border: 3px solid var(--muted);
+  border-top: 3px solid var(--primary-solid);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+.loading-text {
+  color: var(--muted-foreground);
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+/* 响应式调整 */
+@media (max-width: 400px) {
+  body {
+    width: 320px;
+  }
+
+  .popup-header {
+    padding: 1.25rem;
+  }
+
+  .popup-title {
+    font-size: 1.25rem;
+  }
+
+  .status-card {
+    margin: 1.25rem;
+    padding: 1rem;
+  }
+
+  .action-buttons {
+    padding: 0 1.25rem 1rem 1.25rem;
+  }
+}
+
+/* 动画增强 */
+.popup-container > * {
+  animation: slideInUp 0.4s ease-out;
+}
+
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.status-card {
+  animation: slideInUp 0.4s ease-out 0.1s both;
+}
+
+.config-status {
+  animation: slideInUp 0.4s ease-out 0.15s both;
+}
+
+.action-buttons {
+  animation: slideInUp 0.4s ease-out 0.2s both;
+}
+
+.version-info {
+  animation: slideInUp 0.4s ease-out 0.3s both;
+}
+
+/* 滚动条样式 */
+.popup-content::-webkit-scrollbar {
+  width: 6px;
+}
+
+.popup-content::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.popup-content::-webkit-scrollbar-thumb {
+  background: var(--muted);
+  border-radius: 3px;
+}
+
+.popup-content::-webkit-scrollbar-thumb:hover {
+  background: var(--primary-solid);
+}
