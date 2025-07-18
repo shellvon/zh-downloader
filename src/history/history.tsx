@@ -68,21 +68,15 @@ const HistoryPage: React.FC = () => {
     }
   }, chrome.runtime.onMessage)
 
-  
   // 监听存储变化，实时更新历史记录
-  useChromeEvent(
-    (changes: { [key: string]: chrome.storage.StorageChange }) => {
-      if (changes[STORAGE_KEYS.DOWNLOAD_HISTORY]) {
-        const newHistory = changes[STORAGE_KEYS.DOWNLOAD_HISTORY].newValue || []
-        setHistory(newHistory)
-        updateStats(newHistory)
-        logger.log('History updated from storage change')
-      }
-    },
-    chrome.storage.onChanged,
-  )
-
-
+  useChromeEvent((changes: { [key: string]: chrome.storage.StorageChange }) => {
+    if (changes[STORAGE_KEYS.DOWNLOAD_HISTORY]) {
+      const newHistory = changes[STORAGE_KEYS.DOWNLOAD_HISTORY].newValue || []
+      setHistory(newHistory)
+      updateStats(newHistory)
+      logger.log('History updated from storage change')
+    }
+  }, chrome.storage.onChanged)
 
   const updateStats = useCallback((currentHistory: HistoryRecord[]) => {
     const newTotalCount = currentHistory.length
@@ -111,7 +105,6 @@ const HistoryPage: React.FC = () => {
     }
   }, [updateStats])
 
-  
   const clearHistory = useCallback(async () => {
     if (confirm('确定要清空所有历史记录吗？此操作不可撤销。')) {
       try {
@@ -368,11 +361,7 @@ const HistoryPage: React.FC = () => {
                   >
                     <div className="card-header">
                       <div className="card-type-indicator">
-                        {record.type === 'video' ? (
-                          <Video size={20} />
-                        ) : (
-                          <Camera size={20} />
-                        )}
+                        {record.type === 'video' ? <Video size={20} /> : <Camera size={20} />}
                       </div>
                       <button
                         onClick={() => deleteRecord(record.timestamp)}

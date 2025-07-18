@@ -15,14 +15,15 @@ import {
   Shield,
   Sun,
   Moon,
-} from 'lucide-react' // 导入 Sun 和 Moon 图标
-import { loadTheme, saveTheme, applyTheme, type Theme, listenThemeUpdate } from '@/utils/theme' // 导入 Theme 类型
+} from 'lucide-react'
+import { useTheme } from '@/hooks/useTheme'
 import { loadConfig } from '@/utils/config'
 import type { Config } from '@/types'
 import './popup.css'
 import '@/styles/theme.css'
 import logger from '@/utils/logger'
-import { ConfigEvent, SelectorEvent, DownloadEvent, ContentEvent, PageEvent } from '@/utils/events'
+import { SelectorEvent, ContentEvent } from '@/utils/events'
+import { isValidTab } from '@/utils/tab'
 
 const PopupPage: React.FC = () => {
   const [loading, setLoading] = useState(true)
@@ -32,29 +33,18 @@ const PopupPage: React.FC = () => {
   const [currentSite, setCurrentSite] = useState<string>('')
   const [config, setConfig] = useState<Config | null>(null)
   const [activeConfig, setActiveConfig] = useState<string>('')
-  const [currentTheme, setCurrentTheme] = useState<Theme>('system') // 添加主题状态
+  const { theme, toggleTheme } = useTheme()
 
-  // 初始化主题和配置
+  // 初始化配置
   useEffect(() => {
-    logger.log('Popup: Initializing theme and config...')
     const init = async () => {
-      const savedTheme = await loadTheme()
-      setCurrentTheme(savedTheme) // 设置当前主题状态
-      applyTheme(savedTheme)
-
+      logger.log('Popup: Initializing config...')
       const configData = await loadConfig()
       setConfig(configData)
-
+      logger.log('Popup: Config loaded.')
       setLoading(false)
-      logger.log('Popup: Theme and config loaded.')
     }
     init()
-
-    const off = listenThemeUpdate((theme) => {
-      setCurrentTheme(theme)
-      applyTheme(theme)
-    })
-    return off
   }, [])
 
   // 获取当前页面状态和视频数量
@@ -67,13 +57,7 @@ const PopupPage: React.FC = () => {
           currentWindow: true,
         })
 
-        if (
-          !tab ||
-          !tab.id ||
-          !tab.url ||
-          tab.url.startsWith('chrome://') ||
-          tab.url.startsWith('about:')
-        ) {
+        if (!isValidTab(tab)) {
           setStatusMessage('请在普通网页中使用此扩展')
           setIsStatusActive(false)
           setVideoCount(0)
@@ -82,8 +66,8 @@ const PopupPage: React.FC = () => {
           logger.log('Popup: Invalid tab URL or ID.')
           return
         }
-
-        const hostname = new URL(tab.url).hostname
+        const validTab = tab as Required<typeof tab>
+        const hostname = new URL(validTab.url).hostname
         setCurrentSite(hostname)
         logger.log('Popup: Current hostname:', hostname)
 
@@ -105,7 +89,7 @@ const PopupPage: React.FC = () => {
         let count = 0
         try {
           logger.log('Popup: Attempting to get video count from content script...')
-          const response = await chrome.tabs.sendMessage(tab.id, {
+          const response = await chrome.tabs.sendMessage(validTab.id, {
             action: ContentEvent.GET_VIDEO_COUNT,
           })
           if (response && typeof response.videoCount === 'number') {
@@ -121,12 +105,12 @@ const PopupPage: React.FC = () => {
           )
           try {
             await chrome.scripting.executeScript({
-              target: { tabId: tab.id },
+              target: { tabId: validTab.id },
               files: ['content.js'],
             })
             logger.log('Popup: Content script re-injected. Retrying get video count...')
             await new Promise((resolve) => setTimeout(resolve, 500))
-            const response = await chrome.tabs.sendMessage(tab.id, {
+            const response = await chrome.tabs.sendMessage(validTab.id, {
               action: ContentEvent.GET_VIDEO_COUNT,
             })
             if (response && typeof response.videoCount === 'number') {
@@ -181,15 +165,6 @@ const PopupPage: React.FC = () => {
     })
   }, [])
 
-  // 切换主题函数
-  const handleThemeToggle = useCallback(async () => {
-    const newTheme: Theme = currentTheme === 'light' ? 'dark' : 'light'
-    await saveTheme(newTheme)
-    setCurrentTheme(newTheme)
-    applyTheme(newTheme)
-    logger.log('Popup: Theme toggled to', newTheme)
-  }, [currentTheme])
-
   // 启动元素选择器
   const startElementSelector = useCallback(async () => {
     try {
@@ -197,19 +172,13 @@ const PopupPage: React.FC = () => {
         active: true,
         currentWindow: true,
       })
-      if (
-        !tab ||
-        !tab.id ||
-        !tab.url ||
-        tab.url.startsWith('chrome://') ||
-        tab.url.startsWith('about:')
-      ) {
+      if (!isValidTab(tab)) {
         alert('请在普通网页中启动元素选择器')
         return
       }
-
+      const validTab = tab as Required<typeof tab>
       try {
-        await chrome.tabs.sendMessage(tab.id, {
+        await chrome.tabs.sendMessage(validTab.id, {
           action: SelectorEvent.START,
         })
         logger.log('Sent startElementSelector message to content script.')
@@ -217,12 +186,12 @@ const PopupPage: React.FC = () => {
       } catch (error) {
         logger.warn('Failed to send message to content script, attempting re-injection:', error)
         await chrome.scripting.executeScript({
-          target: { tabId: tab.id },
+          target: { tabId: validTab.id },
           files: ['content.js'],
         })
         logger.log('Content script re-injected. Retrying startElementSelector message.')
         await new Promise((resolve) => setTimeout(resolve, 500))
-        await chrome.tabs.sendMessage(tab.id, {
+        await chrome.tabs.sendMessage(validTab.id, {
           action: SelectorEvent.START,
         })
         window.close()
@@ -255,8 +224,8 @@ const PopupPage: React.FC = () => {
               <Zap size={24} />
               知乎视频下载器
             </h1>
-            <button onClick={handleThemeToggle} className="theme-toggle-button" title="切换主题">
-              {currentTheme === 'light' ? <Moon size={20} /> : <Sun size={20} />}
+            <button onClick={toggleTheme} className="theme-toggle-button" title="切换主题">
+              {theme === 'light' ? <Moon size={20} /> : <Sun size={20} />}
             </button>
           </div>
           <p className="popup-subtitle">专业的视频内容提取工具</p>

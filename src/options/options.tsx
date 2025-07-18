@@ -26,14 +26,13 @@ import {
 } from 'lucide-react'
 import type { Config, SiteConfig, ElementSelectorData } from '@/types'
 import { loadConfig, saveConfig, getDefaultConfig } from '@/utils/config'
-import { saveTheme, type Theme } from '@/utils/theme'
 import { useTheme } from '@/hooks/useTheme'
 import { useChromeEvent } from '@/hooks/useChromeEvent'
 import { STORAGE_KEYS } from '@/utils/constants'
 import './options.css'
 import '@/styles/theme.css'
 import logger from '@/utils/logger'
-import { ConfigEvent, SelectorEvent} from '@/utils/events'
+import { ConfigEvent, SelectorEvent } from '@/utils/events'
 
 const OptionsPage: React.FC = () => {
   const [config, setConfig] = useState<Config | null>(null)
@@ -44,18 +43,10 @@ const OptionsPage: React.FC = () => {
     (ElementSelectorData & { selectorType: 'video' | 'title' | 'author' | 'container' }) | null
   >(null)
   const [editingDomain, setEditingDomain] = useState<string | null>(null)
-  // 主题由 useTheme 统一管理
-  useTheme()
+
+  const { theme, toggleTheme } = useTheme()
 
   const importFileInputRef = useRef<HTMLInputElement>(null)
-
-  // 切换主题
-  const [theme, setTheme] = useState<Theme>('system')
-  const toggleTheme = useCallback(async () => {
-    const newTheme = theme === 'light' ? 'dark' : 'light'
-    await saveTheme(newTheme)
-    setTheme(newTheme)
-  }, [theme])
 
   // 加载配置
   const loadConfigData = useCallback(async () => {
@@ -283,15 +274,12 @@ const OptionsPage: React.FC = () => {
   }, [loadConfigData])
 
   // 监听配置变更（storage）
-  useChromeEvent(
-    (changes: { [key: string]: chrome.storage.StorageChange }) => {
-      if (changes[STORAGE_KEYS.VIDEO_DOWNLOADER_CONFIG]) {
-        const newConfig = changes[STORAGE_KEYS.VIDEO_DOWNLOADER_CONFIG].newValue
-        if (newConfig) setConfig(newConfig)
-      }
-    },
-    chrome.storage.onChanged
-  )
+  useChromeEvent((changes: { [key: string]: chrome.storage.StorageChange }) => {
+    if (changes[STORAGE_KEYS.VIDEO_DOWNLOADER_CONFIG]) {
+      const newConfig = changes[STORAGE_KEYS.VIDEO_DOWNLOADER_CONFIG].newValue
+      if (newConfig) setConfig(newConfig)
+    }
+  }, chrome.storage.onChanged)
 
   const showMessage = (text: string, type: 'success' | 'error') => {
     setMessage({ text, type })
