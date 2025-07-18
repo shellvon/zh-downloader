@@ -26,11 +26,14 @@ import {
 } from 'lucide-react'
 import type { Config, SiteConfig, ElementSelectorData } from '@/types'
 import { loadConfig, saveConfig, getDefaultConfig } from '@/utils/config'
-import { loadTheme, saveTheme, applyTheme, type Theme, listenThemeUpdate } from '@/utils/theme'
+import { saveTheme, type Theme } from '@/utils/theme'
+import { useTheme } from '@/hooks/useTheme'
+import { useChromeEvent } from '@/hooks/useChromeEvent'
+import { STORAGE_KEYS } from '@/utils/constants'
 import './options.css'
 import '@/styles/theme.css'
 import logger from '@/utils/logger'
-import { ConfigEvent, SelectorEvent, DownloadEvent, ContentEvent, PageEvent } from '@/utils/events'
+import { ConfigEvent, SelectorEvent} from '@/utils/events'
 
 const OptionsPage: React.FC = () => {
   const [config, setConfig] = useState<Config | null>(null)
@@ -41,41 +44,18 @@ const OptionsPage: React.FC = () => {
     (ElementSelectorData & { selectorType: 'video' | 'title' | 'author' | 'container' }) | null
   >(null)
   const [editingDomain, setEditingDomain] = useState<string | null>(null)
-  const [currentTheme, setCurrentTheme] = useState<Theme>('system')
+  // 主题由 useTheme 统一管理
+  useTheme()
 
   const importFileInputRef = useRef<HTMLInputElement>(null)
 
-  // 初始化主题
-  useEffect(() => {
-    const initTheme = async () => {
-      const savedTheme = await loadTheme()
-      setCurrentTheme(savedTheme)
-      applyTheme(savedTheme)
-    }
-    initTheme()
-
-    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)')
-    const handleSystemThemeChange = () => {
-      if (currentTheme === 'system') {
-        applyTheme('system')
-      }
-    }
-    mediaQuery.addEventListener('change', handleSystemThemeChange)
-
-    const off = listenThemeUpdate((theme) => {
-      setCurrentTheme(theme)
-      applyTheme(theme)
-    })
-    return off
-  }, [currentTheme])
-
   // 切换主题
+  const [theme, setTheme] = useState<Theme>('system')
   const toggleTheme = useCallback(async () => {
-    const newTheme = currentTheme === 'light' ? 'dark' : 'light'
+    const newTheme = theme === 'light' ? 'dark' : 'light'
     await saveTheme(newTheme)
-    setCurrentTheme(newTheme)
-    applyTheme(newTheme)
-  }, [currentTheme])
+    setTheme(newTheme)
+  }, [theme])
 
   // 加载配置
   const loadConfigData = useCallback(async () => {
@@ -85,7 +65,7 @@ const OptionsPage: React.FC = () => {
     } catch (error) {
       logger.error('加载配置失败:', error)
       setConfig(getDefaultConfig())
-      showMessage('加载配置失败，使用默认配置', 'error') // Fixed: showMessage variable is undeclared
+      showMessage('加载配置失败，使用默认配置', 'error')
     } finally {
       setLoading(false)
     }
@@ -96,13 +76,13 @@ const OptionsPage: React.FC = () => {
     try {
       await saveConfig(newConfig)
       setConfig(newConfig)
-      showMessage('配置保存成功！', 'success') // Fixed: showMessage variable is undeclared
+      showMessage('配置保存成功！', 'success')
       chrome.runtime.sendMessage({ action: ConfigEvent.UPDATED }).catch((error) => {
         logger.warn('Failed to send configUpdated message to background:', error)
       })
     } catch (error) {
       logger.error('保存配置失败:', error)
-      showMessage('配置保存失败: ' + (error as Error).message, 'error') // Fixed: showMessage variable is undeclared
+      showMessage('配置保存失败: ' + (error as Error).message, 'error')
     }
   }, [])
 
@@ -152,7 +132,7 @@ const OptionsPage: React.FC = () => {
       isBuiltin = false,
     ) => {
       if (!config || !domain.trim() || videoSelectors.length === 0) {
-        showMessage('域名和视频选择器不能为空', 'error') // Fixed: showMessage variable is undeclared
+        showMessage('域名和视频选择器不能为空', 'error')
         return
       }
 
@@ -197,7 +177,7 @@ const OptionsPage: React.FC = () => {
         tab.url.startsWith('chrome://') ||
         tab.url.startsWith('about:')
       ) {
-        showMessage('请在普通网页中启动元素选择器', 'error') // Fixed: showMessage variable is undeclared
+        showMessage('请在普通网页中启动元素选择器', 'error')
         return
       }
 
@@ -216,10 +196,10 @@ const OptionsPage: React.FC = () => {
       }
 
       setIsElementSelectorActive(true)
-      showMessage('元素选择器已启动，请在当前网页中点击目标元素', 'success') // Fixed: showMessage variable is undeclared
+      showMessage('元素选择器已启动，请在当前网页中点击目标元素', 'success')
     } catch (error) {
       logger.error('启动元素选择器失败:', error)
-      showMessage('启动元素选择器失败: ' + (error as Error).message, 'error') // Fixed: showMessage variable is undeclared
+      showMessage('启动元素选择器失败: ' + (error as Error).message, 'error')
     }
   }, [])
 
@@ -260,7 +240,7 @@ const OptionsPage: React.FC = () => {
     document.body.removeChild(a)
 
     URL.revokeObjectURL(url)
-    showMessage('配置已导出', 'success') // Fixed: showMessage variable is undeclared
+    showMessage('配置已导出', 'success')
   }, [config])
 
   // 导入配置
@@ -280,7 +260,7 @@ const OptionsPage: React.FC = () => {
 
           saveConfigData(importedConfig)
         } catch (error) {
-          showMessage('导入失败: ' + (error as Error).message, 'error') // Fixed: showMessage variable is undeclared
+          showMessage('导入失败: ' + (error as Error).message, 'error')
         }
       }
 
@@ -301,6 +281,17 @@ const OptionsPage: React.FC = () => {
   useEffect(() => {
     loadConfigData()
   }, [loadConfigData])
+
+  // 监听配置变更（storage）
+  useChromeEvent(
+    (changes: { [key: string]: chrome.storage.StorageChange }) => {
+      if (changes[STORAGE_KEYS.VIDEO_DOWNLOADER_CONFIG]) {
+        const newConfig = changes[STORAGE_KEYS.VIDEO_DOWNLOADER_CONFIG].newValue
+        if (newConfig) setConfig(newConfig)
+      }
+    },
+    chrome.storage.onChanged
+  )
 
   const showMessage = (text: string, type: 'success' | 'error') => {
     setMessage({ text, type })
@@ -347,8 +338,8 @@ const OptionsPage: React.FC = () => {
                   恢复默认
                 </button>
                 <button onClick={toggleTheme} className="btn btn-ghost">
-                  {currentTheme === 'light' ? <Moon size={16} /> : <Sun size={16} />}
-                  {currentTheme === 'light' ? '暗色模式' : '亮色模式'}
+                  {theme === 'light' ? <Moon size={16} /> : <Sun size={16} />}
+                  {theme === 'light' ? '暗色模式' : '亮色模式'}
                 </button>
               </div>
             </div>
