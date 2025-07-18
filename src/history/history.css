@@ -722,6 +722,26 @@ body {
   box-shadow: var(--shadow-glow);
 }
 
+/* 加载状态样式 */
+.loading-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 50vh;
+  gap: 1rem;
+}
+
+.loading-spinner {
+  animation: spin 1s linear infinite;
+  color: var(--primary);
+}
+
+.loading-state p {
+  color: var(--muted-foreground);
+  font-size: 1.125rem;
+}
+
 /* 空状态 */
 .empty-state {
   text-align: center;

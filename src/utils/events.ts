@@ -16,11 +16,15 @@ export enum DownloadEvent {
   COMPLETE = 'downloadComplete',
 }
 
+export enum RecordType {
+  VIDEO = 'video',
+  SCREENSHOT = 'screenshot',
+}
+
 export enum ContentEvent {
   RELOAD = 'reloadContentScript',
   GET_VIDEO_COUNT = 'getVideoCount',
   PING = 'ping',
-  THEME_UPDATED = 'themeUpdated',
 }
 
 export enum PageEvent {

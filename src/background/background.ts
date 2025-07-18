@@ -9,6 +9,12 @@ import {
   PageEvent,
   on,
 } from '@/utils/events'
+import {
+  DownloadCompleteMessage,
+  DownloadCreatedMessage,
+  DownloadProgressMessage,
+  ThemeUpdatedMessage,
+} from '@/types'
 
 const CONTEXT_MENU_ID_START_SELECTOR = 'startUnifiedElementSelector'
 
@@ -44,11 +50,11 @@ const isValidTab = (tab: chrome.tabs.Tab): boolean => {
 /**
  * 向所有有效标签页发送消息
  */
-const sendMessageToAllTabs = async (message: any, errorMessage: string): Promise<void> => {
+const sendMessageToAllTabs = async <T>(message: T, errorMessage: string): Promise<void> => {
   try {
     const tabs = await chrome.tabs.query({})
     const promises = tabs.filter(isValidTab).map((tab) =>
-      chrome.tabs.sendMessage(tab.id!, message).catch(() => {
+      chrome.tabs.sendMessage<T>(tab.id!, message).catch(() => {
         // 忽略错误，可能内容脚本未加载
       }),
     )
@@ -124,9 +130,9 @@ const handleThemeUpdated = (
   request: ThemeRequest,
   sendResponse: (response?: any) => void,
 ): void => {
-  sendMessageToAllTabs(
+  sendMessageToAllTabs<ThemeUpdatedMessage>(
     {
-      action: ContentEvent.THEME_UPDATED,
+      action: ConfigEvent.THEME_UPDATED,
       theme: request.theme,
     },
     '转发主题更新消息失败',
@@ -233,7 +239,7 @@ const handleMessage = (
       handleDownloadStart(request as DownloadRequest, sendResponse)
       return true
 
-    case ContentEvent.THEME_UPDATED:
+    case ConfigEvent.THEME_UPDATED:
       handleThemeUpdated(request as ThemeRequest, sendResponse)
       return true
 
@@ -323,10 +329,9 @@ const handleDownloadChanged = async (downloadDelta: chrome.downloads.DownloadDel
  */
 const handleDownloadComplete = async (downloadId: number) => {
   logger.info(`Download ${downloadId} completed successfully`)
-
   // 通知历史页面
   chrome.runtime
-    .sendMessage({
+    .sendMessage<DownloadCompleteMessage>({
       action: DownloadEvent.COMPLETE,
       downloadId,
     })
@@ -358,7 +363,7 @@ const handleDownloadProgress = async (
 
       // 通知历史页面更新进度
       chrome.runtime
-        .sendMessage({
+        .sendMessage<DownloadProgressMessage>({
           action: DownloadEvent.PROGRESS,
           downloadId,
           progress,
@@ -387,7 +392,7 @@ const handleDownloadCreated = (downloadItem: chrome.downloads.DownloadItem): voi
 
   // 通知历史页面有新下载开始
   chrome.runtime
-    .sendMessage({
+    .sendMessage<DownloadCreatedMessage>({
       action: DownloadEvent.CREATED,
       downloadId: downloadItem.id,
       filename: downloadItem.filename,

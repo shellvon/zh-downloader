@@ -3,7 +3,15 @@ import type { Config, VideoInfo, HistoryRecord, SiteConfig } from '@/types'
 import { loadConfig, saveConfig } from '@/utils/config'
 import { loadTheme, applyTheme } from '@/utils/theme'
 import logger from '@/utils/logger'
-import { ConfigEvent, SelectorEvent, DownloadEvent, ContentEvent, PageEvent } from '@/utils/events'
+import {
+  ConfigEvent,
+  SelectorEvent,
+  DownloadEvent,
+  ContentEvent,
+  PageEvent,
+  RecordType,
+} from '@/utils/events'
+import { STORAGE_KEYS } from '@/utils/constants'
 
 interface VideoSource {
   url: string
@@ -80,7 +88,7 @@ class UniversalVideoDownloader {
           setTimeout(() => this.init(), 500)
           sendResponse({ success: true })
           break
-        case ContentEvent.THEME_UPDATED:
+        case ConfigEvent.THEME_UPDATED:
           logger.log('收到 themeUpdated 消息，更新主题:', request.theme)
           this.setupTheme()
           sendResponse({ success: true })
@@ -1376,7 +1384,7 @@ class UniversalVideoDownloader {
       button.classList.add('success')
 
       await this.recordHistory({
-        type: 'screenshot',
+        type: RecordType.SCREENSHOT,
         title: videoInfo.title,
         domain: window.location.hostname,
         url: window.location.href,
@@ -1427,7 +1435,7 @@ class UniversalVideoDownloader {
       tooltip.textContent = '下载已开始！'
 
       await this.recordHistory({
-        type: 'download',
+        type: RecordType.VIDEO,
         title: videoInfo.title,
         domain: window.location.hostname,
         url: window.location.href,
@@ -1476,8 +1484,8 @@ class UniversalVideoDownloader {
 
   private async recordHistory(record: HistoryRecord) {
     try {
-      const result = await chrome.storage.local.get(['downloadHistory'])
-      let history: HistoryRecord[] = result.downloadHistory || []
+      const result = await chrome.storage.local.get([STORAGE_KEYS.DOWNLOAD_HISTORY])
+      let history: HistoryRecord[] = result[STORAGE_KEYS.DOWNLOAD_HISTORY] || []
 
       history.unshift(record)
 
@@ -1485,7 +1493,7 @@ class UniversalVideoDownloader {
         history = history.slice(0, 500)
       }
 
-      await chrome.storage.local.set({ downloadHistory: history })
+      await chrome.storage.local.set({ [STORAGE_KEYS.DOWNLOAD_HISTORY]: history })
     } catch (error) {
       logger.warn('保存历史记录失败:', error)
     }

@@ -8,7 +8,7 @@ import {
   Search,
   CalendarDays,
   XCircle,
-  Download,
+  Video,
   Camera,
   FolderOpen,
   Copy,
@@ -20,133 +20,88 @@ import {
   AlertCircle,
   Loader,
 } from 'lucide-react'
-import type { HistoryRecord } from '@/types'
-import { loadTheme, applyTheme, listenThemeUpdate } from '@/utils/theme'
+import type { HistoryRecord, DownloadEventMessage } from '@/types'
+import { useTheme } from '@/hooks/useTheme'
+import { useChromeEvent } from '@/hooks/useChromeEvent'
+import { DownloadEvent, RecordType } from '@/utils/events'
+import { truncateUrl, copyWithToast, formatFileSize, createToast } from '@/utils/common'
 import './history.css'
 import '@/styles/theme.css'
 import logger from '@/utils/logger'
-
-// 辅助函数：截断 URL
-const truncateUrl = (url: string, maxLength: number) => {
-  if (url.length <= maxLength) return url
-  return `${url.substring(0, maxLength)}...`
-}
-
-// 辅助函数：复制到剪贴板
-const copyToClipboard = (text: string) => {
-  navigator.clipboard
-    .writeText(text)
-    .then(() => {
-      // 创建一个临时的成功提示
-      const toast = document.createElement('div')
-      toast.textContent = '已复制到剪贴板！'
-      toast.style.cssText = `
-      position: fixed;
-      top: 20px;
-      right: 20px;
-      background: var(--accent-solid);
-      color: white;
-      padding: 0.75rem 1rem;
-      border-radius: 0.5rem;
-      font-size: 0.875rem;
-      z-index: 10000;
-      box-shadow: var(--shadow-lg);
-      animation: slideInRight 0.3s ease-out;
-    `
-      document.body.appendChild(toast)
-      setTimeout(() => {
-        toast.remove()
-      }, 2000)
-    })
-    .catch((err) => {
-      logger.error('复制失败:', err)
-      alert('复制失败，请手动复制。')
-    })
-}
+import { STORAGE_KEYS } from '@/utils/constants'
 
 const HistoryPage: React.FC = () => {
   const [history, setHistory] = useState<HistoryRecord[]>([])
-  const [_, setLoading] = useState(true)
+  const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
   const [startDate, setStartDate] = useState<string>('')
   const [endDate, setEndDate] = useState<string>('')
-  const [typeFilter, setTypeFilter] = useState<'all' | 'download' | 'screenshot'>('all')
+  const [typeFilter, setTypeFilter] = useState<'all' | 'video' | 'screenshot'>('all')
   const [totalCount, setTotalCount] = useState(0)
-  const [downloadCount, setDownloadCount] = useState(0)
+  const [videoCount, setVideoCount] = useState(0)
   const [screenshotCount, setScreenshotCount] = useState(0)
   const [totalSize, setTotalSize] = useState<number | undefined>(0)
   const [downloadProgress, setDownloadProgress] = useState<
     Map<number, { progress: number; filename: string }>
   >(new Map())
 
-  // 初始化主题
-  useEffect(() => {
-    const initTheme = async () => {
-      const savedTheme = await loadTheme()
-      applyTheme(savedTheme)
-      setLoading(false)
-    }
-    initTheme()
-
-    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)')
-    const handleSystemThemeChange = () => {
-      loadTheme().then(applyTheme)
-    }
-    mediaQuery.addEventListener('change', handleSystemThemeChange)
-
-    const off = listenThemeUpdate((theme) => {
-      applyTheme(theme)
-    })
-
-    return () => {
-      mediaQuery.removeEventListener('change', handleSystemThemeChange)
-      off()
-    }
-  }, [])
+  // 使用主题 Hook
+  useTheme()
 
   // 监听下载进度消息
-  useEffect(() => {
-    const handleMessage = (request: any, sender: any, sendResponse: any) => {
-      if (request.action === 'downloadProgress') {
-        setDownloadProgress((prev) => {
-          const newMap = new Map(prev)
-          newMap.set(request.downloadId, {
-            progress: request.progress,
-            filename: request.filename,
-          })
-          return newMap
+  useChromeEvent((request: DownloadEventMessage) => {
+    if (request.action === DownloadEvent.PROGRESS) {
+      setDownloadProgress((prev) => {
+        const newMap = new Map(prev)
+        newMap.set(request.downloadId, {
+          progress: request.progress,
+          filename: request.filename,
         })
-      } else if (request.action === 'downloadComplete') {
-        setDownloadProgress((prev) => {
-          const newMap = new Map(prev)
-          newMap.delete(request.downloadId)
-          return newMap
-        })
-      }
+        return newMap
+      })
+    } else if (request.action === DownloadEvent.COMPLETE) {
+      setDownloadProgress((prev) => {
+        const newMap = new Map(prev)
+        newMap.delete(request.downloadId)
+        return newMap
+      })
     }
+  }, chrome.runtime.onMessage)
 
-    chrome.runtime.onMessage.addListener(handleMessage)
-    return () => chrome.runtime.onMessage.removeListener(handleMessage)
-  }, [])
+  
+  // 监听存储变化，实时更新历史记录
+  useChromeEvent(
+    (changes: { [key: string]: chrome.storage.StorageChange }) => {
+      if (changes[STORAGE_KEYS.DOWNLOAD_HISTORY]) {
+        const newHistory = changes[STORAGE_KEYS.DOWNLOAD_HISTORY].newValue || []
+        setHistory(newHistory)
+        updateStats(newHistory)
+        logger.log('History updated from storage change')
+      }
+    },
+    chrome.storage.onChanged,
+  )
+
+
 
   const updateStats = useCallback((currentHistory: HistoryRecord[]) => {
     const newTotalCount = currentHistory.length
-    const newDownloadCount = currentHistory.filter((record) => record.type === 'download').length
+    const newVideoCount = currentHistory.filter((record) => record.type === RecordType.VIDEO).length
     const newScreenshotCount = currentHistory.filter(
-      (record) => record.type === 'screenshot',
+      (record) => record.type === RecordType.SCREENSHOT,
     ).length
     const newTotalSize = currentHistory.reduce((acc, record) => acc + (record.fileSize || 0), 0)
 
     setTotalCount(newTotalCount)
-    setDownloadCount(newDownloadCount)
+    setVideoCount(newVideoCount)
     setScreenshotCount(newScreenshotCount)
     setTotalSize(newTotalSize)
   }, [])
 
   const loadHistory = useCallback(async () => {
     try {
-      const result = await chrome.storage.local.get(['downloadHistory'])
-      const records = result.downloadHistory || []
+      const result = await chrome.storage.local.get([STORAGE_KEYS.DOWNLOAD_HISTORY])
+      const records = result[STORAGE_KEYS.DOWNLOAD_HISTORY] || []
       setHistory(records)
       updateStats(records)
     } catch (error) {
@@ -156,51 +111,17 @@ const HistoryPage: React.FC = () => {
     }
   }, [updateStats])
 
-  // 监听存储变化，实时更新历史记录
-  useEffect(() => {
-    const handleStorageChange = (changes: { [key: string]: chrome.storage.StorageChange }) => {
-      if (changes.downloadHistory) {
-        const newHistory = changes.downloadHistory.newValue || []
-        setHistory(newHistory)
-        updateStats(newHistory)
-        logger.log('History updated from storage change')
-      }
-    }
-
-    chrome.storage.onChanged.addListener(handleStorageChange)
-    return () => chrome.storage.onChanged.removeListener(handleStorageChange)
-  }, [updateStats])
-
+  
   const clearHistory = useCallback(async () => {
     if (confirm('确定要清空所有历史记录吗？此操作不可撤销。')) {
       try {
-        await chrome.storage.local.set({ downloadHistory: [] })
+        await chrome.storage.local.set({ [STORAGE_KEYS.DOWNLOAD_HISTORY]: [] })
         setHistory([])
         updateStats([])
-
-        // 显示成功提示
-        const toast = document.createElement('div')
-        toast.textContent = '历史记录已清空'
-        toast.style.cssText = `
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        background: var(--accent-solid);
-        color: white;
-        padding: 0.75rem 1rem;
-        border-radius: 0.5rem;
-        font-size: 0.875rem;
-        z-index: 10000;
-        box-shadow: var(--shadow-lg);
-        animation: slideInRight 0.3s ease-out;
-      `
-        document.body.appendChild(toast)
-        setTimeout(() => {
-          toast.remove()
-        }, 2000)
+        createToast('历史记录已清空')
       } catch (error) {
         logger.error('清空历史记录失败:', error)
-        alert('清空历史记录失败。')
+        createToast('清空历史记录失败。', 'error')
       }
     }
   }, [updateStats])
@@ -210,33 +131,13 @@ const HistoryPage: React.FC = () => {
       if (confirm('确定要删除此条历史记录吗？')) {
         try {
           const updatedHistory = history.filter((record) => record.timestamp !== timestamp)
-          await chrome.storage.local.set({ downloadHistory: updatedHistory })
+          await chrome.storage.local.set({ [STORAGE_KEYS.DOWNLOAD_HISTORY]: updatedHistory })
           setHistory(updatedHistory)
           updateStats(updatedHistory)
-
-          // 显示成功提示
-          const toast = document.createElement('div')
-          toast.textContent = '记录已删除'
-          toast.style.cssText = `
-          position: fixed;
-          top: 20px;
-          right: 20px;
-          background: var(--accent-solid);
-          color: white;
-          padding: 0.75rem 1rem;
-          border-radius: 0.5rem;
-          font-size: 0.875rem;
-          z-index: 10000;
-          box-shadow: var(--shadow-lg);
-          animation: slideInRight 0.3s ease-out;
-        `
-          document.body.appendChild(toast)
-          setTimeout(() => {
-            toast.remove()
-          }, 2000)
+          createToast('记录已删除')
         } catch (error) {
           logger.error('删除历史记录失败:', error)
-          alert('删除历史记录失败。')
+          createToast('删除历史记录失败。', 'error')
         }
       }
     },
@@ -244,21 +145,8 @@ const HistoryPage: React.FC = () => {
   )
 
   const openDownloadedFile = useCallback(async (downloadId: number) => {
-    try {
-      await chrome.downloads.show(downloadId) // 修改为 show 方法
-    } catch (error) {
-      logger.error('打开文件位置失败:', error)
-      alert('打开文件位置失败，可能文件已被移动或删除。')
-    }
+    chrome.downloads.show(downloadId)
   }, [])
-
-  const formatFileSize = (bytes: number | undefined) => {
-    if (bytes === undefined || bytes === 0) return '0 B'
-    const k = 1024
-    const sizes = ['B', 'KB', 'MB', 'GB']
-    const i = Math.floor(Math.log(bytes) / Math.log(k))
-    return `${(bytes / Math.pow(k, i)).toFixed(2)} ${sizes[i]}`
-  }
 
   useEffect(() => {
     loadHistory()
@@ -283,6 +171,17 @@ const HistoryPage: React.FC = () => {
 
     return matchesSearch && matchesDate && matchesType
   })
+
+  if (loading) {
+    return (
+      <div className="history-container">
+        <div className="loading-state">
+          <Loader size={48} className="loading-spinner" />
+          <p>加载中...</p>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="history-container">
@@ -332,11 +231,11 @@ const HistoryPage: React.FC = () => {
 
           <div className="stat-card downloads">
             <div className="stat-icon">
-              <Download size={24} />
+              <Video size={24} />
             </div>
             <div className="stat-content">
-              <div className="stat-value">{downloadCount}</div>
-              <div className="stat-label">下载次数</div>
+              <div className="stat-value">{videoCount}</div>
+              <div className="stat-label">视频次数</div>
             </div>
           </div>
 
@@ -415,11 +314,11 @@ const HistoryPage: React.FC = () => {
                   全部
                 </button>
                 <button
-                  onClick={() => setTypeFilter('download')}
-                  className={`type-filter-btn ${typeFilter === 'download' ? 'active' : ''}`}
+                  onClick={() => setTypeFilter('video')}
+                  className={`type-filter-btn ${typeFilter === 'video' ? 'active' : ''}`}
                 >
-                  <Download size={14} />
-                  下载
+                  <Video size={14} />
+                  视频
                 </button>
                 <button
                   onClick={() => setTypeFilter('screenshot')}
@@ -469,7 +368,11 @@ const HistoryPage: React.FC = () => {
                   >
                     <div className="card-header">
                       <div className="card-type-indicator">
-                        {record.type === 'download' ? <Download size={20} /> : <Camera size={20} />}
+                        {record.type === 'video' ? (
+                          <Video size={20} />
+                        ) : (
+                          <Camera size={20} />
+                        )}
                       </div>
                       <button
                         onClick={() => deleteRecord(record.timestamp)}
@@ -549,7 +452,7 @@ const HistoryPage: React.FC = () => {
                             <ExternalLink size={12} />
                           </a>
                           <button
-                            onClick={() => copyToClipboard(record.url)}
+                            onClick={() => copyWithToast(record.url)}
                             className="copy-btn"
                             title="复制页面链接"
                           >
@@ -571,7 +474,7 @@ const HistoryPage: React.FC = () => {
                               <ExternalLink size={12} />
                             </a>
                             <button
-                              onClick={() => copyToClipboard(record.videoSrc)}
+                              onClick={() => copyWithToast(record.videoSrc)}
                               className="copy-btn"
                               title="复制视频源链接"
                             >

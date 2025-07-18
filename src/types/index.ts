@@ -1,3 +1,6 @@
+import { ConfigEvent, DownloadEvent, RecordType } from '@/utils/events'
+import { Theme } from '@/utils/theme'
+
 export interface SiteConfig {
   enabled: boolean
   videoSelectors: string[]
@@ -26,7 +29,7 @@ export interface VideoInfo {
 }
 
 export interface HistoryRecord {
-  type: 'download' | 'screenshot'
+  type: RecordType
   title: string
   domain: string
   url: string
@@ -47,4 +50,37 @@ export interface ElementSelectorData {
   selectorType: 'video' | 'title' | 'author' | 'container'
   hostname: string
   documentTitle: string
+}
+
+// 下载相关消息类型
+export interface DownloadProgressMessage {
+  action: DownloadEvent.PROGRESS
+  downloadId: number
+  progress: number
+  filename: string
+  bytesReceived?: number
+  totalBytes?: number
+}
+
+export interface DownloadCompleteMessage {
+  action: DownloadEvent.COMPLETE
+  downloadId: number
+}
+
+export interface DownloadCreatedMessage {
+  action: DownloadEvent.CREATED
+  downloadId: number
+  filename: string
+  url: string
+  totalBytes?: number
+}
+
+export type DownloadEventMessage =
+  | DownloadProgressMessage
+  | DownloadCompleteMessage
+  | DownloadCreatedMessage
+
+export type ThemeUpdatedMessage = {
+  action: ConfigEvent.THEME_UPDATED
+  theme?: Theme
 }
