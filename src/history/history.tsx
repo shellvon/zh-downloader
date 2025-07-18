@@ -24,6 +24,7 @@ import type { HistoryRecord } from '@/types'
 import { loadTheme, applyTheme, listenThemeUpdate } from '@/utils/theme'
 import './history.css'
 import '@/styles/theme.css'
+import logger from '@/utils/logger'
 
 // 辅助函数：截断 URL
 const truncateUrl = (url: string, maxLength: number) => {
@@ -58,7 +59,7 @@ const copyToClipboard = (text: string) => {
       }, 2000)
     })
     .catch((err) => {
-      console.error('复制失败:', err)
+      logger.error('复制失败:', err)
       alert('复制失败，请手动复制。')
     })
 }
@@ -149,7 +150,7 @@ const HistoryPage: React.FC = () => {
       setHistory(records)
       updateStats(records)
     } catch (error) {
-      console.error('加载历史记录失败:', error)
+      logger.error('加载历史记录失败:', error)
     } finally {
       setLoading(false)
     }
@@ -162,7 +163,7 @@ const HistoryPage: React.FC = () => {
         const newHistory = changes.downloadHistory.newValue || []
         setHistory(newHistory)
         updateStats(newHistory)
-        console.log('History updated from storage change')
+        logger.log('History updated from storage change')
       }
     }
 
@@ -198,7 +199,7 @@ const HistoryPage: React.FC = () => {
           toast.remove()
         }, 2000)
       } catch (error) {
-        console.error('清空历史记录失败:', error)
+        logger.error('清空历史记录失败:', error)
         alert('清空历史记录失败。')
       }
     }
@@ -234,7 +235,7 @@ const HistoryPage: React.FC = () => {
             toast.remove()
           }, 2000)
         } catch (error) {
-          console.error('删除历史记录失败:', error)
+          logger.error('删除历史记录失败:', error)
           alert('删除历史记录失败。')
         }
       }
@@ -246,7 +247,7 @@ const HistoryPage: React.FC = () => {
     try {
       await chrome.downloads.show(downloadId) // 修改为 show 方法
     } catch (error) {
-      console.error('打开文件位置失败:', error)
+      logger.error('打开文件位置失败:', error)
       alert('打开文件位置失败，可能文件已被移动或删除。')
     }
   }, [])

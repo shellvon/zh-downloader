@@ -21,6 +21,7 @@ import { loadConfig } from '@/utils/config'
 import type { Config } from '@/types'
 import './popup.css'
 import '@/styles/theme.css'
+import logger from '@/utils/logger'
 
 const PopupPage: React.FC = () => {
   const [loading, setLoading] = useState(true)
@@ -34,7 +35,7 @@ const PopupPage: React.FC = () => {
 
   // 初始化主题和配置
   useEffect(() => {
-    console.log('Popup: Initializing theme and config...')
+    logger.log('Popup: Initializing theme and config...')
     const init = async () => {
       const savedTheme = await loadTheme()
       setCurrentTheme(savedTheme) // 设置当前主题状态
@@ -44,7 +45,7 @@ const PopupPage: React.FC = () => {
       setConfig(configData)
 
       setLoading(false)
-      console.log('Popup: Theme and config loaded.')
+      logger.log('Popup: Theme and config loaded.')
     }
     init()
 
@@ -58,7 +59,7 @@ const PopupPage: React.FC = () => {
   // 获取当前页面状态和视频数量
   useEffect(() => {
     const getPageStatus = async () => {
-      console.log('Popup: Getting page status...')
+      logger.log('Popup: Getting page status...')
       try {
         const [tab] = await chrome.tabs.query({
           active: true,
@@ -77,13 +78,13 @@ const PopupPage: React.FC = () => {
           setVideoCount(0)
           setCurrentSite('系统页面')
           setActiveConfig('无')
-          console.log('Popup: Invalid tab URL or ID.')
+          logger.log('Popup: Invalid tab URL or ID.')
           return
         }
 
         const hostname = new URL(tab.url).hostname
         setCurrentSite(hostname)
-        console.log('Popup: Current hostname:', hostname)
+        logger.log('Popup: Current hostname:', hostname)
 
         // 检查当前网站的配置
         let matchedConfig = '通用模式'
@@ -102,18 +103,18 @@ const PopupPage: React.FC = () => {
 
         let count = 0
         try {
-          console.log('Popup: Attempting to get video count from content script...')
+          logger.log('Popup: Attempting to get video count from content script...')
           const response = await chrome.tabs.sendMessage(tab.id, {
             action: 'getVideoCount',
           })
           if (response && typeof response.videoCount === 'number') {
             count = response.videoCount
-            console.log('Popup: Received video count:', count)
+            logger.log('Popup: Received video count:', count)
           } else {
-            console.warn('Popup: Did not receive valid video count, response:', response)
+            logger.warn('Popup: Did not receive valid video count, response:', response)
           }
         } catch (error) {
-          console.warn(
+          logger.warn(
             'Popup: Failed to get video count from content script, attempting re-injection:',
             error,
           )
@@ -122,22 +123,22 @@ const PopupPage: React.FC = () => {
               target: { tabId: tab.id },
               files: ['content.js'],
             })
-            console.log('Popup: Content script re-injected. Retrying get video count...')
+            logger.log('Popup: Content script re-injected. Retrying get video count...')
             await new Promise((resolve) => setTimeout(resolve, 500))
             const response = await chrome.tabs.sendMessage(tab.id, {
               action: 'getVideoCount',
             })
             if (response && typeof response.videoCount === 'number') {
               count = response.videoCount
-              console.log('Popup: Received video count after re-injection:', count)
+              logger.log('Popup: Received video count after re-injection:', count)
             } else {
-              console.warn(
+              logger.warn(
                 'Popup: Did not receive valid video count after re-injection, response:',
                 response,
               )
             }
           } catch (reinjectError) {
-            console.error(
+            logger.error(
               'Popup: Failed to re-inject content script and get video count:',
               reinjectError,
             )
@@ -153,7 +154,7 @@ const PopupPage: React.FC = () => {
           setIsStatusActive(true)
         }
       } catch (error) {
-        console.error('Popup: Failed to get page status:', error)
+        logger.error('Popup: Failed to get page status:', error)
         setStatusMessage('无法检测当前页面状态')
         setIsStatusActive(false)
         setVideoCount(0)
@@ -168,12 +169,12 @@ const PopupPage: React.FC = () => {
   }, [config])
 
   const openOptionsPage = useCallback(() => {
-    console.log('Popup: Opening options page.')
+    logger.log('Popup: Opening options page.')
     chrome.runtime.openOptionsPage()
   }, [])
 
   const openHistoryPage = useCallback(() => {
-    console.log('Popup: Opening history page.')
+    logger.log('Popup: Opening history page.')
     chrome.tabs.create({
       url: chrome.runtime.getURL('src/history/index.html'),
     })
@@ -185,7 +186,7 @@ const PopupPage: React.FC = () => {
     await saveTheme(newTheme)
     setCurrentTheme(newTheme)
     applyTheme(newTheme)
-    console.log('Popup: Theme toggled to', newTheme)
+    logger.log('Popup: Theme toggled to', newTheme)
   }, [currentTheme])
 
   // 启动元素选择器
@@ -210,15 +211,15 @@ const PopupPage: React.FC = () => {
         await chrome.tabs.sendMessage(tab.id, {
           action: 'startElementSelector',
         })
-        console.log('Sent startElementSelector message to content script.')
+        logger.log('Sent startElementSelector message to content script.')
         window.close()
       } catch (error) {
-        console.warn('Failed to send message to content script, attempting re-injection:', error)
+        logger.warn('Failed to send message to content script, attempting re-injection:', error)
         await chrome.scripting.executeScript({
           target: { tabId: tab.id },
           files: ['content.js'],
         })
-        console.log('Content script re-injected. Retrying startElementSelector message.')
+        logger.log('Content script re-injected. Retrying startElementSelector message.')
         await new Promise((resolve) => setTimeout(resolve, 500))
         await chrome.tabs.sendMessage(tab.id, {
           action: 'startElementSelector',
@@ -226,7 +227,7 @@ const PopupPage: React.FC = () => {
         window.close()
       }
     } catch (error) {
-      console.error('启动元素选择器失败:', error)
+      logger.error('启动元素选择器失败:', error)
       alert('启动元素选择器失败: ' + (error as Error).message)
     }
   }, [])
@@ -328,9 +329,9 @@ const PopupPage: React.FC = () => {
 
 const container = document.getElementById('root')
 if (container) {
-  console.log('Popup: Root container found, rendering React app.')
+  logger.log('Popup: Root container found, rendering React app.')
   const root = createRoot(container)
   root.render(<PopupPage />)
 } else {
-  console.error('Popup: Root container #root not found!')
+  logger.error('Popup: Root container #root not found!')
 }

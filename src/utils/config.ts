@@ -1,4 +1,5 @@
 import type { Config } from '@/types'
+import logger from '@/utils/logger'
 
 export const getDefaultConfig = (): Config => ({
   sites: {
@@ -59,7 +60,7 @@ export const loadConfig = async (): Promise<Config> => {
     const loadedConfig = result.videoDownloaderConfig || getDefaultConfig()
     return loadedConfig
   } catch (error) {
-    console.warn('加载配置失败，使用默认配置:', error)
+    logger.warn('加载配置失败，使用默认配置:', error)
     return getDefaultConfig()
   }
 }

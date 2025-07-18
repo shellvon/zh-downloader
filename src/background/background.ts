@@ -1,8 +1,9 @@
 import { loadTheme, saveTheme } from '@/utils/theme' // 导入主题工具
 import { loadConfig } from '@/utils/config' // 导入配置工具
+import logger from '@/utils/logger'
 
 chrome.runtime.onInstalled.addListener(async () => {
-  console.log('通用视频下载器已安装')
+  logger.info('通用视频下载器已安装')
 
   // 检查并设置默认主题
   const currentTheme = await loadTheme()
@@ -31,7 +32,7 @@ async function updateContextMenuVisibility() {
   // 移除旧的菜单项
   chrome.contextMenus.removeAll(() => {
     if (chrome.runtime.lastError) {
-      console.warn('Error removing context menus:', chrome.runtime.lastError.message)
+      logger.warn('Error removing context menus:', chrome.runtime.lastError.message)
     }
     // 只有在高级模式开启时才创建统一选择器菜单项
     if (advancedModeEnabled) {
@@ -40,9 +41,9 @@ async function updateContextMenuVisibility() {
         title: '启动智能元素选择器',
         contexts: ['page', 'video', 'selection', 'image'], // 可以在页面、视频、选中文本、图片上右键
       })
-      console.log('右键菜单已创建 (高级模式 - 统一选择器)。')
+      logger.info('右键菜单已创建 (高级模式 - 统一选择器)。')
     } else {
-      console.log('右键菜单已移除 (非高级模式)。')
+      logger.info('右键菜单已移除 (非高级模式)。')
     }
   })
 }
@@ -56,9 +57,9 @@ chrome.contextMenus.onClicked.addListener(async (info, tab) => {
         await chrome.tabs.sendMessage(tab.id, {
           action: 'startElementSelector',
         })
-        console.log(`已发送 'startElementSelector' 消息 (通过右键菜单)。`)
+        logger.info(`已发送 'startElementSelector' 消息 (通过右键菜单)。`)
       } catch (error) {
-        console.error('右键菜单启动元素选择器失败，内容脚本可能未准备好或发生错误:', error)
+        logger.error('右键菜单启动元素选择器失败，内容脚本可能未准备好或发生错误:', error)
         // 可以向用户发送通知
         chrome.notifications.create({
           type: 'basic',
@@ -79,12 +80,12 @@ const downloadProgress = new Map<
 
 // 监听下载状态变化
 chrome.downloads.onChanged.addListener(async (downloadDelta) => {
-  console.log('Download changed:', downloadDelta)
+  logger.info('Download changed:', downloadDelta)
 
   if (downloadDelta.state && downloadDelta.state.current === 'complete') {
     // 下载完成，清理进度信息
     downloadProgress.delete(downloadDelta.id)
-    console.log(`Download ${downloadDelta.id} completed`)
+    logger.info(`Download ${downloadDelta.id} completed`)
 
     // 通知历史页面下载完成
     chrome.runtime
@@ -101,7 +102,7 @@ chrome.downloads.onChanged.addListener(async (downloadDelta) => {
       const downloads = await chrome.downloads.search({ id: downloadDelta.id })
       if (downloads.length > 0) {
         const download = downloads[0]
-        console.log('Download info:', {
+        logger.info('Download info:', {
           id: download.id,
           bytesReceived: download.bytesReceived,
           totalBytes: download.totalBytes,
@@ -122,7 +123,7 @@ chrome.downloads.onChanged.addListener(async (downloadDelta) => {
             totalBytes: download.totalBytes,
           })
 
-          console.log(`Download ${downloadDelta.id} progress: ${progress}%`)
+          logger.info(`Download ${downloadDelta.id} progress: ${progress}%`)
 
           // 通知历史页面更新进度
           chrome.runtime
@@ -140,14 +141,14 @@ chrome.downloads.onChanged.addListener(async (downloadDelta) => {
         }
       }
     } catch (error) {
-      console.error('Error getting download info:', error)
+      logger.error('Error getting download info:', error)
     }
   }
 })
 
 // 监听下载创建，初始化进度跟踪
 chrome.downloads.onCreated.addListener((downloadItem) => {
-  console.log('Download created:', downloadItem)
+  logger.info('Download created:', downloadItem)
   downloadProgress.set(downloadItem.id, {
     progress: 0,
     filename: downloadItem.filename,
@@ -158,7 +159,7 @@ chrome.downloads.onCreated.addListener((downloadItem) => {
 // 监听来自content script的消息
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.action === 'themeUpdated') {
-    console.log('Background: Received theme update, broadcasting to all tabs')
+    logger.info('Background: Received theme update, broadcasting to all tabs')
     // 通知所有标签页主题已更新
     chrome.tabs.query({}, (tabs) => {
       tabs.forEach((tab) => {
@@ -203,7 +204,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
             error: chrome.runtime.lastError.message,
           })
         } else {
-          console.log(`Download started with ID: ${downloadId}`)
+          logger.info(`Download started with ID: ${downloadId}`)
           sendResponse({ success: true, downloadId: downloadId }) // 返回 downloadId
         }
       },
@@ -218,11 +219,11 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
           files: ['content.js'], // 确保这里是正确的路径
         })
         .then(() => {
-          console.log('Content script re-injected successfully.')
+          logger.info('Content script re-injected successfully.')
           sendResponse({ success: true })
         })
         .catch((error) => {
-          console.error('Failed to re-inject content script:', error)
+          logger.error('Failed to re-inject content script:', error)
           sendResponse({ success: false, error: error.message })
         })
     } else {
@@ -269,16 +270,16 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   } else if (request.action === 'elementSelected') {
     // 转发元素选择结果到 options 页面
     chrome.runtime.sendMessage(request).catch((error) => {
-      console.warn('Failed to forward elementSelected message to options page:', error)
+      logger.warn('Failed to forward elementSelected message to options page:', error)
     })
   } else if (request.action === 'openOptionsPage') {
     // 打开选项页面
     chrome.runtime.openOptionsPage(() => {
       if (chrome.runtime.lastError) {
-        console.error('Failed to open options page:', chrome.runtime.lastError.message)
+        logger.error('Failed to open options page:', chrome.runtime.lastError.message)
         sendResponse({ success: false, error: chrome.runtime.lastError.message })
       } else {
-        console.log('Options page opened successfully')
+        logger.info('Options page opened successfully')
         sendResponse({ success: true })
       }
     })

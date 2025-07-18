@@ -2,6 +2,7 @@ import './content.css'
 import type { Config, VideoInfo, HistoryRecord, SiteConfig } from '@/types'
 import { loadConfig, saveConfig } from '@/utils/config'
 import { loadTheme, applyTheme } from '@/utils/theme'
+import logger from '@/utils/logger'
 
 interface VideoSource {
   url: string
@@ -49,10 +50,10 @@ class UniversalVideoDownloader {
   }
 
   private async init() {
-    console.log('init() 调用。')
+    logger.log('init() 调用。')
     await this.loadConfig()
     await this.setupTheme()
-    console.log('配置加载完成:', this.config)
+    logger.log('配置加载完成:', this.config)
 
     if (document.readyState === 'loading') {
       document.addEventListener('DOMContentLoaded', () => this.start())
@@ -62,7 +63,7 @@ class UniversalVideoDownloader {
 
     // 监听消息
     chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-      console.log('内容脚本收到消息:', request.action)
+      logger.log('内容脚本收到消息:', request.action)
       switch (request.action) {
         case 'startElementSelector':
           this.startElementSelector()
@@ -73,13 +74,13 @@ class UniversalVideoDownloader {
           sendResponse({ success: true })
           break
         case 'configUpdated':
-          console.log('收到 configUpdated 消息，销毁并重新初始化。')
+          logger.log('收到 configUpdated 消息，销毁并重新初始化。')
           this.destroy()
           setTimeout(() => this.init(), 500)
           sendResponse({ success: true })
           break
         case 'themeUpdated':
-          console.log('收到 themeUpdated 消息，更新主题:', request.theme)
+          logger.log('收到 themeUpdated 消息，更新主题:', request.theme)
           this.setupTheme()
           sendResponse({ success: true })
           break
@@ -87,7 +88,7 @@ class UniversalVideoDownloader {
           sendResponse({ success: true, message: 'pong' })
           break
         case 'reloadContentScript':
-          console.log('Received reloadContentScript request. Destroying and re-initializing.')
+          logger.log('Received reloadContentScript request. Destroying and re-initializing.')
           this.destroy()
           setTimeout(() => {
             this.init()
@@ -102,7 +103,7 @@ class UniversalVideoDownloader {
           sendResponse({ success: true })
           break
         default:
-          console.warn('未知消息动作:', request.action)
+          logger.warn('未知消息动作:', request.action)
           sendResponse({ success: false, error: '未知动作' })
       }
       return true
@@ -125,7 +126,7 @@ class UniversalVideoDownloader {
         }
       })
     } catch (error) {
-      console.warn('主题设置失败:', error)
+      logger.warn('主题设置失败:', error)
     }
   }
 
@@ -212,7 +213,7 @@ class UniversalVideoDownloader {
     // 保存配置
     try {
       await saveConfig(this.config)
-      console.log(`已保存${type}选择器到配置:`, selector)
+      logger.log(`已保存${type}选择器到配置:`, selector)
 
       // 询问是否打开设置页面
       const openOptions = confirm(
@@ -223,16 +224,16 @@ class UniversalVideoDownloader {
         chrome.runtime.sendMessage({ action: 'openOptionsPage' })
       }
     } catch (error) {
-      console.error('保存选择器配置失败:', error)
+      logger.error('保存选择器配置失败:', error)
       this.showSelectorMessage('保存配置失败，请重试。')
     }
   }
 
   private start() {
-    console.log('start() 调用。')
+    logger.log('start() 调用。')
     this.scanForVideos()
     this.setupObserver()
-    console.log('通用视频下载器已启动 - 当前网站:', window.location.hostname)
+    logger.log('通用视频下载器已启动 - 当前网站:', window.location.hostname)
   }
 
   private setupObserver() {
@@ -251,7 +252,7 @@ class UniversalVideoDownloader {
         }
       })
       if (shouldScan) {
-        console.log('DOM 变化检测到视频元素，重新扫描。')
+        logger.log('DOM 变化检测到视频元素，重新扫描。')
         setTimeout(() => this.scanForVideos(), 500)
       }
     })
@@ -263,18 +264,18 @@ class UniversalVideoDownloader {
   }
 
   private scanForVideos() {
-    console.log('scanForVideos() 调用。')
+    logger.log('scanForVideos() 调用。')
     if (!this.config) {
-      console.warn('配置未加载，跳过视频扫描。')
+      logger.warn('配置未加载，跳过视频扫描。')
       return
     }
 
     const hostname = window.location.hostname
     const siteConfig = this.getSiteConfig(hostname)
-    console.log('当前网站配置:', siteConfig)
+    logger.log('当前网站配置:', siteConfig)
 
     if (!siteConfig || !siteConfig.enabled) {
-      console.log(`站点 ${hostname} 未启用或无配置，跳过扫描。`)
+      logger.log(`站点 ${hostname} 未启用或无配置，跳过扫描。`)
       this.updateBadgeCount(0)
       return
     }
@@ -284,10 +285,10 @@ class UniversalVideoDownloader {
     selectors.forEach((selector) => {
       try {
         const elements = document.querySelectorAll(selector)
-        console.log(`选择器 "${selector}" 找到 ${elements.length} 个元素。`)
+        logger.log(`选择器 "${selector}" 找到 ${elements.length} 个元素。`)
         elements.forEach((element) => this.processVideoElement(element, siteConfig))
       } catch (error) {
-        console.warn('选择器错误:', selector, error)
+        logger.warn('选择器错误:', selector, error)
       }
     })
 
@@ -300,7 +301,7 @@ class UniversalVideoDownloader {
 
   private updateBadgeCount(count: number) {
     chrome.runtime.sendMessage({ action: 'getVideoCount', videoCount: count }).catch((error) => {
-      console.warn('无法更新徽章:', error)
+      logger.warn('无法更新徽章:', error)
     })
   }
 
@@ -391,7 +392,7 @@ class UniversalVideoDownloader {
       for (const selector of siteConfig.containerSelectors) {
         const specificContainer = element.closest(selector)
         if (specificContainer) {
-          console.log('通过站点容器选择器找到容器:', selector)
+          logger.log('通过站点容器选择器找到容器:', selector)
           return specificContainer
         }
       }
@@ -407,7 +408,7 @@ class UniversalVideoDownloader {
         rect.width > 200 &&
         rect.height > 150
       ) {
-        console.log('通过通用逻辑找到容器:', container)
+        logger.log('通过通用逻辑找到容器:', container)
         return container
       }
       container = container.parentElement
@@ -566,11 +567,11 @@ class UniversalVideoDownloader {
               const data = JSON.parse(dataValue)
               if (data.title) title = data.title
               if (data.authorName) author = data.authorName
-              console.log(`从 ${attr} 属性提取信息:`, { title, author })
+              logger.log(`从 ${attr} 属性提取信息:`, { title, author })
               break
             }
           } catch (error) {
-            console.warn(`解析 ${attr} 属性失败:`, error)
+            logger.warn(`解析 ${attr} 属性失败:`, error)
           }
         }
       }
@@ -637,12 +638,12 @@ class UniversalVideoDownloader {
           if (element) {
             const text = element.textContent?.trim()
             if (text && text.length > 1) {
-              console.log(`通过${type}选择器 "${selector}" 找到:`, text)
+              logger.log(`通过${type}选择器 "${selector}" 找到:`, text)
               return text.substring(0, 50)
             }
           }
         } catch (error) {
-          console.warn(`${type}选择器 "${selector}" 出错:`, error)
+          logger.warn(`${type}选择器 "${selector}" 出错:`, error)
         }
       }
       searchContainer = searchContainer.parentElement
@@ -735,7 +736,7 @@ class UniversalVideoDownloader {
     button.title = '播放器控制'
 
     // 调试：确保按钮有正确的类名
-    console.log('创建播放器控制按钮，类名:', button.className)
+    logger.log('创建播放器控制按钮，类名:', button.className)
 
     const tooltip = document.createElement('div')
     tooltip.className = 'video-tool-tooltip'
@@ -1103,7 +1104,7 @@ class UniversalVideoDownloader {
     button.title = `截图: ${videoInfo.title}`
 
     // 调试：确保按钮有正确的类名
-    console.log('创建截图按钮，类名:', button.className)
+    logger.log('创建截图按钮，类名:', button.className)
 
     const tooltip = document.createElement('div')
     tooltip.className = 'video-tool-tooltip'
@@ -1129,7 +1130,7 @@ class UniversalVideoDownloader {
       : `下载视频: ${videoInfo.title}`
 
     // 调试：确保按钮有正确的类名
-    console.log('创建下载按钮，类名:', button.className)
+    logger.log('创建下载按钮，类名:', button.className)
     button.disabled = videoInfo.isStreamable && !videoInfo.src
 
     const tooltip = document.createElement('div')
@@ -1442,7 +1443,7 @@ class UniversalVideoDownloader {
       button.classList.remove('loading')
       button.classList.add('error')
       tooltip.textContent = '下载失败'
-      console.error(`[downloadVideo] ${videoInfo.title} ${videoInfo.src} failed: ${error}`)
+      logger.error(`[downloadVideo] ${videoInfo.title} ${videoInfo.src} failed: ${error}`)
 
       setTimeout(() => {
         button.classList.remove('error')
@@ -1483,7 +1484,7 @@ class UniversalVideoDownloader {
 
       await chrome.storage.local.set({ downloadHistory: history })
     } catch (error) {
-      console.warn('保存历史记录失败:', error)
+      logger.warn('保存历史记录失败:', error)
     }
   }
 
@@ -1687,7 +1688,7 @@ class UniversalVideoDownloader {
         const type = btn.getAttribute('data-type')
 
         if (!type) {
-          console.error('选择器类型为空')
+          logger.error('选择器类型为空')
           return
         }
 
@@ -1715,7 +1716,7 @@ class UniversalVideoDownloader {
             }, 1500)
           })
           .catch((err) => {
-            console.error('复制失败:', err)
+            logger.error('复制失败:', err)
             alert('复制失败，请手动复制。')
           })
       })

@@ -29,6 +29,7 @@ import { loadConfig, saveConfig, getDefaultConfig } from '@/utils/config'
 import { loadTheme, saveTheme, applyTheme, type Theme, listenThemeUpdate } from '@/utils/theme'
 import './options.css'
 import '@/styles/theme.css'
+import logger from '@/utils/logger'
 
 const OptionsPage: React.FC = () => {
   const [config, setConfig] = useState<Config | null>(null)
@@ -81,7 +82,7 @@ const OptionsPage: React.FC = () => {
       const configData = await loadConfig()
       setConfig(configData)
     } catch (error) {
-      console.error('加载配置失败:', error)
+      logger.error('加载配置失败:', error)
       setConfig(getDefaultConfig())
       showMessage('加载配置失败，使用默认配置', 'error') // Fixed: showMessage variable is undeclared
     } finally {
@@ -96,10 +97,10 @@ const OptionsPage: React.FC = () => {
       setConfig(newConfig)
       showMessage('配置保存成功！', 'success') // Fixed: showMessage variable is undeclared
       chrome.runtime.sendMessage({ action: 'configUpdated' }).catch((error) => {
-        console.warn('Failed to send configUpdated message to background:', error)
+        logger.warn('Failed to send configUpdated message to background:', error)
       })
     } catch (error) {
-      console.error('保存配置失败:', error)
+      logger.error('保存配置失败:', error)
       showMessage('配置保存失败: ' + (error as Error).message, 'error') // Fixed: showMessage variable is undeclared
     }
   }, [])
@@ -201,14 +202,14 @@ const OptionsPage: React.FC = () => {
 
       try {
         await chrome.tabs.sendMessage(tab.id, { action: 'startElementSelector' })
-        console.log('Sent startElementSelector message to content script.')
+        logger.log('Sent startElementSelector message to content script.')
       } catch (error) {
-        console.warn('Failed to send message to content script, attempting re-injection:', error)
+        logger.warn('Failed to send message to content script, attempting re-injection:', error)
         await chrome.scripting.executeScript({
           target: { tabId: tab.id },
           files: ['content.js'],
         })
-        console.log('Content script re-injected. Retrying startElementSelector message.')
+        logger.log('Content script re-injected. Retrying startElementSelector message.')
         await new Promise((resolve) => setTimeout(resolve, 500))
         await chrome.tabs.sendMessage(tab.id, { action: 'startElementSelector' })
       }
@@ -216,7 +217,7 @@ const OptionsPage: React.FC = () => {
       setIsElementSelectorActive(true)
       showMessage('元素选择器已启动，请在当前网页中点击目标元素', 'success') // Fixed: showMessage variable is undeclared
     } catch (error) {
-      console.error('启动元素选择器失败:', error)
+      logger.error('启动元素选择器失败:', error)
       showMessage('启动元素选择器失败: ' + (error as Error).message, 'error') // Fixed: showMessage variable is undeclared
     }
   }, [])
@@ -231,7 +232,7 @@ const OptionsPage: React.FC = () => {
         setSelectedElement(null)
       }
     } catch (error) {
-      console.error('停止元素选择器失败:', error)
+      logger.error('停止元素选择器失败:', error)
     }
   }, [])
 

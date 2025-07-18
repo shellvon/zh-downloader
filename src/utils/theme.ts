@@ -1,3 +1,5 @@
+import logger from '@/utils/logger'
+
 export type Theme = 'light' | 'dark' | 'system'
 
 export const loadTheme = async (): Promise<Theme> => {
@@ -12,7 +14,7 @@ export const saveTheme = async (theme: Theme): Promise<void> => {
   try {
     await chrome.runtime.sendMessage({ action: 'themeUpdated', theme })
   } catch (error) {
-    console.warn('无法发送主题更新消息:', error)
+    logger.warn('无法发送主题更新消息:', error)
   }
 }
 
