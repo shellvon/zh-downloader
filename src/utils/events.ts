@@ -11,9 +11,9 @@ export enum SelectorEvent {
 
 export enum DownloadEvent {
   START = 'download',
+  CREATED = 'downloadCreated',
   PROGRESS = 'downloadProgress',
   COMPLETE = 'downloadComplete',
-  GET_PROGRESS = 'getDownloadProgress',
 }
 
 export enum ContentEvent {
@@ -25,4 +25,13 @@ export enum ContentEvent {
 
 export enum PageEvent {
   OPEN_OPTIONS = 'openOptionsPage',
+}
+
+// 类型安全的事件注册和解绑工具
+export function on<
+  T extends { addListener: (...args: any[]) => any; removeListener: (cb: any) => any },
+>(target: T, ...args: Parameters<T['addListener']>) {
+  target.addListener(...args)
+  // 返回解绑函数
+  return () => target.removeListener(args[0])
 }

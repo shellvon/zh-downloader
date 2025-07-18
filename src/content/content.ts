@@ -3,7 +3,7 @@ import type { Config, VideoInfo, HistoryRecord, SiteConfig } from '@/types'
 import { loadConfig, saveConfig } from '@/utils/config'
 import { loadTheme, applyTheme } from '@/utils/theme'
 import logger from '@/utils/logger'
-import { ConfigEvent, SelectorEvent, DownloadEvent, ContentEvent } from '@/utils/events'
+import { ConfigEvent, SelectorEvent, DownloadEvent, ContentEvent, PageEvent } from '@/utils/events'
 
 interface VideoSource {
   url: string
@@ -222,7 +222,7 @@ class UniversalVideoDownloader {
       )
 
       if (openOptions) {
-        chrome.runtime.sendMessage({ action: 'openOptionsPage' })
+        chrome.runtime.sendMessage({ action: PageEvent.OPEN_OPTIONS })
       }
     } catch (error) {
       logger.error('保存选择器配置失败:', error)
