@@ -3,6 +3,7 @@ import type { Config, VideoInfo, HistoryRecord, SiteConfig } from '@/types'
 import { loadConfig, saveConfig } from '@/utils/config'
 import { loadTheme, applyTheme } from '@/utils/theme'
 import logger from '@/utils/logger'
+import { ConfigEvent, SelectorEvent, DownloadEvent, ContentEvent } from '@/utils/events'
 
 interface VideoSource {
   url: string
@@ -65,29 +66,29 @@ class UniversalVideoDownloader {
     chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       logger.log('内容脚本收到消息:', request.action)
       switch (request.action) {
-        case 'startElementSelector':
+        case SelectorEvent.START:
           this.startElementSelector()
           sendResponse({ success: true })
           break
-        case 'stopElementSelector':
+        case SelectorEvent.STOP:
           this.stopElementSelector()
           sendResponse({ success: true })
           break
-        case 'configUpdated':
+        case ConfigEvent.UPDATED:
           logger.log('收到 configUpdated 消息，销毁并重新初始化。')
           this.destroy()
           setTimeout(() => this.init(), 500)
           sendResponse({ success: true })
           break
-        case 'themeUpdated':
+        case ContentEvent.THEME_UPDATED:
           logger.log('收到 themeUpdated 消息，更新主题:', request.theme)
           this.setupTheme()
           sendResponse({ success: true })
           break
-        case 'ping':
+        case ContentEvent.PING:
           sendResponse({ success: true, message: 'pong' })
           break
-        case 'reloadContentScript':
+        case ContentEvent.RELOAD:
           logger.log('Received reloadContentScript request. Destroying and re-initializing.')
           this.destroy()
           setTimeout(() => {
@@ -95,10 +96,10 @@ class UniversalVideoDownloader {
             sendResponse({ success: true })
           }, 500)
           return true
-        case 'getVideoCount':
+        case ContentEvent.GET_VIDEO_COUNT:
           sendResponse({ videoCount: this.downloadButtons.size })
           break
-        case 'highlightElement':
+        case SelectorEvent.HIGHLIGHT:
           this.highlightElement(request.selector)
           sendResponse({ success: true })
           break
@@ -300,9 +301,11 @@ class UniversalVideoDownloader {
   }
 
   private updateBadgeCount(count: number) {
-    chrome.runtime.sendMessage({ action: 'getVideoCount', videoCount: count }).catch((error) => {
-      logger.warn('无法更新徽章:', error)
-    })
+    chrome.runtime
+      .sendMessage({ action: ContentEvent.GET_VIDEO_COUNT, videoCount: count })
+      .catch((error) => {
+        logger.warn('无法更新徽章:', error)
+      })
   }
 
   private getSiteConfig(hostname: string): SiteConfig | null {
@@ -1456,7 +1459,7 @@ class UniversalVideoDownloader {
     return new Promise((resolve, reject) => {
       chrome.runtime.sendMessage(
         {
-          action: 'download',
+          action: DownloadEvent.START,
           url: videoInfo.src,
           filename: `${videoInfo.title}.${videoInfo.format}`,
         },

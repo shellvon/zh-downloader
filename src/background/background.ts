@@ -1,6 +1,7 @@
 import { loadTheme, saveTheme } from '@/utils/theme' // 导入主题工具
 import { loadConfig } from '@/utils/config' // 导入配置工具
 import logger from '@/utils/logger'
+import { ConfigEvent, SelectorEvent, DownloadEvent, ContentEvent, PageEvent } from '@/utils/events'
 
 chrome.runtime.onInstalled.addListener(async () => {
   logger.info('通用视频下载器已安装')
@@ -17,7 +18,7 @@ chrome.runtime.onInstalled.addListener(async () => {
 
 // 监听配置更新，以更新右键菜单可见性
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-  if (request.action === 'configUpdated') {
+  if (request.action === ConfigEvent.UPDATED) {
     updateContextMenuVisibility()
     sendResponse({ success: true })
   }
@@ -55,7 +56,7 @@ chrome.contextMenus.onClicked.addListener(async (info, tab) => {
       try {
         // 尝试向内容脚本发送消息，指示启动统一元素选择器
         await chrome.tabs.sendMessage(tab.id, {
-          action: 'startElementSelector',
+          action: SelectorEvent.START,
         })
         logger.info(`已发送 'startElementSelector' 消息 (通过右键菜单)。`)
       } catch (error) {
@@ -90,7 +91,7 @@ chrome.downloads.onChanged.addListener(async (downloadDelta) => {
     // 通知历史页面下载完成
     chrome.runtime
       .sendMessage({
-        action: 'downloadComplete',
+        action: DownloadEvent.COMPLETE,
         downloadId: downloadDelta.id,
       })
       .catch(() => {
@@ -128,7 +129,7 @@ chrome.downloads.onChanged.addListener(async (downloadDelta) => {
           // 通知历史页面更新进度
           chrome.runtime
             .sendMessage({
-              action: 'downloadProgress',
+              action: DownloadEvent.PROGRESS,
               downloadId: downloadDelta.id,
               progress,
               filename: download.filename,
@@ -158,7 +159,7 @@ chrome.downloads.onCreated.addListener((downloadItem) => {
 
 // 监听来自content script的消息
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-  if (request.action === 'themeUpdated') {
+  if (request.action === ContentEvent.THEME_UPDATED) {
     logger.info('Background: Received theme update, broadcasting to all tabs')
     // 通知所有标签页主题已更新
     chrome.tabs.query({}, (tabs) => {
@@ -166,7 +167,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         if (tab.id) {
           chrome.tabs
             .sendMessage(tab.id, {
-              action: 'themeUpdated',
+              action: ContentEvent.THEME_UPDATED,
               theme: request.theme,
             })
             .catch(() => {
@@ -179,7 +180,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     // 同时广播到所有扩展页面（popup, options, history等）
     chrome.runtime
       .sendMessage({
-        action: 'themeUpdated',
+        action: ContentEvent.THEME_UPDATED,
         theme: request.theme,
       })
       .catch(() => {
@@ -189,7 +190,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     sendResponse({ success: true })
     return true
   }
-  if (request.action === 'download') {
+  if (request.action === DownloadEvent.START) {
     // 使用Chrome下载API
     chrome.downloads.download(
       {
@@ -210,7 +211,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       },
     )
     return true // 保持消息通道开放
-  } else if (request.action === 'reloadContentScript') {
+  } else if (request.action === ContentEvent.RELOAD) {
     // 重新注入内容脚本
     if (sender.tab?.id) {
       chrome.scripting
@@ -233,7 +234,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       })
     }
     return true // Keep message channel open for async response
-  } else if (request.action === 'getVideoCount') {
+  } else if (request.action === ContentEvent.GET_VIDEO_COUNT) {
     // 接收视频数量并更新徽章
     if (sender.tab?.id && request.videoCount !== undefined) {
       const count = request.videoCount > 0 ? String(request.videoCount) : ''
@@ -246,12 +247,12 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     } else {
       sendResponse({ success: false, error: 'Invalid getVideoCount request.' })
     }
-  } else if (request.action === 'highlightElement') {
+  } else if (request.action === SelectorEvent.HIGHLIGHT) {
     // 转发高亮请求到当前活动标签页的内容脚本
     if (sender.tab?.id && request.selector) {
       chrome.tabs.sendMessage(
         sender.tab.id,
-        { action: 'highlightElement', selector: request.selector },
+        { action: SelectorEvent.HIGHLIGHT, selector: request.selector },
         (response) => {
           sendResponse(response)
         },
@@ -263,16 +264,11 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         error: 'Invalid highlightElement request.',
       })
     }
-  } else if (request.action === 'getDownloadProgress') {
+  } else if (request.action === DownloadEvent.GET_PROGRESS) {
     // 获取下载进度
     const progress = downloadProgress.get(request.downloadId)
     sendResponse({ progress: progress || null })
-  } else if (request.action === 'elementSelected') {
-    // 转发元素选择结果到 options 页面
-    chrome.runtime.sendMessage(request).catch((error) => {
-      logger.warn('Failed to forward elementSelected message to options page:', error)
-    })
-  } else if (request.action === 'openOptionsPage') {
+  } else if (request.action === PageEvent.OPEN_OPTIONS) {
     // 打开选项页面
     chrome.runtime.openOptionsPage(() => {
       if (chrome.runtime.lastError) {

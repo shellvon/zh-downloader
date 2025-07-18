@@ -4,10 +4,7 @@ const LOG_LEVELS = ['debug', 'log', 'info', 'warn', 'error'] as const
 type LogLevel = (typeof LOG_LEVELS)[number]
 
 // 可通过环境变量或全局变量控制日志开关
-const isEnabled =
-  typeof process !== 'undefined' && process.env && process.env.NODE_ENV !== 'production'
-    ? true
-    : ((window as any)?.__ZH_LOGGER_ENABLED__ ?? true)
+const isEnabled = (window as any)?.__ZH_LOGGER_ENABLED__ ?? true
 
 function format(level: LogLevel, ...args: any[]) {
   const time = new Date().toISOString()

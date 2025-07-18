@@ -22,6 +22,7 @@ import type { Config } from '@/types'
 import './popup.css'
 import '@/styles/theme.css'
 import logger from '@/utils/logger'
+import { ConfigEvent, SelectorEvent, DownloadEvent, ContentEvent, PageEvent } from '@/utils/events'
 
 const PopupPage: React.FC = () => {
   const [loading, setLoading] = useState(true)
@@ -105,7 +106,7 @@ const PopupPage: React.FC = () => {
         try {
           logger.log('Popup: Attempting to get video count from content script...')
           const response = await chrome.tabs.sendMessage(tab.id, {
-            action: 'getVideoCount',
+            action: ContentEvent.GET_VIDEO_COUNT,
           })
           if (response && typeof response.videoCount === 'number') {
             count = response.videoCount
@@ -126,7 +127,7 @@ const PopupPage: React.FC = () => {
             logger.log('Popup: Content script re-injected. Retrying get video count...')
             await new Promise((resolve) => setTimeout(resolve, 500))
             const response = await chrome.tabs.sendMessage(tab.id, {
-              action: 'getVideoCount',
+              action: ContentEvent.GET_VIDEO_COUNT,
             })
             if (response && typeof response.videoCount === 'number') {
               count = response.videoCount
@@ -209,7 +210,7 @@ const PopupPage: React.FC = () => {
 
       try {
         await chrome.tabs.sendMessage(tab.id, {
-          action: 'startElementSelector',
+          action: SelectorEvent.START,
         })
         logger.log('Sent startElementSelector message to content script.')
         window.close()
@@ -222,7 +223,7 @@ const PopupPage: React.FC = () => {
         logger.log('Content script re-injected. Retrying startElementSelector message.')
         await new Promise((resolve) => setTimeout(resolve, 500))
         await chrome.tabs.sendMessage(tab.id, {
-          action: 'startElementSelector',
+          action: SelectorEvent.START,
         })
         window.close()
       }

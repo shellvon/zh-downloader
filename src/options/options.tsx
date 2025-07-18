@@ -30,6 +30,7 @@ import { loadTheme, saveTheme, applyTheme, type Theme, listenThemeUpdate } from 
 import './options.css'
 import '@/styles/theme.css'
 import logger from '@/utils/logger'
+import { ConfigEvent, SelectorEvent, DownloadEvent, ContentEvent, PageEvent } from '@/utils/events'
 
 const OptionsPage: React.FC = () => {
   const [config, setConfig] = useState<Config | null>(null)
@@ -96,7 +97,7 @@ const OptionsPage: React.FC = () => {
       await saveConfig(newConfig)
       setConfig(newConfig)
       showMessage('配置保存成功！', 'success') // Fixed: showMessage variable is undeclared
-      chrome.runtime.sendMessage({ action: 'configUpdated' }).catch((error) => {
+      chrome.runtime.sendMessage({ action: ConfigEvent.UPDATED }).catch((error) => {
         logger.warn('Failed to send configUpdated message to background:', error)
       })
     } catch (error) {
@@ -201,7 +202,7 @@ const OptionsPage: React.FC = () => {
       }
 
       try {
-        await chrome.tabs.sendMessage(tab.id, { action: 'startElementSelector' })
+        await chrome.tabs.sendMessage(tab.id, { action: SelectorEvent.START })
         logger.log('Sent startElementSelector message to content script.')
       } catch (error) {
         logger.warn('Failed to send message to content script, attempting re-injection:', error)
@@ -211,7 +212,7 @@ const OptionsPage: React.FC = () => {
         })
         logger.log('Content script re-injected. Retrying startElementSelector message.')
         await new Promise((resolve) => setTimeout(resolve, 500))
-        await chrome.tabs.sendMessage(tab.id, { action: 'startElementSelector' })
+        await chrome.tabs.sendMessage(tab.id, { action: SelectorEvent.START })
       }
 
       setIsElementSelectorActive(true)
@@ -227,7 +228,7 @@ const OptionsPage: React.FC = () => {
     try {
       const [tab] = await chrome.tabs.query({ active: true, currentWindow: true })
       if (tab.id) {
-        await chrome.tabs.sendMessage(tab.id, { action: 'stopElementSelector' })
+        await chrome.tabs.sendMessage(tab.id, { action: SelectorEvent.STOP })
         setIsElementSelectorActive(false)
         setSelectedElement(null)
       }
@@ -295,28 +296,6 @@ const OptionsPage: React.FC = () => {
     const newConfig = { ...config, advancedModeEnabled: !config.advancedModeEnabled }
     saveConfigData(newConfig)
   }, [config, saveConfigData])
-
-  // 监听来自content script的消息
-  useEffect(() => {
-    const messageListener = (request: any, sender: any, sendResponse: any) => {
-      if (request.action === 'elementSelected') {
-        setSelectedElement({
-          selector: request.selector,
-          tagName: request.tagName,
-          className: request.className,
-          id: request.id,
-          selectorType: request.selectorType,
-          hostname: request.hostname,
-          documentTitle: request.documentTitle,
-        })
-        setIsElementSelectorActive(false)
-        showMessage(`元素已选择: ${request.selectorType} - ${request.selector}`, 'success') // Fixed: showMessage variable is undeclared
-      }
-    }
-
-    chrome.runtime.onMessage.addListener(messageListener)
-    return () => chrome.runtime.onMessage.removeListener(messageListener)
-  }, [])
 
   // 初始化
   useEffect(() => {
