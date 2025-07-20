@@ -1,7 +1,6 @@
-import './content.css'
 import type { Config, VideoInfo, HistoryRecord, SiteConfig } from '@/types'
 import { loadConfig, saveConfig } from '@/utils/config'
-import { loadTheme, applyTheme } from '@/utils/theme'
+import { loadTheme } from '@/utils/theme'
 import logger from '@/utils/logger'
 import {
   ConfigEvent,
@@ -13,11 +12,28 @@ import {
 } from '@/utils/events'
 import { STORAGE_KEYS } from '@/utils/constants'
 
+import './content.css'
+
 interface VideoSource {
   url: string
   quality: string
   format: string
   label: string
+}
+
+// 常量提取，减少重复
+const CONSTANTS = {
+  ROOT_ID: 'zhd-root',
+  DATA_ATTR: 'data-zhd',
+  REINIT_DELAY: 500,
+  SCAN_DELAY: 500,
+  QUALITY_PRIORITY: { 高清: 4, 标清: 3, 流畅: 2, 未知: 1 } as const,
+  GENERIC_TITLE_SELECTORS: [
+    'h1', 'h2', 'h3', '.title', '.video-title', '.media-title',
+    '[title]', '[alt]', '.content-title', '.post-title'
+  ],
+  VIDEO_EVENTS: ['loadstart', 'loadedmetadata', 'canplay', 'play', 'loadeddata', 'progress'],
+  STREAMABLE_FORMATS: ['.m3u8', 'm3u8', '.mpd', 'dash', 'blob:']
 }
 
 class UniversalVideoDownloader {
@@ -41,21 +57,19 @@ class UniversalVideoDownloader {
   private videoEventListeners = new WeakMap<HTMLVideoElement, () => void>()
 
   constructor() {
-    // 初始化根节点
-    let root = document.querySelector('.zh-downloader-root') as HTMLElement
+    this.root = this.createOrGetRoot()
+    document.body.setAttribute(CONSTANTS.DATA_ATTR, '')
+    this.init()
+  }
+
+  private createOrGetRoot(): HTMLElement {
+    let root = document.querySelector(`#${CONSTANTS.ROOT_ID}`) as HTMLElement
     if (!root) {
       root = document.createElement('div')
-      root.className = 'zh-downloader-root'
-      root.style.all = 'initial' // 尽量隔离全局样式
-      root.style.position = 'fixed'
-      root.style.top = '0'
-      root.style.left = '0'
-      root.style.zIndex = '2147483647'
-      root.style.pointerEvents = 'none' // 默认不影响页面
+      root.id = CONSTANTS.ROOT_ID
       document.body.appendChild(root)
     }
-    this.root = root
-    this.init()
+    return root
   }
 
   private async init() {
@@ -85,7 +99,7 @@ class UniversalVideoDownloader {
         case ConfigEvent.UPDATED:
           logger.log('收到 configUpdated 消息，销毁并重新初始化。')
           this.destroy()
-          setTimeout(() => this.init(), 500)
+          setTimeout(() => this.init(), CONSTANTS.REINIT_DELAY)
           sendResponse({ success: true })
           break
         case ConfigEvent.THEME_UPDATED:
@@ -102,7 +116,7 @@ class UniversalVideoDownloader {
           setTimeout(() => {
             this.init()
             sendResponse({ success: true })
-          }, 500)
+          }, CONSTANTS.REINIT_DELAY)
           return true
         case ContentEvent.GET_VIDEO_COUNT:
           sendResponse({ videoCount: this.downloadButtons.size })
@@ -126,29 +140,58 @@ class UniversalVideoDownloader {
   private async setupTheme() {
     try {
       const theme = await loadTheme()
-      applyTheme(theme, document.documentElement)
-      // 监听主题变化
-      const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)')
-      mediaQuery.addEventListener('change', () => {
-        if (theme === 'system') {
-          applyTheme(theme, document.documentElement)
-        }
-      })
+      // 判断当前主题
+      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
+      const isDark = theme === 'dark' || (theme === 'system' && prefersDark)
+
+      // 设置根元素主题类
+      this.root.classList.toggle('dark', isDark)
+      this.root.classList.toggle('light', !isDark)
+
+      // 同时更新所有现有的工具栏和面板
+      this.updateExistingElementsTheme(isDark)
+
+      // 监听系统主题变化
+      if (theme === 'system') {
+        const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)')
+        mediaQuery.addEventListener('change', (e) => {
+          const newIsDark = e.matches
+          this.root.classList.toggle('dark', newIsDark)
+          this.root.classList.toggle('light', !newIsDark)
+          this.updateExistingElementsTheme(newIsDark)
+        })
+      }
     } catch (error) {
       logger.warn('主题设置失败:', error)
     }
   }
 
-  private injectThemeCSS() {
-    // 移除已存在的主题样式
-    const existingStyle = document.getElementById('video-downloader-theme')
-    if (existingStyle) {
-      existingStyle.remove()
-    }
+  private updateExistingElementsTheme(isDark: boolean) {
+    // 更新所有现有的工具栏
+    document.querySelectorAll('.video-tools-container').forEach(container => {
+      container.classList.toggle('dark', isDark)
+      container.classList.toggle('light', !isDark)
+    })
+
+    // 更新所有现有的控制面板
+    document.querySelectorAll('.player-control-panel').forEach(panel => {
+      panel.classList.toggle('dark', isDark)
+      panel.classList.toggle('light', !isDark)
+    })
+
+    // 更新所有现有的选择器弹窗
+    document.querySelectorAll('.selector-type-popup').forEach(popup => {
+      popup.classList.toggle('dark', isDark)
+      popup.classList.toggle('light', !isDark)
+    })
   }
 
-  private async saveSelectorToConfig(selector: string, type: string, element: Element) {
-    if (!this.config) return
+  private async saveSelectorToConfig(
+    selector: string,
+    type: string,
+    element: Element,
+  ): Promise<boolean> {
+    if (!this.config) return false
 
     const hostname = window.location.hostname
     let siteKey = hostname
@@ -170,7 +213,7 @@ class UniversalVideoDownloader {
       )
       if (!shouldOverride) {
         this.showSelectorMessage('已取消保存选择器。')
-        return
+        return false
       }
     }
 
@@ -232,9 +275,12 @@ class UniversalVideoDownloader {
       if (openOptions) {
         chrome.runtime.sendMessage({ action: PageEvent.OPEN_OPTIONS })
       }
+
+      return true
     } catch (error) {
       logger.error('保存选择器配置失败:', error)
       this.showSelectorMessage('保存配置失败，请重试。')
+      return false
     }
   }
 
@@ -262,7 +308,7 @@ class UniversalVideoDownloader {
       })
       if (shouldScan) {
         logger.log('DOM 变化检测到视频元素，重新扫描。')
-        setTimeout(() => this.scanForVideos(), 500)
+        setTimeout(() => this.scanForVideos(), CONSTANTS.SCAN_DELAY)
       }
     })
 
@@ -360,14 +406,13 @@ class UniversalVideoDownloader {
       }
     }
 
-    const events = ['loadstart', 'loadedmetadata', 'canplay', 'play', 'loadeddata', 'progress']
     const cleanup = () => {
-      events.forEach((event) => {
+      CONSTANTS.VIDEO_EVENTS.forEach((event) => {
         videoElement.removeEventListener(event, updateVideoInfo)
       })
     }
 
-    events.forEach((event) => {
+    CONSTANTS.VIDEO_EVENTS.forEach((event) => {
       videoElement.addEventListener(event, updateVideoInfo)
     })
 
@@ -455,15 +500,7 @@ class UniversalVideoDownloader {
 
     // 检查是否为流媒体
     if (info.src) {
-      if (
-        info.src.includes('.m3u8') ||
-        info.src.includes('m3u8') ||
-        info.src.includes('.mpd') ||
-        info.src.includes('dash') ||
-        info.src.includes('blob:')
-      ) {
-        info.isStreamable = true
-      }
+      info.isStreamable = CONSTANTS.STREAMABLE_FORMATS.some(format => info.src.includes(format))
     }
 
     return info
@@ -549,11 +586,9 @@ class UniversalVideoDownloader {
   }
 
   private selectBestVideoSource(sources: VideoSource[]): VideoSource {
-    const qualityPriority = { 高清: 4, 标清: 3, 流畅: 2, 未知: 1 }
-
     return sources.reduce((best, current) => {
-      const bestPriority = qualityPriority[best.quality as keyof typeof qualityPriority] || 1
-      const currentPriority = qualityPriority[current.quality as keyof typeof qualityPriority] || 1
+      const bestPriority = CONSTANTS.QUALITY_PRIORITY[best.quality as keyof typeof CONSTANTS.QUALITY_PRIORITY] || 1
+      const currentPriority = CONSTANTS.QUALITY_PRIORITY[current.quality as keyof typeof CONSTANTS.QUALITY_PRIORITY] || 1
       return currentPriority > bestPriority ? current : best
     })
   }
@@ -600,19 +635,7 @@ class UniversalVideoDownloader {
 
     // 4. 通用回退逻辑
     if (!title) {
-      const genericSelectors = [
-        'h1',
-        'h2',
-        'h3',
-        '.title',
-        '.video-title',
-        '.media-title',
-        '[title]',
-        '[alt]',
-        '.content-title',
-        '.post-title',
-      ]
-      title = this.extractTextBySelectors(container, genericSelectors, '通用标题')
+      title = this.extractTextBySelectors(container, CONSTANTS.GENERIC_TITLE_SELECTORS, '通用标题')
     }
 
     // 5. 最后回退到页面标题
@@ -680,33 +703,28 @@ class UniversalVideoDownloader {
     videoElement: HTMLVideoElement,
     videoInfo: VideoInfo,
   ) {
+    // 让视频父容器为定位元素，方便绝对定位
+    const videoContainer = container as HTMLElement
+    if (getComputedStyle(videoContainer).position === 'static') {
+      videoContainer.style.position = 'relative'
+    }
+
+    // 创建工具栏容器
     const toolsContainer = document.createElement('div')
     toolsContainer.className = 'video-tools-container'
-    // 只在 toolsContainer 上加主题 class
-    toolsContainer.classList.add(
-      document.documentElement.classList.contains('dark') ? 'dark' : 'light',
-    )
-    // 监听主题变化
-    const themeObserver = new MutationObserver(() => {
-      toolsContainer.classList.toggle('dark', document.documentElement.classList.contains('dark'))
-      toolsContainer.classList.toggle('light', !document.documentElement.classList.contains('dark'))
-    })
-    themeObserver.observe(document.documentElement, {
-      attributes: true,
-      attributeFilter: ['class'],
-    })
-    ;(toolsContainer as any)._themeObserver = themeObserver
 
-    // 始终创建播放器控制按钮
+    // 主题 class
+    const isDark = this.root.classList.contains('dark')
+    toolsContainer.classList.toggle('dark', isDark)
+    toolsContainer.classList.toggle('light', !isDark)
+
+    // 创建按钮
     const playerControlBtn = this.createPlayerControlButton(videoElement, videoInfo)
     playerControlBtn.addEventListener('click', (e) => {
       e.preventDefault()
       e.stopPropagation()
       e.stopImmediatePropagation()
-      // toggle 面板
-      const existingPanel = container.parentNode?.querySelector(
-        '.player-control-panel',
-      ) as HTMLElement
+      const existingPanel = document.querySelector('.player-control-panel') as HTMLElement
       if (existingPanel) {
         existingPanel.remove()
       } else {
@@ -727,13 +745,8 @@ class UniversalVideoDownloader {
       toolsContainer.appendChild(downloadBtn)
     }
 
-    const containerStyle = window.getComputedStyle(container)
-    if (containerStyle.position === 'static') {
-      ;(container as HTMLElement).style.position = 'relative'
-    }
+    videoContainer.appendChild(toolsContainer)
 
-    this.positionToolsContainer(toolsContainer, container)
-    container.appendChild(toolsContainer)
     this.downloadButtons.add(toolsContainer)
     this.updateBadgeCount(this.downloadButtons.size)
   }
@@ -766,29 +779,36 @@ class UniversalVideoDownloader {
   }
 
   private showPlayerControls(button: HTMLButtonElement, videoElement: HTMLVideoElement) {
-    // 移除已存在的面板
-    const existingPanel = document.querySelector('.player-control-panel') as HTMLElement
+    // 所在工具栏容器
+    const currentToolsContainer = button.closest('.video-tools-container') as HTMLElement
+    if (!currentToolsContainer) return
+
+    // 已存在则移除
+    const existingPanel = currentToolsContainer.parentElement?.querySelector(
+      '.player-control-panel',
+    ) as HTMLElement
     if (existingPanel) {
       existingPanel.remove()
+      return
     }
 
     const controlPanel = document.createElement('div')
     controlPanel.className = 'player-control-panel'
 
     // 主题支持
-    const isDark = document.documentElement.classList.contains('dark')
+    const isDark = this.root.classList.contains('dark')
     controlPanel.classList.add(isDark ? 'dark' : 'light')
 
     // 监听主题变化
     const themeObserver = new MutationObserver(() => {
-      controlPanel.classList.toggle('dark', document.documentElement.classList.contains('dark'))
-      controlPanel.classList.toggle('light', !document.documentElement.classList.contains('dark'))
+      controlPanel.classList.toggle('dark', this.root.classList.contains('dark'))
+      controlPanel.classList.toggle('light', !this.root.classList.contains('dark'))
     })
-    themeObserver.observe(document.documentElement, {
+    themeObserver.observe(this.root, {
       attributes: true,
       attributeFilter: ['class'],
     })
-    ;(controlPanel as any)._themeObserver = themeObserver
+      ; (controlPanel as any)._themeObserver = themeObserver
 
     controlPanel.innerHTML = `
       <div class="actions-row">
@@ -839,6 +859,66 @@ class UniversalVideoDownloader {
         </div>
       </div>
     `
+
+    // 定位面板到工具栏下方，右侧与下载按钮对齐
+    const playerControlBtn = currentToolsContainer.querySelector(
+      '.player-control-btn',
+    ) as HTMLElement
+    const downloadBtn = currentToolsContainer.querySelector('.download-btn') as HTMLElement
+    const updatePanelPosition = () => {
+      const toolbarTop = currentToolsContainer.offsetTop
+      const toolbarHeight = currentToolsContainer.offsetHeight
+      const panelWidth = controlPanel.offsetWidth || 320
+      let panelLeft = playerControlBtn.offsetLeft
+      if (downloadBtn) {
+        const btnRight = downloadBtn.offsetLeft + downloadBtn.offsetWidth
+        panelLeft = btnRight - panelWidth
+        if (panelLeft < 0) panelLeft = 0
+      }
+      controlPanel.style.position = 'absolute'
+      controlPanel.style.top = `${toolbarTop + toolbarHeight + 8}px`
+      //  controlPanel.style.left = `${panelLeft}px`
+      controlPanel.style.zIndex = '1000002'
+      controlPanel.style.pointerEvents = 'auto'
+      controlPanel.style.width = 'max-content'
+      controlPanel.style.minWidth = '320px'
+      controlPanel.style.minHeight = '200px'
+      // controlPanel.style.maxHeight = '35vh';
+      controlPanel.style.overflowY = 'auto'
+      controlPanel.style.padding = '20px 16px 16px 16px'
+    }
+    requestAnimationFrame(updatePanelPosition)
+
+    // 主题切换时同步 shadowRoot 内所有相关元素的 class
+    const syncThemeClass = () => {
+      const isDark = this.root.classList.contains('dark')
+      const containers = currentToolsContainer.parentElement?.querySelectorAll(
+        '.video-tools-container, .player-control-panel',
+      ) as NodeListOf<HTMLElement>
+      containers.forEach((el) => {
+        el.classList.toggle('dark', isDark)
+        el.classList.toggle('light', !isDark)
+      })
+    }
+    // 初始同步
+    syncThemeClass()
+    // 监听主题变化
+    const themeObserverPanel = new MutationObserver(() => {
+      syncThemeClass()
+    })
+    themeObserverPanel.observe(this.root, {
+      attributes: true,
+      attributeFilter: ['class'],
+    })
+      ; (controlPanel as any)._themeObserver = themeObserverPanel
+    // 销毁时断开 observer
+    const oldRemove = controlPanel.remove.bind(controlPanel)
+    controlPanel.remove = () => {
+      if ((controlPanel as any)._themeObserver) (controlPanel as any)._themeObserver.disconnect()
+      oldRemove()
+    }
+
+    currentToolsContainer.parentElement?.appendChild(controlPanel)
 
     // 变量提升，确保所有函数可访问且只声明一次
     let currentScale = 1
@@ -989,16 +1069,9 @@ class UniversalVideoDownloader {
     if (toolsContainer && toolsContainer.parentNode) {
       toolsContainer.parentNode.appendChild(controlPanel)
     } else {
-      this.root.appendChild(controlPanel)
+      document.body.appendChild(controlPanel)
     }
     setTimeout(() => document.addEventListener('click', closePanel), 100)
-
-    // 销毁时断开 observer
-    const oldRemove = controlPanel.remove.bind(controlPanel)
-    controlPanel.remove = () => {
-      if ((controlPanel as any)._themeObserver) (controlPanel as any)._themeObserver.disconnect()
-      oldRemove()
-    }
 
     if (brightnessSlider && brightnessValue) {
       brightnessSlider.addEventListener('input', () => {
@@ -1183,15 +1256,6 @@ class UniversalVideoDownloader {
     button.addEventListener('mouseleave', () => {
       button.classList.remove('pulse')
     })
-  }
-
-  private positionToolsContainer(toolsContainer: HTMLElement, container: Element) {
-    const rect = container.getBoundingClientRect()
-    if (rect.width < 300) {
-      toolsContainer.classList.add('small')
-    } else {
-      toolsContainer.classList.add('large')
-    }
   }
 
   private formatTime(seconds: number): string {
@@ -1511,111 +1575,11 @@ class UniversalVideoDownloader {
       isPaused: false,
     }
 
-    const style = document.createElement('style')
-    style.id = 'element-selector-style'
-    style.textContent = `
-  .element-selector-overlay {
-    position: fixed !important;
-    pointer-events: none !important;
-    border: 3px solid var(--primary-solid) !important; /* Use theme primary solid */
-    background: var(--primary-light) !important; /* Use theme primary light */
-    z-index: 999999 !important;
-    transition: all 0.1s ease !important;
-    box-shadow: var(--shadow-glow) !important; /* Use theme glow shadow */
-  }
-  .element-selector-tooltip {
-    position: fixed !important;
-    background: var(--card-hover) !important; /* Use theme card hover background */
-    color: var(--foreground) !important; /* Use theme foreground color */
-    padding: 8px 12px !important;
-    border-radius: 6px !important;
-    font-size: 12px !important;
-    z-index: 1000000 !important;
-    pointer-events: none !important;
-    font-family: monospace !important;
-    box-shadow: var(--shadow-lg) !important; /* Use theme shadow */
-    max-width: 300px !important;
-    word-break: break-all !important;
-  }
-  .selector-type-popup {
-    position: fixed !important;
-    top: 50% !important;
-    left: 50% !important;
-    transform: translate(-50%, -50%) !important;
-    background: var(--background-solid) !important; /* Use theme solid background for full opacity */
-    color: var(--foreground) !important; /* Use theme foreground color */
-    padding: 24px !important;
-    border-radius: 12px !important;
-    z-index: 1000001 !important;
-    box-shadow: var(--shadow-xl) !important; /* Use theme extra large shadow */
-    backdrop-filter: blur(20px) !important;
-    border: 1px solid var(--glass-border) !important; /* Use theme glass border */
-  }
-  .selector-type-popup h3 {
-    margin: 0 0 16px 0 !important;
-    font-size: 18px !important;
-    text-align: center !important;
-  }
-  .selector-type-buttons {
-    display: grid !important;
-    grid-template-columns: 1fr 1fr !important;
-    gap: 12px !important;
-    margin-bottom: 16px !important;
-  }
-  .selector-type-btn {
-    padding: 12px 16px !important;
-    border: 1px solid var(--glass-border) !important; /* Use theme glass border */
-    border-radius: 8px !important;
-    background: var(--muted) !important; /* Use theme muted background */
-    color: var(--foreground) !important; /* Use theme foreground color */
-    cursor: pointer !important;
-    transition: all 0.2s ease !important;
-    font-size: 14px !important;
-    text-align: center !important;
-  }
-  .selector-type-btn:hover {
-    background: var(--muted-foreground) !important; /* Use slightly darker muted for hover */
-    border-color: var(--primary-solid) !important; /* Use theme primary solid for hover border */
-  }
-  .selector-info {
-    font-size: 12px !important;
-    color: var(--muted-foreground) !important; /* Use theme muted foreground color */
-    text-align: center !important;
-    line-height: 1.4 !important;
-  }
-  .copy-selector-btn {
-    background: var(--secondary-solid) !important; /* Use theme secondary solid */
-    color: var(--secondary-foreground) !important; /* Use theme secondary foreground */
-    border: none !important;
-    border-radius: 6px !important;
-    padding: 8px 12px !important;
-    margin-top: 8px !important;
-    cursor: pointer !important;
-    transition: all 0.2s ease !important;
-    font-size: 12px !important;
-  }
-  .copy-selector-btn:hover {
-    background: var(--secondary-dark) !important; /* Use theme secondary dark for hover */
-  }
-  .selected-selector-text {
-    font-family: monospace !important;
-    background: var(--input) !important; /* Use theme input background */
-    padding: 2px 4px !important;
-    border-radius: 4px !important;
-    color: var(--accent-solid) !important; /* Use theme accent solid */
-    word-break: break-all !important;
-    display: inline-block !important;
-  }
-`
-    document.head.appendChild(style)
-
-    this.elementSelector.overlay = document.createElement('div')
-    this.elementSelector.overlay.className = 'element-selector-overlay'
-    this.root.appendChild(this.elementSelector.overlay)
+    // 选择器相关样式已移至 content.css，无需动态注入
 
     this.elementSelector.tooltip = document.createElement('div')
     this.elementSelector.tooltip.className = 'element-selector-tooltip'
-    this.root.appendChild(this.elementSelector.tooltip)
+    this.root.appendChild(this.elementSelector.tooltip) // 替换 this.root
 
     this.elementSelector.mouseMoveHandler = (e) => this.handleElementSelectorMouseMove(e)
     this.elementSelector.clickHandler = (e) => this.handleElementSelectorClick(e)
@@ -1628,28 +1592,52 @@ class UniversalVideoDownloader {
     this.showSelectorMessage(
       '元素选择模式已激活\n• 鼠标悬停预览元素\n• 点击选择元素\n• 按 ESC 退出',
     )
+
+    // 确保 highlight-overlay 插入主文档
+    if (!document.querySelector('.highlight-overlay')) {
+      this.highlightOverlay = document.createElement('div')
+      this.highlightOverlay.className = 'highlight-overlay'
+      document.body.appendChild(this.highlightOverlay)
+    }
   }
 
   private handleElementSelectorMouseMove(e: MouseEvent) {
     if (!this.elementSelector?.isActive || this.elementSelector.isPaused) return
 
-    const element = document.elementFromPoint(e.clientX, e.clientY)
+    let element = document.elementFromPoint(e.clientX, e.clientY)
+    // 若命中遮罩或高亮框，暂时隐藏后再取一次
+    if (
+      element === this.elementSelector.overlay ||
+      element === this.highlightOverlay ||
+      element?.classList.contains('element-selector-overlay')
+    ) {
+      if (this.elementSelector.overlay) this.elementSelector.overlay.style.display = 'none'
+      if (this.highlightOverlay) this.highlightOverlay.style.display = 'none'
+      element = document.elementFromPoint(e.clientX, e.clientY)
+      if (this.elementSelector.overlay) this.elementSelector.overlay.style.display = 'block'
+      if (this.highlightOverlay) this.highlightOverlay.style.display = 'block'
+    }
+
     if (!element || element === this.elementSelector.currentElement) return
 
     this.elementSelector.currentElement = element
 
     const rect = element.getBoundingClientRect()
-    const overlay = this.elementSelector.overlay!
-    overlay.style.left = rect.left + window.scrollX + 'px'
-    overlay.style.top = rect.top + window.scrollY + 'px'
-    overlay.style.width = rect.width + 'px'
-    overlay.style.height = rect.height + 'px'
-
     const tooltip = this.elementSelector.tooltip!
     const selector = this.generateSelector(element)
     tooltip.textContent = `选择器: ${selector}\n标签: ${element.tagName.toLowerCase()}\n类名: ${(element as HTMLElement).className || '无'}`
     tooltip.style.left = Math.min(e.clientX + 15, window.innerWidth - 320) + 'px'
     tooltip.style.top = Math.max(e.clientY - 60, 10) + 'px'
+
+    // 更新高亮框位置和大小
+    if (this.highlightOverlay && this.elementSelector?.currentElement) {
+      const rect = this.elementSelector.currentElement.getBoundingClientRect()
+      this.highlightOverlay.style.top = `${rect.top - 3}px`
+      this.highlightOverlay.style.left = `${rect.left - 3}px`
+      this.highlightOverlay.style.width = `${rect.width + 6}px`
+      this.highlightOverlay.style.height = `${rect.height + 6}px`
+      this.highlightOverlay.style.display = 'block'
+    }
   }
 
   private handleElementSelectorClick(e: MouseEvent) {
@@ -1666,7 +1654,6 @@ class UniversalVideoDownloader {
 
     // 暂停选择器模式
     this.elementSelector.isPaused = true
-    this.elementSelector.overlay!.style.display = 'none'
     this.elementSelector.tooltip!.style.display = 'none'
     document.removeEventListener('mousemove', this.elementSelector.mouseMoveHandler!)
     document.removeEventListener('keydown', this.elementSelector.keyHandler!)
@@ -1677,6 +1664,7 @@ class UniversalVideoDownloader {
   private showSelectorTypePopup(element: Element, selector: string) {
     const popup = document.createElement('div')
     popup.className = 'selector-type-popup'
+    popup.style.zIndex = '9999999999' // 保证最高
     popup.innerHTML = `
       <h3>选择选择器类型</h3>
       <div class="selector-type-buttons">
@@ -1686,10 +1674,10 @@ class UniversalVideoDownloader {
         <button class="selector-type-btn" data-type="container">容器选择器</button>
       </div>
       <div class="selector-info">
-        选择器: <span class="selected-selector-text">${selector}</span><br>
-        标签: ${element.tagName.toLowerCase()}<br>
-        <button class="copy-selector-btn">复制选择器</button><br>
-        按 ESC 取消选择
+        <div class="selector-info-line">选择器: <span class="selected-selector-text">${selector}</span></div>
+        <div class="selector-info-line">标签: ${element.tagName.toLowerCase()}</div>
+        <div class="copy-tip"><button class="copy-selector-btn">复制选择器</button></div>
+        <div class="esc-tip">按 ESC 键取消选择</div>
       </div>
     `
 
@@ -1704,13 +1692,16 @@ class UniversalVideoDownloader {
         }
 
         // 保存选择器到配置
-        await this.saveSelectorToConfig(selector, type, element)
+        const saved = await this.saveSelectorToConfig(selector, type, element)
 
         popup.remove()
         this.stopElementSelector() // 完全停止选择器
-        this.showSelectorMessage(
-          `${type}选择器已保存: ${selector}\n\n配置已自动更新，可在设置页面查看。`,
-        )
+
+        if (saved) {
+          this.showSelectorMessage(
+            `${type}选择器已保存: ${selector}\n\n配置已自动更新，可在设置页面查看。`,
+          )
+        }
       })
     })
 
@@ -1737,19 +1728,15 @@ class UniversalVideoDownloader {
       if (e.key === 'Escape') {
         popup.remove()
         document.removeEventListener('keydown', handlePopupKeydown)
-        // 恢复选择器模式
-        if (this.elementSelector) {
-          this.elementSelector.isPaused = false
-          this.elementSelector.overlay!.style.display = 'block'
-          this.elementSelector.tooltip!.style.display = 'block'
-          document.addEventListener('mousemove', this.elementSelector.mouseMoveHandler!)
-          document.addEventListener('keydown', this.elementSelector.keyHandler!)
-          this.showSelectorMessage('元素选择模式已恢复。\n\n请继续点击目标元素或按 ESC 退出。')
-        }
+        this.stopElementSelector()
+        this.showSelectorMessage('已取消保存选择器。')
       }
     }
 
-    document.body.appendChild(popup)
+    // 隐藏高亮框和 overlay
+    if (this.highlightOverlay) this.highlightOverlay.style.display = 'none'
+    if (this.elementSelector?.tooltip) this.elementSelector.tooltip.style.display = 'none'
+    this.root.appendChild(popup)
     document.addEventListener('keydown', handlePopupKeydown)
   }
 
@@ -1802,9 +1789,6 @@ class UniversalVideoDownloader {
       document.removeEventListener('keydown', this.elementSelector.keyHandler)
     }
 
-    if (this.elementSelector.overlay) {
-      this.elementSelector.overlay.remove()
-    }
     if (this.elementSelector.tooltip) {
       this.elementSelector.tooltip.remove()
     }
@@ -1821,34 +1805,47 @@ class UniversalVideoDownloader {
     }
 
     this.elementSelector = null
+
+    // 关闭时移除 highlight-overlay
+    if (this.highlightOverlay && this.highlightOverlay.parentNode) {
+      this.highlightOverlay.parentNode.removeChild(this.highlightOverlay)
+      this.highlightOverlay = null
+    }
   }
 
   private showSelectorMessage(message: string) {
+    const isDark = this.root.classList.contains('dark')
     const messageDiv = document.createElement('div')
+    messageDiv.className = 'zhd-selector-message'
     messageDiv.style.cssText = `
-  position: fixed;
-  top: 20px;
-  left: 50%;
-  transform: translateX(-50%);
-  background: var(--background-solid) !important; /* Use theme solid background for full opacity */
-  color: var(--foreground) !important; /* Use theme foreground color */
-  padding: 16px 24px;
-  border-radius: 8px;
-  font-size: 14px;
-  z-index: 1000001;
-  box-shadow: var(--shadow-xl) !important; /* Use theme extra large shadow */
-  backdrop-filter: blur(20px);
-  border: 1px solid var(--glass-border) !important; /* Use theme glass border */
-  white-space: pre-line;
-  text-align: center;
-  line-height: 1.4;
-`
+      position: fixed !important;
+      top: 24px !important;
+      left: 50% !important;
+      transform: translateX(-50%) !important;
+      background: ${isDark ? 'rgba(15, 15, 35, 0.95)' : 'rgba(255, 255, 255, 0.95)'} !important;
+      color: ${isDark ? '#e2e8f0' : '#1e293b'} !important;
+      padding: 16px 24px !important;
+      border-radius: 16px !important;
+      font-size: 14px !important;
+      font-weight: 500 !important;
+      z-index: 2147483647 !important;
+      box-shadow: ${isDark ? '0 10px 25px -5px rgba(0, 0, 0, 0.3), 0 0 20px rgba(59, 130, 246, 0.3)' : '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 0 20px rgba(59, 130, 246, 0.2)'} !important;
+      backdrop-filter: blur(20px) saturate(180%) !important;
+      border: 1px solid ${isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(148, 163, 184, 0.3)'} !important;
+      white-space: pre-line !important;
+      text-align: center !important;
+      line-height: 1.5 !important;
+      font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+      animation: slideInFromTop 0.4s cubic-bezier(0.4, 0, 0.2, 1) !important;
+      max-width: 400px !important;
+    `
     messageDiv.textContent = message
 
     document.body.appendChild(messageDiv)
 
     setTimeout(() => {
-      messageDiv.remove()
+      messageDiv.style.animation = 'slideOutToTop 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards'
+      setTimeout(() => messageDiv.remove(), 300)
     }, 4000)
   }
 
@@ -1951,23 +1948,12 @@ class UniversalVideoDownloader {
 
 // 启动通用下载器
 const downloaderInstance = new UniversalVideoDownloader()
-;(window as any).universalVideoDownloaderInstance = downloaderInstance
-
-// 页面的 pointer-events 属性可能被覆盖，确保工具按钮可点击
-document.addEventListener('DOMContentLoaded', () => {
-  const style = document.createElement('style')
-  style.textContent = `
-    .video-tools-container, .video-tools-container * {
-      pointer-events: auto !important;
-    }
-  `
-  document.head.appendChild(style)
-})
+  ; (window as any).universalVideoDownloaderInstance = downloaderInstance
 
 // 页面卸载时清理
 window.addEventListener('beforeunload', () => {
   if ((window as any).universalVideoDownloaderInstance) {
-    ;(window as any).universalVideoDownloaderInstance.destroy()
+    ; (window as any).universalVideoDownloaderInstance.destroy()
     delete (window as any).universalVideoDownloaderInstance
   }
 })
@@ -1978,9 +1964,9 @@ new MutationObserver(() => {
   if (location.href !== currentUrl) {
     currentUrl = location.href
     if ((window as any).universalVideoDownloaderInstance) {
-      ;(window as any).universalVideoDownloaderInstance.destroy()
+      ; (window as any).universalVideoDownloaderInstance.destroy()
       setTimeout(() => {
-        ;(window as any).universalVideoDownloaderInstance = new UniversalVideoDownloader()
+        ; (window as any).universalVideoDownloaderInstance = new UniversalVideoDownloader()
       }, 1000)
     }
   }

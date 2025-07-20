@@ -9,11 +9,12 @@
     {
       "matches": ["<all_urls>"],
       "js": ["content.js"],
-      "css": ["style.css"],
+      "css": ["content.css"],
       "run_at": "document_end",
       "type": "module"
     }
   ],
+
   "background": {
     "service_worker": "background.js",
     "type": "module"
