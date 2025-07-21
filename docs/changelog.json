@@ -1,8 +1,35 @@
 [
     {
+        "version": "2.0.0",
+        "date": "2025.07.21",
+        "crx": "https://chrome.google.com/webstore/detail/zh-downloader/gcknejnpflbcggigdinhahgngfhaomik?utm_source=chrome-ntp-icon",
+        "zip": "https://github.com/shellvon/zh-downloader/releases/download/1.0.12/zh-downloader-v2.0.0.zip",
+        "logs": {
+            "new": [
+                {
+                    "text": "使用Manifest V3 规范搭配全新UI",
+                    "issues": ["33"]
+                },
+                {
+                    "text": "支持视频画中画、倍速、滤镜"
+                },
+                {
+                    "text": "支持视频关键帧截图保存"
+                },
+                {
+                    "text": "支持历史记录管理"
+                }
+            ],
+            "update": [
+                {
+                    "text": "关闭高级模式、嗅探模式、流媒体处理等等复杂case，仅支持知乎一个站点"
+                }
+            ]
+        }
+    },
+    {
         "version": "1.0.13",
         "date": "2022.07.18",
-        "crx": "https://chrome.google.com/webstore/detail/zh-downloader/gcknejnpflbcggigdinhahgngfhaomik?utm_source=chrome-ntp-icon",
         "zip": "https://github.com/shellvon/zh-downloader/releases/download/1.0.12/zh-downloader-v1.0.13.zip",
         "logs": {
            "fixed": [
