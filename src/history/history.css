@@ -199,12 +199,12 @@ body {
   background: var(--primary);
 }
 
-.stat-card.downloads::before {
-  background: var(--accent);
+.stat-card.video::before {
+  background: var(--primary);
 }
 
 .stat-card.screenshots::before {
-  background: var(--secondary);
+  background: var(--accent);
 }
 
 .stat-card.storage::before {
@@ -231,13 +231,13 @@ body {
   color: var(--primary-solid);
 }
 
-.stat-card.downloads .stat-icon {
-  background: var(--accent-solid);
+.stat-card.video .stat-icon {
+  background: var(--secondary-solid);
   color: white;
 }
 
 .stat-card.screenshots .stat-icon {
-  background: var(--secondary-solid);
+  background: var(--accent-solid);
   color: white;
 }
 
@@ -469,7 +469,7 @@ body {
   border-radius: 1.25rem 1.25rem 0 0;
 }
 
-.history-card.download::before {
+.history-card.video::before {
   background: var(--primary);
 }
 
@@ -499,9 +499,9 @@ body {
   flex-shrink: 0;
 }
 
-.history-card.download .card-type-indicator {
-  background: var(--primary-light);
-  color: var(--primary-solid);
+.history-card.video .card-type-indicator {
+  background: var(--secondary-solid);
+  color: white;
 }
 
 .history-card.screenshot .card-type-indicator {
@@ -597,6 +597,7 @@ body {
   0% {
     transform: rotate(0deg);
   }
+
   100% {
     transform: rotate(360deg);
   }
@@ -606,6 +607,7 @@ body {
   0% {
     transform: translateX(-100%);
   }
+
   100% {
     transform: translateX(100%);
   }
@@ -828,10 +830,12 @@ body {
 
 /* 动画 */
 @keyframes float {
+
   0%,
   100% {
     transform: translateY(0px) rotate(0deg);
   }
+
   50% {
     transform: translateY(-20px) rotate(180deg);
   }
@@ -842,6 +846,7 @@ body {
     opacity: 0;
     transform: translateY(20px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -853,6 +858,7 @@ body {
     opacity: 0;
     transform: translateX(100px);
   }
+
   to {
     opacity: 1;
     transform: translateX(0);

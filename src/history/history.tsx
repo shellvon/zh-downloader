@@ -222,7 +222,7 @@ const HistoryPage: React.FC = () => {
             </div>
           </div>
 
-          <div className="stat-card downloads">
+          <div className="stat-card video">
             <div className="stat-icon">
               <Video size={24} />
             </div>

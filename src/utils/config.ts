@@ -1,5 +1,6 @@
 import type { Config } from '@/types'
 import logger from '@/utils/logger'
+import { ConfigEvent } from './events'
 
 export const getDefaultConfig = (): Config => ({
   sites: {
@@ -72,7 +73,7 @@ export const saveConfig = async (config: Config): Promise<void> => {
     const tabs = await chrome.tabs.query({})
     tabs.forEach((tab) => {
       if (tab.id) {
-        chrome.tabs.sendMessage(tab.id, { action: 'configUpdated' }).catch(() => {})
+        chrome.tabs.sendMessage(tab.id, { action: ConfigEvent.UPDATED }).catch(() => { })
       }
     })
   }

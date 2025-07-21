@@ -329,6 +329,20 @@ const handleDownloadChanged = async (downloadDelta: chrome.downloads.DownloadDel
  */
 const handleDownloadComplete = async (downloadId: number) => {
   logger.info(`Download ${downloadId} completed successfully`)
+  
+  try {
+    // 获取下载信息以更新历史记录中的文件大小
+    const downloads = await chrome.downloads.search({ id: downloadId })
+    const download = downloads[0]
+    
+    if (download && download.totalBytes && download.totalBytes > 0) {
+      // 更新历史记录中的文件大小
+      await updateHistoryFileSize(downloadId, download.totalBytes)
+    }
+  } catch (error) {
+    logger.error('Error updating file size in history:', error)
+  }
+  
   // 通知历史页面
   chrome.runtime
     .sendMessage<DownloadCompleteMessage>({
@@ -338,6 +352,30 @@ const handleDownloadComplete = async (downloadId: number) => {
     .catch(() => {
       // 忽略错误，可能没有历史页面在监听
     })
+}
+
+/**
+ * 更新历史记录中的文件大小
+ */
+const updateHistoryFileSize = async (downloadId: number, fileSize: number) => {
+  try {
+    const result = await chrome.storage.local.get(['downloadHistory'])
+    const history = result.downloadHistory || []
+    
+    // 找到对应的历史记录并更新文件大小
+    const updatedHistory = history.map((record: any) => {
+      if (record.downloadId === downloadId) {
+        return { ...record, fileSize }
+      }
+      return record
+    })
+    
+    // 保存更新后的历史记录
+    await chrome.storage.local.set({ downloadHistory: updatedHistory })
+    logger.info(`Updated file size for download ${downloadId}: ${fileSize} bytes`)
+  } catch (error) {
+    logger.error('Error updating history file size:', error)
+  }
 }
 
 /**
