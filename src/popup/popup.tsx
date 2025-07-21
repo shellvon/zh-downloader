@@ -279,11 +279,11 @@ const PopupPage: React.FC = () => {
             </>
           )}
 
-          <button onClick={openOptionsPage} className="action-button">
+          {/* <button onClick={openOptionsPage} className="action-button">
             <Settings className="action-icon" />
             <span className="action-text">扩展设置</span>
             <ChevronRight size={16} />
-          </button>
+          </button> */}
         </div>
       </div>
 

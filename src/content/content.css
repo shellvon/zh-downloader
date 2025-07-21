@@ -196,6 +196,18 @@
   filter: brightness(0) saturate(100%) invert(100%) !important;
 }
 
+/* 激活状态样式 */
+.player-control-panel .icon-btn.active {
+  background: var(--primary-solid) !important;
+  color: var(--primary-foreground) !important;
+  box-shadow: var(--shadow-lg), var(--shadow-glow) !important;
+  border-color: var(--primary-solid) !important;
+}
+
+.player-control-panel .icon-btn.active::before {
+  filter: brightness(0) saturate(100%) invert(100%) !important;
+}
+
 /* 控制行 */
 .player-control-panel .control-row {
   display: flex;

@@ -7,7 +7,7 @@
   "host_permissions": ["<all_urls>"],
   "content_scripts": [
     {
-      "matches": ["<all_urls>"],
+      "matches": ["*://*.zhihu.com/*"],
       "js": ["content.js"],
       "css": ["content.css"],
       "run_at": "document_end",
